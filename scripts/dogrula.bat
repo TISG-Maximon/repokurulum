@@ -32,5 +32,5 @@ if errorlevel 1 (
   set /a EKSIK+=1
   exit /b 0
 )
-for /f "tokens=*" %%V in ('%~2 2^>nul ^| findstr /n "^" ^| findstr "^1:"') do echo [OK] %1  %%V
+for /f "tokens=1,* delims=:" %%A in ('%~2 2^>nul ^| findstr /n "^" ^| findstr "^1:"') do echo [OK] %1  %%B
 exit /b 0
