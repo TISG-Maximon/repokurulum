@@ -9,7 +9,7 @@ repokurulum/
 │   ├── mcp-ekstra.bat       ← context7, sequential-thinking, GitHub MCP (opsiyonel)
 │   ├── graphify-proje.bat   ← bir projede graphify hook + graphify MCP'yi açar
 │   └── dogrula.bat          ← kurulumu kontrol eder (hiçbir şey değiştirmez)
-├── .mcp.json                ← proje kapsamlı MCP örneği (Playwright)
+├── ornek-mcp-windows.json  ← proje kapsamlı .mcp.json örneği (Windows, Playwright)
 ├── CLAUDE.md                ← Claude'a bu repoda nasıl davranacağını söyler
 └── logs/kurulum.log         ← her çalıştırmada oluşur (git'e girmez)
 ```
@@ -48,7 +48,9 @@ Claude Code'a yetenek eklemenin 4 yolu var; bu repo dördünü de kullanır:
 | `project` | Repo kökünde `.mcp.json` (git'e girer) | Repoyu klonlayan herkes (ilk açılışta onay sorar) |
 | `user` | `~\.claude.json` (global) | Sen, tüm projeler |
 
-`kurulum.bat` Playwright'ı **user** kapsamında ekler → her projede çalışır. Bu repodaki `.mcp.json` ise proje kapsamına örnektir.
+`kurulum.bat` Playwright'ı **user** kapsamında ekler → her projede çalışır. `ornek-mcp-windows.json` proje kapsamına örnektir; bir Windows projesinde kullanmak istersen adını `.mcp.json` yap.
+
+> ⚠️ Bu repoda bilerek gerçek bir `.mcp.json` **yok**: `project` kapsamı `user` kapsamını ezer ve `cmd /c` Linux/bulut oturumlarında `ENOENT: cmd` hatası verir.
 
 - **Windows'a özel kural:** `npx` bir `.cmd` dosyasıdır; Claude Code onu doğrudan başlatamaz. Bu yüzden komut **`cmd /c npx ...`** şeklinde verilir. (En sık yapılan hata budur: "Connection closed".)
 
