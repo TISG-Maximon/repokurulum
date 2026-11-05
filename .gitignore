@@ -1,0 +1,4 @@
+logs/
+graphify-out/cache/
+node_modules/
+.claude/settings.local.json

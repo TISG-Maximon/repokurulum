@@ -1,0 +1,6 @@
+# .bat/.cmd dosyalari Windows'ta CRLF olmak ZORUNDA (LF ile goto/call etiketleri bozulabilir)
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+*.md  text eol=lf
+*.json text eol=lf
