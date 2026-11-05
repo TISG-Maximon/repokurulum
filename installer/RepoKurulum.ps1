@@ -95,7 +95,8 @@ function Invoke-Harici {
     <# Dis komut calistirir; ciktiyi log'a yazar; arayuzu dondurmaz; stdin hemen kapatilir. #>
     param([string]$Dosya, [string[]]$Argumanlar = @(), [int]$ZamanAsimi = 900, [switch]$Sessizce)
 
-    $komut = Get-Command $Dosya -ErrorAction SilentlyContinue | Select-Object -First 1
+    # .ps1 sarmalayicilari (npx.ps1, npm.ps1) Process.Start ile calismaz -> sadece Application
+    $komut = Get-Command $Dosya -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
     if (-not $komut) { Write-Log "Komut bulunamadi: $Dosya" 'HATA'; return 9009 }
     $yol = $komut.Source
     if (-not $yol) { $yol = $komut.Name }
@@ -266,7 +267,7 @@ function Resolve-McpKomut([string[]]$Komut) {
     $ilk = $Komut[0]
     $geri = @()
     if ($Komut.Count -gt 1) { $geri = $Komut[1..($Komut.Count - 1)] }
-    $c = Get-Command $ilk -ErrorAction SilentlyContinue | Select-Object -First 1
+    $c = Get-Command $ilk -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
     if ($c -and $c.Source -and $c.Source -match '\.(cmd|bat)$') {
         # Windows kurali: npx/npm gibi .cmd'ler MCP icin "cmd /c" ile sarilir
         return @('cmd', '/c', $ilk) + $geri

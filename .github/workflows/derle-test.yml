@@ -56,6 +56,8 @@ jobs:
           .\installer\RepoKurulum.ps1 -Sessiz -Bilesenler "uv,claude,mcp-timeout,playwright-mcp,context7,duckduckgo-mcp,markitdown-mcp,graphify,repomix-mcp"
           $kod = $LASTEXITCODE
           Write-Host "Cikis kodu: $kod"
+          $hatalar = Select-String -Path "$env:LOCALAPPDATA\RepoKurulum\logs\*.log" -Pattern '\[HATA\]'
+          if ($hatalar) { $hatalar | ForEach-Object { Write-Host "::error::$($_.Line)" }; exit 1 }
           exit $kod
 
       - name: Ikinci calistirma her seyi atlamali (idempotent)
