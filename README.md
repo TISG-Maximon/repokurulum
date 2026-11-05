@@ -1,10 +1,54 @@
 # repokurulum
 
-Windows bilgisayarda **Claude Code + Playwright MCP + graphify** (ve isteğe bağlı ek MCP sunucuları) ortamını tek tıkla kuran betikler ve çalışma mantığının anlatımı.
+Windows bilgisayarda **Claude Code + Playwright MCP + graphify** ve araştırma/belge MCP'lerini kuran **kurulum uygulaması**, betikler ve çalışma mantığının anlatımı.
+
+## ⚡ Herhangi bir PC'de en hızlı yol (tek satır)
+
+**PowerShell** aç (Başlat → "PowerShell"), şunu yapıştır, Enter:
+```powershell
+irm https://raw.githubusercontent.com/TISG-Maximon/repokurulum/HEAD/bootstrap.ps1 | iex
+```
+Kurulum penceresi açılır → **Seçilenleri Kur** → bitince **Claude'u Aç (giriş)** → tarayıcıda giriş. Elle yapman gereken bu kadar.
+
+| Elle yapman gereken | Neden otomatik olamıyor |
+|---|---|
+| Tek satırı yapıştırmak | Bir şeyin başlatması gerekiyor |
+| winget kuruluyorsa 1–2 UAC "Evet" | Node/Git/Chrome tüm kullanıcılara kurulur; Windows izin ister |
+| Claude'a tarayıcıdan giriş | Hesap güvenliği; bunu sadece sen yapabilirsin |
+| (Opsiyonel) API anahtarları | Tavily/Exa/Firecrawl/GitHub senin hesabına bağlı; uygulama pencerede sorar, istersen kalıcı kaydeder |
+
+Diğer başlatma yolları:
+- **`RepoKurulum.exe`**: GitHub → Actions → son "derle-ve-test" çalışması → *RepoKurulum-exe* artifact'ı (veya `v*` etiketi atılınca Releases). Tek dosya; USB'yle taşıyabilirsin. İmzasız olduğu için SmartScreen "Yine de çalıştır" der.
+- **`RepoKurulum.bat`**: repo indirildiyse çift tıkla.
+- **Sessiz / uzaktan** (pencere yok, varsayılanları kurar): `RepoKurulum.bat -Sessiz` veya
+  ```powershell
+  $env:REPOKURULUM_SESSIZ='1'; irm https://raw.githubusercontent.com/TISG-Maximon/repokurulum/HEAD/bootstrap.ps1 | iex
+  ```
+- **Durum listesi**: `RepoKurulum.bat -Liste`
+
+### Uygulamanın hata azaltma özellikleri
+- Her bileşen önce **kontrol edilir**; kuruluysa atlanır (tekrar çalıştırmak güvenli).
+- Her bileşenin **alternatif kurulum yolu** var (örn. Claude: resmi installer → npm; uv: winget → resmi script).
+- **Bağımlılıklar otomatik** seçilir ve doğru sırayla kurulur.
+- npx paketleri **önceden indirilir**; MCP ilk açılışta zaman aşımına düşmez.
+- MCP komutları Windows kuralına göre **otomatik** `cmd /c` ile sarılır; uv araçları **tam yol** ile kaydedilir.
+- Her çalıştırma `%LOCALAPPDATA%\RepoKurulum\logs\` içine log yazar.
+- GitHub Actions her push'ta uygulamayı **gerçek bir Windows makinesinde** sessiz modda kurar, ikinci çalıştırmanın her şeyi atladığını doğrular ve exe'yi derler.
+
+Hangi araçların neden seçildiği: **[docs/MIT-REPOLAR.md](docs/MIT-REPOLAR.md)**. Yeni araç eklemek: `installer/bilesenler.json`.
+
+---
 
 ```
 repokurulum/
-├── kurulum.bat              ← ANA KURULUM (çift tıkla)
+├── bootstrap.ps1            ← tek satırlık kurulumun indirdiği başlatıcı (exe'nin kaynağı)
+├── RepoKurulum.bat          ← KURULUM UYGULAMASI (pencereli)
+├── installer/
+│   ├── RepoKurulum.ps1      ← uygulama + kurulum motoru
+│   └── bilesenler.json      ← bileşen listesi (buradan genişletilir)
+├── docs/MIT-REPOLAR.md      ← araştırma/düzenleme repoları özeti
+├── .github/workflows/       ← Windows'ta otomatik test + exe derleme
+├── kurulum.bat              ← eski/yedek betik (uygulama açılmazsa)
 ├── scripts/
 │   ├── mcp-ekstra.bat       ← context7, sequential-thinking, GitHub MCP (opsiyonel)
 │   ├── graphify-proje.bat   ← bir projede graphify hook + graphify MCP'yi açar

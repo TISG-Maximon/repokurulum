@@ -1,0 +1,108 @@
+name: derle-ve-test
+
+on:
+  push:
+    branches: ['**']
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  dogrula:
+    name: Sozdizimi + gercek Windows'ta sessiz kurulum testi
+    runs-on: windows-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: PowerShell sozdizimi ve JSON kontrolu
+        shell: powershell
+        run: |
+          $hata = 0
+          Get-ChildItem -Recurse -Filter *.ps1 | ForEach-Object {
+            $tokens = $null; $errs = $null
+            [System.Management.Automation.Language.Parser]::ParseFile($_.FullName, [ref]$tokens, [ref]$errs) | Out-Null
+            foreach ($e in $errs) {
+              Write-Host "::error file=$($_.FullName),line=$($e.Extent.StartLineNumber)::$($e.Message)"
+              $hata++
+            }
+          }
+          $cfg = Get-Content installer\bilesenler.json -Raw -Encoding UTF8 | ConvertFrom-Json
+          $idler = @($cfg.bilesenler.id)
+          foreach ($b in $cfg.bilesenler) {
+            foreach ($g in @($b.gerekir)) {
+              if ($g -and ($idler.IndexOf($g) -lt 0 -or $idler.IndexOf($g) -gt $idler.IndexOf($b.id))) {
+                Write-Host "::error::$($b.id) -> '$g' bagimliligi yok ya da listede sonra geliyor"; $hata++
+              }
+            }
+          }
+          Write-Host "$($idler.Count) bilesen okundu."
+          if ($hata) { exit 1 }
+
+      - name: PSScriptAnalyzer (yalnizca Error)
+        shell: powershell
+        run: |
+          Install-Module PSScriptAnalyzer -Scope CurrentUser -Force -SkipPublisherCheck
+          $r = Invoke-ScriptAnalyzer -Path . -Recurse -Severity Error
+          $r | Format-Table -AutoSize | Out-String | Write-Host
+          if ($r) { exit 1 }
+
+      - name: Sessiz kurulum (anahtarsiz bilesenler)
+        shell: powershell
+        run: |
+          .\installer\RepoKurulum.ps1 -Sessiz -Bilesenler "uv,claude,mcp-timeout,playwright-mcp,context7,duckduckgo-mcp,markitdown-mcp,graphify,repomix-mcp"
+          $kod = $LASTEXITCODE
+          Write-Host "Cikis kodu: $kod"
+          exit $kod
+
+      - name: Ikinci calistirma her seyi atlamali (idempotent)
+        shell: powershell
+        run: |
+          .\installer\RepoKurulum.ps1 -Liste
+          .\installer\RepoKurulum.ps1 -Sessiz -Bilesenler "playwright-mcp,graphify,repomix-mcp"
+          exit $LASTEXITCODE
+
+      - name: Loglari topla
+        if: always()
+        shell: powershell
+        run: |
+          New-Item -ItemType Directory -Force loglar | Out-Null
+          Copy-Item "$env:LOCALAPPDATA\RepoKurulum\logs\*" loglar -ErrorAction SilentlyContinue
+          if (Get-Command claude -ErrorAction SilentlyContinue) { claude mcp list | Out-File loglar\mcp-list.txt }
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kurulum-loglari
+          path: loglar
+
+  exe:
+    name: RepoKurulum.exe derle
+    needs: dogrula
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: ps2exe ile derle
+        shell: powershell
+        run: |
+          Install-Module ps2exe -Scope CurrentUser -Force
+          Import-Module ps2exe
+          Invoke-ps2exe -inputFile .\bootstrap.ps1 -outputFile .\RepoKurulum.exe `
+            -title 'Repo Kurulum' -description 'Claude Code + MCP + skill kurulum araci' `
+            -product 'RepoKurulum' -version '1.0.0.0'
+          if (-not (Test-Path .\RepoKurulum.exe)) { exit 1 }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: RepoKurulum-exe
+          path: RepoKurulum.exe
+
+      - name: Etiketliyse surum (release) olustur
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: RepoKurulum.exe

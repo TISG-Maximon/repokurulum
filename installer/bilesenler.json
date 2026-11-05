@@ -1,0 +1,249 @@
+{
+  "surum": "1.0.0",
+  "aciklama": "RepoKurulum bilesen listesi. Yeni bir arac eklemek icin buraya bir nesne ekle; uygulama otomatik gosterir. Sira onemlidir: bagimliliklar once gelmelidir.",
+  "bilesenler": [
+    {
+      "id": "git",
+      "ad": "Git for Windows",
+      "kategori": "1. Temel araclar",
+      "lisans": "GPL-2.0",
+      "repo": "https://github.com/git-for-windows/git",
+      "aciklama": "Repo indirme; Claude Code Windows'ta Git Bash kullanir",
+      "varsayilan": true,
+      "kontrol": { "komut": "git" },
+      "kur": [ [ { "tur": "winget", "id": "Git.Git" } ] ],
+      "sonra": [
+        { "tur": "calistir", "dosya": "git", "argumanlar": ["config", "--global", "core.longpaths", "true"] }
+      ]
+    },
+    {
+      "id": "node",
+      "ad": "Node.js LTS (npx)",
+      "kategori": "1. Temel araclar",
+      "lisans": "MIT",
+      "repo": "https://github.com/nodejs/node",
+      "aciklama": "npm tabanli MCP sunuculari icin gerekli",
+      "varsayilan": true,
+      "kontrol": { "komut": "npx" },
+      "kur": [ [ { "tur": "winget", "id": "OpenJS.NodeJS.LTS" } ] ]
+    },
+    {
+      "id": "uv",
+      "ad": "uv (Python arac yoneticisi)",
+      "kategori": "1. Temel araclar",
+      "lisans": "MIT",
+      "repo": "https://github.com/astral-sh/uv",
+      "aciklama": "Python araclarini izole kurar; kendi Python'unu indirir",
+      "varsayilan": true,
+      "kontrol": { "komut": "uv" },
+      "kur": [
+        [ { "tur": "winget", "id": "astral-sh.uv" } ],
+        [ { "tur": "ps", "komut": "irm https://astral.sh/uv/install.ps1 | iex" } ]
+      ]
+    },
+    {
+      "id": "chrome",
+      "ad": "Google Chrome",
+      "kategori": "1. Temel araclar",
+      "lisans": "Ozel (ucretsiz)",
+      "repo": "https://www.google.com/chrome/",
+      "aciklama": "Playwright MCP varsayilan olarak Chrome'u kullanir",
+      "varsayilan": true,
+      "kontrol": { "dosya": [
+        "%ProgramFiles%\\Google\\Chrome\\Application\\chrome.exe",
+        "%ProgramFiles(x86)%\\Google\\Chrome\\Application\\chrome.exe",
+        "%LOCALAPPDATA%\\Google\\Chrome\\Application\\chrome.exe"
+      ] },
+      "kur": [ [ { "tur": "winget", "id": "Google.Chrome" } ] ]
+    },
+    {
+      "id": "claude",
+      "ad": "Claude Code",
+      "kategori": "1. Temel araclar",
+      "lisans": "Anthropic",
+      "repo": "https://github.com/anthropics/claude-code",
+      "aciklama": "Ana ajan (CLI). Ilk acilista tarayicidan giris gerekir",
+      "varsayilan": true,
+      "gerekir": ["git"],
+      "kontrol": { "komut": "claude" },
+      "kur": [
+        [ { "tur": "ps", "komut": "irm https://claude.ai/install.ps1 | iex" } ],
+        [ { "tur": "calistir", "dosya": "npm", "argumanlar": ["install", "-g", "@anthropic-ai/claude-code"] } ]
+      ]
+    },
+    {
+      "id": "mcp-timeout",
+      "ad": "MCP_TIMEOUT=60000 ayari",
+      "kategori": "1. Temel araclar",
+      "lisans": "-",
+      "repo": "",
+      "aciklama": "Ilk acilista paket indirirken MCP zaman asimini onler",
+      "varsayilan": true,
+      "kontrol": { "ortam": "MCP_TIMEOUT" },
+      "kur": [ [ { "tur": "ortam", "ad": "MCP_TIMEOUT", "deger": "60000" } ] ]
+    },
+    {
+      "id": "playwright-mcp",
+      "ad": "Playwright MCP",
+      "kategori": "2. Tarayici ve arastirma",
+      "lisans": "Apache-2.0",
+      "repo": "https://github.com/microsoft/playwright-mcp",
+      "aciklama": "Claude tarayici acar, tiklar, form doldurur, ekran goruntusu alir",
+      "varsayilan": true,
+      "gerekir": ["node", "claude", "chrome"],
+      "kontrol": { "mcp": "playwright" },
+      "kur": [ [ { "tur": "mcp", "ad": "playwright", "komut": ["npx", "-y", "@playwright/mcp@latest"] } ] ]
+    },
+    {
+      "id": "context7",
+      "ad": "Context7 MCP",
+      "kategori": "2. Tarayici ve arastirma",
+      "lisans": "MIT",
+      "repo": "https://github.com/upstash/context7",
+      "aciklama": "Kutuphanelerin GUNCEL dokumanini getirir (eski API uydurmayi azaltir)",
+      "varsayilan": true,
+      "gerekir": ["node", "claude"],
+      "kontrol": { "mcp": "context7" },
+      "kur": [ [ { "tur": "mcp", "ad": "context7", "komut": ["npx", "-y", "@upstash/context7-mcp@latest"] } ] ]
+    },
+    {
+      "id": "duckduckgo-mcp",
+      "ad": "DuckDuckGo arama MCP",
+      "kategori": "2. Tarayici ve arastirma",
+      "lisans": "MIT",
+      "repo": "https://github.com/nickclyde/duckduckgo-mcp-server",
+      "aciklama": "Anahtarsiz web aramasi + sayfa icerigi cekme",
+      "varsayilan": true,
+      "gerekir": ["uv", "claude"],
+      "kontrol": { "mcp": "duckduckgo" },
+      "kur": [ [
+        { "tur": "uvtool", "paket": "duckduckgo-mcp-server" },
+        { "tur": "mcp", "ad": "duckduckgo", "komut": ["duckduckgo-mcp-server"] }
+      ] ]
+    },
+    {
+      "id": "sequential-thinking",
+      "ad": "Sequential Thinking MCP",
+      "kategori": "2. Tarayici ve arastirma",
+      "lisans": "MCP servers (bkz. LICENSE)",
+      "repo": "https://github.com/modelcontextprotocol/servers",
+      "aciklama": "Karmasik problemleri adim adim, revize ederek dusunme araci",
+      "varsayilan": false,
+      "gerekir": ["node", "claude"],
+      "kontrol": { "mcp": "sequential-thinking" },
+      "kur": [ [ { "tur": "mcp", "ad": "sequential-thinking", "komut": ["npx", "-y", "@modelcontextprotocol/server-sequential-thinking"] } ] ]
+    },
+    {
+      "id": "tavily-mcp",
+      "ad": "Tavily arama MCP (API anahtari)",
+      "kategori": "2. Tarayici ve arastirma",
+      "lisans": "MIT",
+      "repo": "https://github.com/tavily-ai/tavily-mcp",
+      "aciklama": "Yapay zeka icin arama, sayfa cikarma, site haritasi, crawl (ucretsiz kota var)",
+      "varsayilan": false,
+      "gerekir": ["node", "claude"],
+      "gizli": [ { "ad": "TAVILY_API_KEY", "url": "https://app.tavily.com" } ],
+      "kontrol": { "mcp": "tavily" },
+      "kur": [ [ { "tur": "mcp", "ad": "tavily", "komut": ["npx", "-y", "tavily-mcp@latest"], "ortam": { "TAVILY_API_KEY": "{TAVILY_API_KEY}" } } ] ]
+    },
+    {
+      "id": "exa-mcp",
+      "ad": "Exa arama MCP (API anahtari)",
+      "kategori": "2. Tarayici ve arastirma",
+      "lisans": "MIT",
+      "repo": "https://github.com/exa-labs/exa-mcp-server",
+      "aciklama": "Anlamsal web aramasi, makale/kod/sirket aramasi",
+      "varsayilan": false,
+      "gerekir": ["node", "claude"],
+      "gizli": [ { "ad": "EXA_API_KEY", "url": "https://dashboard.exa.ai/api-keys" } ],
+      "kontrol": { "mcp": "exa" },
+      "kur": [ [ { "tur": "mcp", "ad": "exa", "komut": ["npx", "-y", "exa-mcp-server"], "ortam": { "EXA_API_KEY": "{EXA_API_KEY}" } } ] ]
+    },
+    {
+      "id": "firecrawl-mcp",
+      "ad": "Firecrawl MCP (API anahtari)",
+      "kategori": "2. Tarayici ve arastirma",
+      "lisans": "MIT",
+      "repo": "https://github.com/firecrawl/firecrawl-mcp-server",
+      "aciklama": "Siteleri tarayip temiz Markdown'a cevirir, toplu scrape",
+      "varsayilan": false,
+      "gerekir": ["node", "claude"],
+      "gizli": [ { "ad": "FIRECRAWL_API_KEY", "url": "https://www.firecrawl.dev/app/api-keys" } ],
+      "kontrol": { "mcp": "firecrawl" },
+      "kur": [ [ { "tur": "mcp", "ad": "firecrawl", "komut": ["npx", "-y", "firecrawl-mcp"], "ortam": { "FIRECRAWL_API_KEY": "{FIRECRAWL_API_KEY}" } } ] ]
+    },
+    {
+      "id": "markitdown-mcp",
+      "ad": "MarkItDown MCP",
+      "kategori": "3. Belge ve duzenleme",
+      "lisans": "MIT",
+      "repo": "https://github.com/microsoft/markitdown",
+      "aciklama": "PDF, Word, Excel, PowerPoint, HTML, resim -> Markdown (Claude okuyabilsin)",
+      "varsayilan": true,
+      "gerekir": ["uv", "claude"],
+      "kontrol": { "mcp": "markitdown" },
+      "kur": [ [
+        { "tur": "uvtool", "paket": "markitdown-mcp" },
+        { "tur": "mcp", "ad": "markitdown", "komut": ["markitdown-mcp"] }
+      ] ]
+    },
+    {
+      "id": "graphify",
+      "ad": "graphify + /graphify skill",
+      "kategori": "4. Kod ve repo",
+      "lisans": "Apache-2.0 / MIT",
+      "repo": "https://github.com/safishamsi/graphify",
+      "aciklama": "Kod ve dokumanlari sorgulanabilir bilgi grafigine cevirir",
+      "varsayilan": true,
+      "gerekir": ["uv", "claude"],
+      "kontrol": { "dosya": ["%USERPROFILE%\\.claude\\skills\\graphify\\SKILL.md"] },
+      "kur": [ [
+        { "tur": "uvtool", "paket": "graphifyy[mcp,pdf,office]" },
+        { "tur": "calistir", "dosya": "graphify", "argumanlar": ["install"] }
+      ], [
+        { "tur": "uvtool", "paket": "graphifyy[mcp]" },
+        { "tur": "calistir", "dosya": "graphify", "argumanlar": ["install", "--platform", "windows"] }
+      ] ]
+    },
+    {
+      "id": "repomix-mcp",
+      "ad": "Repomix MCP",
+      "kategori": "4. Kod ve repo",
+      "lisans": "MIT",
+      "repo": "https://github.com/yamadashy/repomix",
+      "aciklama": "Bir repoyu (yerel veya GitHub) tek, yapay zeka dostu dosyaya paketler",
+      "varsayilan": true,
+      "gerekir": ["node", "claude"],
+      "kontrol": { "mcp": "repomix" },
+      "kur": [ [ { "tur": "mcp", "ad": "repomix", "komut": ["npx", "-y", "repomix", "--mcp"] } ] ]
+    },
+    {
+      "id": "github-mcp",
+      "ad": "GitHub MCP (token)",
+      "kategori": "4. Kod ve repo",
+      "lisans": "MIT",
+      "repo": "https://github.com/github/github-mcp-server",
+      "aciklama": "Issue, PR, kod arama, Actions - GitHub'in resmi MCP sunucusu",
+      "varsayilan": false,
+      "gerekir": ["claude"],
+      "gizli": [ { "ad": "GITHUB_PAT", "url": "https://github.com/settings/personal-access-tokens" } ],
+      "kontrol": { "mcp": "github" },
+      "kur": [ [ { "tur": "mcp-http", "ad": "github", "url": "https://api.githubcopilot.com/mcp/", "basliklar": ["Authorization: Bearer {GITHUB_PAT}"] } ] ]
+    },
+    {
+      "id": "superpowers",
+      "ad": "Superpowers skill paketi",
+      "kategori": "5. Skill / is akisi eklentileri",
+      "lisans": "MIT",
+      "repo": "https://github.com/obra/superpowers",
+      "aciklama": "Beyin firtinasi -> plan -> TDD -> hata ayiklama -> kod inceleme is akisi skill'leri",
+      "varsayilan": false,
+      "gerekir": ["claude"],
+      "kontrol": { "plugin": "superpowers" },
+      "kur": [ [
+        { "tur": "calistir", "dosya": "claude", "argumanlar": ["plugin", "marketplace", "add", "obra/superpowers-marketplace"] },
+        { "tur": "calistir", "dosya": "claude", "argumanlar": ["plugin", "install", "superpowers@superpowers-marketplace", "-s", "user"] }
+      ] ]
+    }
+  ]
+}

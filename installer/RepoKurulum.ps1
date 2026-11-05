@@ -1,0 +1,619 @@
+#Requires -Version 5.1
+<#
+.SYNOPSIS
+  RepoKurulum - Claude Code + MCP + skill kurulum uygulamasi (pencereli veya sessiz).
+
+.DESCRIPTION
+  Bilesenler installer\bilesenler.json dosyasindan okunur. Her bilesen icin:
+    1) "kontrol" ile kurulu mu bakilir (kuruluysa atlanir -> tekrar calistirmak guvenli)
+    2) "kur" icindeki yontemler sirayla denenir; biri basarili olunca durulur
+    3) "sonra" adimlari calistirilir
+  Hicbir adim yonetici izni istemez; winget gerekiyorsa UAC penceresini kendisi acar.
+
+.EXAMPLE
+  powershell -ExecutionPolicy Bypass -STA -File RepoKurulum.ps1
+  powershell -ExecutionPolicy Bypass -File RepoKurulum.ps1 -Sessiz
+  powershell -ExecutionPolicy Bypass -File RepoKurulum.ps1 -Sessiz -Bilesenler "claude,playwright-mcp,graphify"
+  powershell -ExecutionPolicy Bypass -File RepoKurulum.ps1 -Liste
+#>
+[CmdletBinding()]
+param(
+    [switch]$Sessiz,
+    [string]$Bilesenler = '',
+    [switch]$Liste,
+    [switch]$Zorla,
+    [string]$Yapilandirma = ''
+)
+
+$ErrorActionPreference = 'Continue'
+try { [Console]::OutputEncoding = [System.Text.Encoding]::UTF8 } catch { }
+try {
+    [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
+} catch { }
+
+if (-not $Yapilandirma) { $Yapilandirma = Join-Path $PSScriptRoot 'bilesenler.json' }
+
+# ------------------------------------------------------------------ Durum
+$script:LogBox      = $null
+$script:ListView    = $null
+$script:McpOnbellek = $null
+$script:PluginCikti = $null
+$script:SonCikti    = ''
+$script:Gizliler    = @{}
+$script:Hatalar     = 0
+
+$LogDir = Join-Path $env:LOCALAPPDATA 'RepoKurulum\logs'
+New-Item -ItemType Directory -Force -Path $LogDir | Out-Null
+$LogFile = Join-Path $LogDir ('kurulum_{0:yyyyMMdd_HHmmss}.log' -f (Get-Date))
+
+# ------------------------------------------------------------------ Yardimcilar
+function Invoke-UiPump {
+    if ($script:LogBox) { [System.Windows.Forms.Application]::DoEvents() }
+}
+
+function Write-Log {
+    param([string]$Mesaj, [ValidateSet('BILGI', 'OK', 'UYARI', 'HATA')][string]$Seviye = 'BILGI')
+    $satir = '[{0:HH:mm:ss}] [{1}] {2}' -f (Get-Date), $Seviye, $Mesaj
+    try { Add-Content -LiteralPath $LogFile -Value $satir -Encoding UTF8 } catch { }
+    if ($script:LogBox) {
+        $script:LogBox.AppendText($satir + [Environment]::NewLine)
+        Invoke-UiPump
+    } else {
+        $renk = @{ BILGI = 'Gray'; OK = 'Green'; UYARI = 'Yellow'; HATA = 'Red' }[$Seviye]
+        Write-Host $satir -ForegroundColor $renk
+    }
+}
+
+function Update-EnvPath {
+    $parcalar = @(
+        [Environment]::GetEnvironmentVariable('Path', 'Machine'),
+        [Environment]::GetEnvironmentVariable('Path', 'User'),
+        (Join-Path $env:USERPROFILE '.local\bin'),
+        (Join-Path $env:APPDATA 'npm'),
+        (Join-Path $env:ProgramFiles 'nodejs'),
+        (Join-Path $env:ProgramFiles 'Git\cmd'),
+        (Join-Path $env:LOCALAPPDATA 'Microsoft\WinGet\Links')
+    ) | Where-Object { $_ }
+    $env:Path = ($parcalar -join ';')
+}
+
+function Test-Komut([string]$Ad) {
+    return [bool](Get-Command $Ad -ErrorAction SilentlyContinue)
+}
+
+function Format-Arguman([string]$Arg) {
+    if ($Arg -eq '') { return '""' }
+    if ($Arg -notmatch '[\s"]') { return $Arg }
+    return '"' + ($Arg -replace '(\\*)"', '$1$1\"') + '"'
+}
+
+function Stop-ProcessTree([int]$ProcessId) {
+    try { & taskkill.exe /T /F /PID $ProcessId 2>&1 | Out-Null } catch { }
+}
+
+function Invoke-Harici {
+    <# Dis komut calistirir; ciktiyi log'a yazar; arayuzu dondurmaz; stdin hemen kapatilir. #>
+    param([string]$Dosya, [string[]]$Argumanlar = @(), [int]$ZamanAsimi = 900, [switch]$Sessizce)
+
+    $komut = Get-Command $Dosya -ErrorAction SilentlyContinue | Select-Object -First 1
+    if (-not $komut) { Write-Log "Komut bulunamadi: $Dosya" 'HATA'; return 9009 }
+    $yol = $komut.Source
+    if (-not $yol) { $yol = $komut.Name }
+
+    $argMetni = ($Argumanlar | ForEach-Object { Format-Arguman $_ }) -join ' '
+    # .cmd/.bat dosyalari (npm, npx, npm ile kurulan claude) dogrudan baslatilamaz -> cmd /c
+    if ($yol -match '\.(cmd|bat)$') {
+        $argMetni = '/d /s /c "' + (Format-Arguman $yol) + ' ' + $argMetni + '"'
+        $yol = $env:ComSpec
+    }
+    if (-not $Sessizce) { Write-Log ("> {0} {1}" -f $Dosya, (($Argumanlar | ForEach-Object { Format-Arguman $_ }) -join ' ')) }
+
+    $psi = New-Object System.Diagnostics.ProcessStartInfo
+    $psi.FileName = $yol
+    $psi.Arguments = $argMetni
+    $psi.UseShellExecute = $false
+    $psi.CreateNoWindow = $true
+    $psi.RedirectStandardOutput = $true
+    $psi.RedirectStandardError = $true
+    $psi.RedirectStandardInput = $true
+    try {
+        $p = [System.Diagnostics.Process]::Start($psi)
+    } catch {
+        Write-Log "Baslatilamadi: $Dosya - $($_.Exception.Message)" 'HATA'
+        return 9009
+    }
+    try { $p.StandardInput.Close() } catch { }
+    $outTask = $p.StandardOutput.ReadToEndAsync()
+    $errTask = $p.StandardError.ReadToEndAsync()
+    $sw = [System.Diagnostics.Stopwatch]::StartNew()
+    while (-not $p.HasExited) {
+        Invoke-UiPump
+        Start-Sleep -Milliseconds 150
+        if ($sw.Elapsed.TotalSeconds -gt $ZamanAsimi) {
+            Write-Log "Zaman asimi ($ZamanAsimi sn): $Dosya - durduruluyor" 'UYARI'
+            Stop-ProcessTree $p.Id
+            break
+        }
+    }
+    try { $p.WaitForExit(5000) | Out-Null } catch { }
+    $cikti = ''
+    try { $cikti = $outTask.Result + $errTask.Result } catch { }
+    $script:SonCikti = $cikti
+    if ($cikti -and $cikti.Trim()) {
+        try { Add-Content -LiteralPath $LogFile -Value $cikti.TrimEnd() -Encoding UTF8 } catch { }
+    }
+    $kod = 1
+    try { $kod = $p.ExitCode } catch { }
+    return $kod
+}
+
+function Expand-Deger([string]$Metin) {
+    if ($null -eq $Metin) { return '' }
+    $sonuc = [Environment]::ExpandEnvironmentVariables($Metin)
+    foreach ($k in @($script:Gizliler.Keys)) {
+        $sonuc = $sonuc.Replace('{' + $k + '}', [string]$script:Gizliler[$k])
+    }
+    return $sonuc
+}
+
+# ------------------------------------------------------------------ Gizli anahtarlar
+function Get-GizliDeger([string]$Ad) {
+    if ($script:Gizliler.ContainsKey($Ad) -and $script:Gizliler[$Ad]) { return $script:Gizliler[$Ad] }
+    foreach ($kapsam in 'Process', 'User') {
+        $v = [Environment]::GetEnvironmentVariable($Ad, $kapsam)
+        if ($v) { $script:Gizliler[$Ad] = $v; return $v }
+    }
+    return $null
+}
+
+function Request-Gizli($Gizli, [string]$BilesenAdi) {
+    $mevcut = Get-GizliDeger $Gizli.ad
+    if ($mevcut) { return $true }
+    if (-not $script:LogBox) {
+        Write-Log "$BilesenAdi atlandi: $($Gizli.ad) ortam degiskeni tanimli degil ($($Gizli.url))" 'UYARI'
+        return $false
+    }
+    $f = New-Object System.Windows.Forms.Form
+    $f.Text = "Anahtar gerekli: $($Gizli.ad)"
+    $f.Size = New-Object System.Drawing.Size(520, 230)
+    $f.StartPosition = 'CenterParent'
+    $f.FormBorderStyle = 'FixedDialog'
+    $f.MaximizeBox = $false; $f.MinimizeBox = $false
+    $l = New-Object System.Windows.Forms.Label
+    $l.Text = "$BilesenAdi icin $($Gizli.ad) gerekli.`r`nAnahtari buradan alabilirsin:"
+    $l.SetBounds(12, 12, 480, 36)
+    $link = New-Object System.Windows.Forms.LinkLabel
+    $link.Text = $Gizli.url
+    $link.SetBounds(12, 50, 480, 20)
+    $link.add_LinkClicked({ param($s, $e) Start-Process $s.Text })
+    $t = New-Object System.Windows.Forms.TextBox
+    $t.SetBounds(12, 76, 480, 24)
+    $t.UseSystemPasswordChar = $true
+    $c = New-Object System.Windows.Forms.CheckBox
+    $c.Text = 'Kullanici ortam degiskeni olarak kalici kaydet'
+    $c.Checked = $true
+    $c.SetBounds(12, 106, 480, 22)
+    $ok = New-Object System.Windows.Forms.Button
+    $ok.Text = 'Tamam'; $ok.DialogResult = 'OK'; $ok.SetBounds(316, 140, 85, 28)
+    $iptal = New-Object System.Windows.Forms.Button
+    $iptal.Text = 'Atla'; $iptal.DialogResult = 'Cancel'; $iptal.SetBounds(407, 140, 85, 28)
+    $f.Controls.AddRange(@($l, $link, $t, $c, $ok, $iptal))
+    $f.AcceptButton = $ok; $f.CancelButton = $iptal
+    $sonuc = $f.ShowDialog()
+    $deger = $t.Text.Trim()
+    $kalici = $c.Checked
+    $f.Dispose()
+    if ($sonuc -ne 'OK' -or -not $deger) {
+        Write-Log "$BilesenAdi atlandi: anahtar girilmedi" 'UYARI'
+        return $false
+    }
+    $script:Gizliler[$Gizli.ad] = $deger
+    if ($kalici) { [Environment]::SetEnvironmentVariable($Gizli.ad, $deger, 'User') }
+    return $true
+}
+
+# ------------------------------------------------------------------ Kontroller
+function Get-McpListesi {
+    if ($null -ne $script:McpOnbellek) { return $script:McpOnbellek }
+    $adlar = @()
+    $dosya = Join-Path $env:USERPROFILE '.claude.json'
+    $okundu = $false
+    if (Test-Path -LiteralPath $dosya) {
+        try {
+            $json = Get-Content -LiteralPath $dosya -Raw -Encoding UTF8 | ConvertFrom-Json
+            if ($json.mcpServers) { $adlar = @($json.mcpServers.PSObject.Properties.Name) }
+            $okundu = $true
+        } catch { $okundu = $false }
+    } else { $okundu = $true }
+    if (-not $okundu -and (Test-Komut 'claude')) {
+        # .claude.json PowerShell 5.1 ile okunamadiysa (buyuk/kucuk harf cakismasi vb.) CLI'ye sor
+        Invoke-Harici 'claude' @('mcp', 'list') -ZamanAsimi 120 -Sessizce | Out-Null
+        $adlar = @([regex]::Matches($script:SonCikti, '(?m)^([A-Za-z0-9_.\-]+):\s') | ForEach-Object { $_.Groups[1].Value })
+    }
+    $script:McpOnbellek = $adlar
+    return $adlar
+}
+
+function Test-Plugin([string]$Ad) {
+    if (-not (Test-Komut 'claude')) { return $false }
+    if ($null -eq $script:PluginCikti) {
+        Invoke-Harici 'claude' @('plugin', 'list') -ZamanAsimi 120 -Sessizce | Out-Null
+        $script:PluginCikti = [string]$script:SonCikti
+    }
+    return ($script:PluginCikti -match ('(?im)\b' + [regex]::Escape($Ad) + '\b'))
+}
+
+function Reset-Onbellek { $script:McpOnbellek = $null; $script:PluginCikti = $null }
+
+function Test-Bilesen($B) {
+    $k = $B.kontrol
+    if (-not $k) { return $false }
+    if ($k.komut) { return (Test-Komut $k.komut) }
+    if ($k.dosya) {
+        foreach ($d in @($k.dosya)) {
+            if (Test-Path -LiteralPath ([Environment]::ExpandEnvironmentVariables($d))) { return $true }
+        }
+        return $false
+    }
+    if ($k.mcp) { return (@(Get-McpListesi) -contains $k.mcp) }
+    if ($k.plugin) { return (Test-Plugin $k.plugin) }
+    if ($k.ortam) { return [bool][Environment]::GetEnvironmentVariable($k.ortam, 'User') }
+    return $false
+}
+
+# ------------------------------------------------------------------ Adimlar
+function Resolve-McpKomut([string[]]$Komut) {
+    $ilk = $Komut[0]
+    $geri = @()
+    if ($Komut.Count -gt 1) { $geri = $Komut[1..($Komut.Count - 1)] }
+    $c = Get-Command $ilk -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($c -and $c.Source -and $c.Source -match '\.(cmd|bat)$') {
+        # Windows kurali: npx/npm gibi .cmd'ler MCP icin "cmd /c" ile sarilir
+        return @('cmd', '/c', $ilk) + $geri
+    }
+    if ($ilk -in @('npx', 'npm')) { return @('cmd', '/c', $ilk) + $geri }
+    if ($c -and $c.Source) { return @($c.Source) + $geri }   # tam yol: PATH sorunlarini onler
+    return $Komut
+}
+
+function Invoke-Adim($A) {
+    switch ($A.tur) {
+        'winget' {
+            if (-not (Test-Komut 'winget')) {
+                Write-Log "winget yok (Microsoft Store > 'App Installer'). $($A.id) bu yontemle kurulamadi." 'UYARI'
+                return 1
+            }
+            $kod = Invoke-Harici 'winget' @('install', '--id', $A.id, '-e', '--source', 'winget', '--silent',
+                '--accept-package-agreements', '--accept-source-agreements', '--disable-interactivity')
+            # -1978335189 = zaten kurulu ; -1978335135 = guncelleme yok
+            if ($kod -in @(0, -1978335189, -1978335135)) { return 0 }
+            return $kod
+        }
+        'ps' {
+            return (Invoke-Harici 'powershell.exe' @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', (Expand-Deger $A.komut)))
+        }
+        'calistir' {
+            Update-EnvPath
+            $argumanlar = @($A.argumanlar | ForEach-Object { Expand-Deger $_ })
+            return (Invoke-Harici $A.dosya $argumanlar)
+        }
+        'uvtool' {
+            Update-EnvPath
+            $py = '3.12'
+            if ($A.python) { $py = $A.python }
+            $kod = Invoke-Harici 'uv' @('tool', 'install', '--python', $py, $A.paket)
+            if ($kod -ne 0 -and $script:SonCikti -match 'already installed') { $kod = 0 }
+            Invoke-Harici 'uv' @('tool', 'update-shell') -Sessizce | Out-Null
+            Update-EnvPath
+            return $kod
+        }
+        'ortam' {
+            [Environment]::SetEnvironmentVariable($A.ad, $A.deger, 'User')
+            Set-Item -Path ("Env:" + $A.ad) -Value $A.deger
+            Write-Log "Ortam degiskeni: $($A.ad)=$($A.deger)"
+            return 0
+        }
+        'mcp' {
+            Update-EnvPath
+            if (-not (Test-Komut 'claude')) { Write-Log 'claude yok, MCP eklenemez' 'HATA'; return 1 }
+            $komut = Resolve-McpKomut @($A.komut)
+            if ($A.komut[0] -eq 'npx') {
+                Write-Log "Paket onbellege indiriliyor: $($A.komut -join ' ')"
+                Invoke-Harici 'npx' (@($A.komut[1..($A.komut.Count - 1)]) + '--help') -ZamanAsimi 240 -Sessizce | Out-Null
+            }
+            Invoke-Harici 'claude' @('mcp', 'remove', $A.ad, '-s', 'user') -Sessizce | Out-Null
+            $argumanlar = @('mcp', 'add', '-s', 'user', $A.ad)
+            if ($A.ortam) {
+                foreach ($p in $A.ortam.PSObject.Properties) { $argumanlar += @('-e', ($p.Name + '=' + (Expand-Deger $p.Value))) }
+            }
+            $argumanlar += '--'
+            $argumanlar += $komut
+            $kod = Invoke-Harici 'claude' $argumanlar -Sessizce
+            Write-Log ("> claude mcp add -s user {0} -- {1}" -f $A.ad, ($komut -join ' '))
+            Reset-Onbellek
+            return $kod
+        }
+        'mcp-http' {
+            if (-not (Test-Komut 'claude')) { Write-Log 'claude yok, MCP eklenemez' 'HATA'; return 1 }
+            Invoke-Harici 'claude' @('mcp', 'remove', $A.ad, '-s', 'user') -Sessizce | Out-Null
+            $argumanlar = @('mcp', 'add', '-s', 'user', '--transport', 'http', $A.ad, $A.url)
+            foreach ($h in @($A.basliklar)) { if ($h) { $argumanlar += @('-H', (Expand-Deger $h)) } }
+            $kod = Invoke-Harici 'claude' $argumanlar -Sessizce
+            Write-Log "> claude mcp add -s user --transport http $($A.ad) $($A.url) (basliklar gizlendi)"
+            Reset-Onbellek
+            return $kod
+        }
+        default {
+            Write-Log "Bilinmeyen adim turu: $($A.tur)" 'HATA'
+            return 1
+        }
+    }
+}
+
+function Install-Bilesen($B) {
+    Write-Log "==== $($B.ad) ===="
+    if ($Zorla -and $B.kontrol.mcp) {
+        Invoke-Harici 'claude' @('mcp', 'remove', $B.kontrol.mcp, '-s', 'user') -Sessizce | Out-Null
+        Reset-Onbellek
+    } elseif (Test-Bilesen $B) {
+        Write-Log "$($B.ad) zaten kurulu" 'OK'
+        return 'Kurulu'
+    }
+    foreach ($g in @($B.gizli)) {
+        if ($g -and -not (Request-Gizli $g $B.ad)) { return 'Atlandi' }
+    }
+    $sira = 0
+    foreach ($yontem in @($B.kur)) {
+        $sira++
+        if ($sira -gt 1) { Write-Log "Alternatif yontem deneniyor ($sira)..." 'UYARI' }
+        foreach ($adim in @($yontem)) {
+            $kod = Invoke-Adim $adim
+            if ($kod -ne 0) { Write-Log "Adim basarisiz (cikis kodu $kod)" 'UYARI'; break }
+        }
+        Update-EnvPath
+        Reset-Onbellek
+        if (Test-Bilesen $B) {
+            foreach ($adim in @($B.sonra)) { if ($adim) { Invoke-Adim $adim | Out-Null } }
+            Write-Log "$($B.ad) kuruldu" 'OK'
+            return 'Kuruldu'
+        }
+    }
+    $script:Hatalar++
+    Write-Log "$($B.ad) KURULAMADI. Ayrinti: $LogFile" 'HATA'
+    return 'Hata'
+}
+
+# ------------------------------------------------------------------ Yapilandirma
+if (-not (Test-Path -LiteralPath $Yapilandirma)) {
+    Write-Host "Yapilandirma bulunamadi: $Yapilandirma" -ForegroundColor Red
+    exit 2
+}
+$Config = Get-Content -LiteralPath $Yapilandirma -Raw -Encoding UTF8 | ConvertFrom-Json
+$Tum = @($Config.bilesenler)
+$IdTablo = @{}
+foreach ($b in $Tum) { $IdTablo[$b.id] = $b }
+
+function Get-Bagimliliklarla([string[]]$Idler) {
+    $secili = New-Object System.Collections.Generic.HashSet[string]
+    $yigin = New-Object System.Collections.Stack
+    foreach ($i in $Idler) { $yigin.Push($i) }
+    while ($yigin.Count -gt 0) {
+        $i = [string]$yigin.Pop()
+        if (-not $IdTablo.ContainsKey($i)) { Write-Log "Bilinmeyen bilesen: $i" 'UYARI'; continue }
+        if ($secili.Add($i)) { foreach ($g in @($IdTablo[$i].gerekir)) { if ($g) { $yigin.Push($g) } } }
+    }
+    # JSON sirasini koru (bagimliliklar listede once gelir)
+    return @($Tum | Where-Object { $secili.Contains($_.id) })
+}
+
+Update-EnvPath
+Write-Log "RepoKurulum $($Config.surum) - log: $LogFile"
+
+if ($Liste) {
+    foreach ($b in $Tum) {
+        $durum = 'yok'
+        if (Test-Bilesen $b) { $durum = 'KURULU' }
+        '{0,-22} {1,-8} {2,-12} {3}' -f $b.id, $durum, $b.lisans, $b.ad
+    }
+    exit 0
+}
+
+if ($Sessiz) {
+    if ($Bilesenler) { $idler = $Bilesenler.Split(',') | ForEach-Object { $_.Trim() } | Where-Object { $_ } }
+    else { $idler = @($Tum | Where-Object { $_.varsayilan } | ForEach-Object { $_.id }) }
+    $plan = Get-Bagimliliklarla $idler
+    Write-Log ("Kurulacak: " + (($plan | ForEach-Object { $_.id }) -join ', '))
+    $ozet = @()
+    foreach ($b in $plan) { $ozet += ('{0,-22} {1}' -f $b.id, (Install-Bilesen $b)) }
+    Write-Log '---------------- OZET ----------------'
+    foreach ($s in $ozet) { Write-Log $s }
+    Write-Log "Hata sayisi: $($script:Hatalar)" $(if ($script:Hatalar) { 'HATA' } else { 'OK' })
+    exit $script:Hatalar
+}
+
+# ------------------------------------------------------------------ Arayuz
+Add-Type -AssemblyName System.Windows.Forms
+Add-Type -AssemblyName System.Drawing
+[System.Windows.Forms.Application]::EnableVisualStyles()
+
+# Pencere gizli konsoldan acildigi icin beklenmeyen hatalar kullaniciya kutuyla gosterilir
+trap {
+    $m = "Beklenmeyen hata: $($_.Exception.Message)`r`n`r`nLog: $LogFile"
+    try { Add-Content -LiteralPath $LogFile -Value $m -Encoding UTF8 } catch { }
+    if ($script:LogBox) { [System.Windows.Forms.MessageBox]::Show($m, 'Repo Kurulum') | Out-Null }
+    else { Write-Host $m -ForegroundColor Red }
+    continue
+}
+
+$form = New-Object System.Windows.Forms.Form
+$form.Text = "Repo Kurulum $($Config.surum) - Claude Code / MCP / Skill"
+$form.Size = New-Object System.Drawing.Size(1000, 720)
+$form.MinimumSize = New-Object System.Drawing.Size(820, 560)
+$form.StartPosition = 'CenterScreen'
+$form.Font = New-Object System.Drawing.Font('Segoe UI', 9)
+
+$ust = New-Object System.Windows.Forms.Label
+$ust.Text = "Kurmak istediklerini isaretle ve 'Secilenleri Kur'a bas. Kurulu olanlar atlanir; bagimliliklar otomatik secilir. Anahtar isteyenler icin pencere acilir."
+$ust.Dock = 'Top'; $ust.Height = 34; $ust.Padding = New-Object System.Windows.Forms.Padding(8, 8, 8, 0)
+
+$lv = New-Object System.Windows.Forms.ListView
+$lv.View = 'Details'; $lv.CheckBoxes = $true; $lv.FullRowSelect = $true; $lv.GridLines = $true
+$lv.Dock = 'Fill'; $lv.ShowItemToolTips = $true
+[void]$lv.Columns.Add('Bilesen', 230)
+[void]$lv.Columns.Add('Durum', 80)
+[void]$lv.Columns.Add('Lisans', 110)
+[void]$lv.Columns.Add('Ne ise yarar', 520)
+$script:ListView = $lv
+
+$gruplar = @{}
+foreach ($b in $Tum) {
+    if (-not $gruplar.ContainsKey($b.kategori)) {
+        $g = New-Object System.Windows.Forms.ListViewGroup($b.kategori, $b.kategori)
+        [void]$lv.Groups.Add($g); $gruplar[$b.kategori] = $g
+    }
+    $it = New-Object System.Windows.Forms.ListViewItem($b.ad)
+    [void]$it.SubItems.Add('...')
+    [void]$it.SubItems.Add([string]$b.lisans)
+    [void]$it.SubItems.Add([string]$b.aciklama)
+    $it.Group = $gruplar[$b.kategori]
+    $it.Tag = $b.id
+    $it.ToolTipText = [string]$b.repo
+    $it.Checked = [bool]$b.varsayilan
+    [void]$lv.Items.Add($it)
+}
+
+$script:BagimlilikKilit = $false
+$lv.add_ItemChecked({
+    param($s, $e)
+    if ($script:BagimlilikKilit -or -not $e.Item.Checked) { return }
+    $script:BagimlilikKilit = $true
+    try {
+        $gerekli = Get-Bagimliliklarla @([string]$e.Item.Tag)
+        foreach ($it in $script:ListView.Items) {
+            if ($gerekli | Where-Object { $_.id -eq $it.Tag }) { $it.Checked = $true }
+        }
+    } finally { $script:BagimlilikKilit = $false }
+})
+$lv.add_ItemActivate({
+    $sec = $script:ListView.SelectedItems
+    if ($sec.Count -gt 0 -and $sec[0].ToolTipText) { Start-Process $sec[0].ToolTipText }
+})
+
+function Set-Durum([string]$Id, [string]$Durum) {
+    foreach ($it in $script:ListView.Items) {
+        if ($it.Tag -eq $Id) {
+            $it.SubItems[1].Text = $Durum
+            switch ($Durum) {
+                'Kurulu'  { $it.ForeColor = [System.Drawing.Color]::DarkGreen }
+                'Kuruldu' { $it.ForeColor = [System.Drawing.Color]::Green }
+                'Hata'    { $it.ForeColor = [System.Drawing.Color]::Red }
+                'Atlandi' { $it.ForeColor = [System.Drawing.Color]::DarkOrange }
+                default   { $it.ForeColor = [System.Drawing.SystemColors]::WindowText }
+            }
+        }
+    }
+    Invoke-UiPump
+}
+
+function Update-TumDurumlar {
+    Reset-Onbellek
+    Update-EnvPath
+    foreach ($b in $Tum) {
+        $d = 'Yok'
+        if (Test-Bilesen $b) { $d = 'Kurulu' }
+        Set-Durum $b.id $d
+    }
+}
+
+$log = New-Object System.Windows.Forms.TextBox
+$log.Multiline = $true; $log.ScrollBars = 'Vertical'; $log.ReadOnly = $true
+$log.Dock = 'Bottom'; $log.Height = 200
+$log.Font = New-Object System.Drawing.Font('Consolas', 9)
+$log.BackColor = [System.Drawing.Color]::FromArgb(30, 30, 30)
+$log.ForeColor = [System.Drawing.Color]::Gainsboro
+
+$progress = New-Object System.Windows.Forms.ProgressBar
+$progress.Dock = 'Bottom'; $progress.Height = 14
+
+$panel = New-Object System.Windows.Forms.FlowLayoutPanel
+$panel.Dock = 'Bottom'; $panel.Height = 44; $panel.Padding = New-Object System.Windows.Forms.Padding(6)
+
+function New-Dugme([string]$Metin, [int]$Genislik = 140) {
+    $d = New-Object System.Windows.Forms.Button
+    $d.Text = $Metin; $d.Width = $Genislik; $d.Height = 30
+    [void]$panel.Controls.Add($d)
+    return $d
+}
+
+$btnKur      = New-Dugme 'Secilenleri Kur' 150
+$btnKur.Font = New-Object System.Drawing.Font('Segoe UI', 9, [System.Drawing.FontStyle]::Bold)
+$btnYenile   = New-Dugme 'Durumu Yenile'
+$btnVars     = New-Dugme 'Varsayilanlari Sec'
+$btnHic      = New-Dugme 'Secimi Temizle' 110
+$btnClaude   = New-Dugme "Claude'u Ac (giris)" 150
+$btnLog      = New-Dugme 'Log Klasoru' 100
+$chkZorla    = New-Object System.Windows.Forms.CheckBox
+$chkZorla.Text = 'MCP kayitlarini yeniden ekle'; $chkZorla.Width = 200; $chkZorla.Height = 30
+[void]$panel.Controls.Add($chkZorla)
+
+$btnVars.add_Click({ foreach ($it in $script:ListView.Items) { $it.Checked = [bool]$IdTablo[[string]$it.Tag].varsayilan } })
+$btnHic.add_Click({ foreach ($it in $script:ListView.Items) { $it.Checked = $false } })
+$btnLog.add_Click({ Start-Process explorer.exe $LogDir })
+$btnYenile.add_Click({ $form.UseWaitCursor = $true; Update-TumDurumlar; $form.UseWaitCursor = $false })
+$btnClaude.add_Click({
+    Update-EnvPath
+    if (-not (Test-Komut 'claude')) { [System.Windows.Forms.MessageBox]::Show('Claude Code henuz kurulu degil.') | Out-Null; return }
+    Start-Process $env:ComSpec -ArgumentList '/k', 'echo Ilk acilista tarayicida giris yap. Sonra /mcp yazip sunuculari kontrol et. && claude' -WorkingDirectory $env:USERPROFILE
+})
+
+$btnKur.add_Click({
+    $idler = @($script:ListView.CheckedItems | ForEach-Object { [string]$_.Tag })
+    if ($idler.Count -eq 0) { [System.Windows.Forms.MessageBox]::Show('Hicbir bilesen secilmedi.') | Out-Null; return }
+    $script:Zorla = $chkZorla.Checked
+    Set-Variable -Name Zorla -Value $chkZorla.Checked -Scope Script
+    foreach ($c in $panel.Controls) { $c.Enabled = $false }
+    $script:ListView.Enabled = $false
+    $script:Hatalar = 0
+    $plan = Get-Bagimliliklarla $idler
+    $progress.Maximum = [Math]::Max(1, $plan.Count); $progress.Value = 0
+    try {
+        foreach ($b in $plan) {
+            Set-Durum $b.id 'Kuruluyor'
+            $sonuc = Install-Bilesen $b
+            Set-Durum $b.id $sonuc
+            $progress.Value = [Math]::Min($progress.Maximum, $progress.Value + 1)
+        }
+    } catch {
+        Write-Log "Beklenmeyen hata: $($_.Exception.Message)" 'HATA'
+        $script:Hatalar++
+    } finally {
+        foreach ($c in $panel.Controls) { $c.Enabled = $true }
+        $script:ListView.Enabled = $true
+    }
+    if ($script:Hatalar -eq 0) {
+        Write-Log "TAMAMLANDI. Simdi 'Claude'u Ac' ile giris yap ve /mcp yaz." 'OK'
+        [System.Windows.Forms.MessageBox]::Show("Kurulum tamamlandi.`r`n`r`nSonraki adim: 'Claude'u Ac (giris)' dugmesine bas, tarayicida giris yap, sonra /mcp yaz.", 'Repo Kurulum') | Out-Null
+    } else {
+        Write-Log "$($script:Hatalar) bilesen kurulamadi. Log: $LogFile" 'HATA'
+        [System.Windows.Forms.MessageBox]::Show("$($script:Hatalar) bilesen kurulamadi.`r`nLog: $LogFile`r`n`r`nInternet/proxy'yi kontrol edip tekrar 'Secilenleri Kur'a basabilirsin.", 'Repo Kurulum') | Out-Null
+    }
+})
+
+# Dock sirasi: once Fill, sonra Bottom/Top (WinForms ters sirayla yerlestirir)
+$form.Controls.Add($lv)
+$form.Controls.Add($panel)
+$form.Controls.Add($progress)
+$form.Controls.Add($log)
+$form.Controls.Add($ust)
+$script:LogBox = $log
+
+$form.add_Shown({
+    $form.Activate()
+    Write-Log "Log dosyasi: $LogFile"
+    if (-not (Test-Komut 'winget')) { Write-Log "winget bulunamadi. Microsoft Store'dan 'App Installer' kur; bazi bilesenler alternatif yontemle kurulur." 'UYARI' }
+    $form.UseWaitCursor = $true
+    Update-TumDurumlar
+    $form.UseWaitCursor = $false
+})
+
+[void]$form.ShowDialog()
