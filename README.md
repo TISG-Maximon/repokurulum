@@ -25,6 +25,7 @@ Diğer başlatma yolları:
   $env:REPOKURULUM_SESSIZ='1'; irm https://raw.githubusercontent.com/TISG-Maximon/repokurulum/HEAD/bootstrap.ps1 | iex
   ```
 - **Durum listesi**: `RepoKurulum.bat -Liste`
+- **Claude Code'u açmak**: `ClaudeAc.bat`'a çift tıkla (klasör ve "yeni / devam / eski konuşma" sorar) ya da bir klasörü üzerine sürükle-bırak. Masaüstüne kopyalayabilirsin.
 
 ### Uygulamanın hata azaltma özellikleri
 - Her bileşen önce **kontrol edilir**; kuruluysa atlanır (tekrar çalıştırmak güvenli).

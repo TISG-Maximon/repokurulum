@@ -84,6 +84,19 @@ jobs:
           if ($hepsi -notmatch '\*\*tavily\*\*') { $hata += '-TumKurallar tavily icermiyor' }
           if ($hata) { $hata | ForEach-Object { Write-Host "::error::$_" }; exit 1 }
 
+      - name: ClaudeAc.bat (kuru calisma)
+        shell: cmd
+        run: |
+          set CLAUDEAC_KURU=1
+          call ClaudeAc.bat "%CD%" devam > ca.txt 2>&1
+          type ca.txt
+          findstr /c:"KURU CALISMA: claude --continue" ca.txt || exit /b 1
+          findstr /c:"%CD%" "%LOCALAPPDATA%\RepoKurulum\son-klasor.txt" || exit /b 1
+          call ClaudeAc.bat "C:\yok\boyle\klasor" yeni > ca2.txt 2>&1
+          if not errorlevel 1 (echo Olmayan klasorde hata vermedi & exit /b 1)
+          type ca2.txt
+          exit /b 0
+
       - name: Arayuz acilip kapaniyor mu (pencere testi)
         shell: powershell
         timeout-minutes: 5
