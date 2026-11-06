@@ -67,6 +67,23 @@ jobs:
           .\installer\RepoKurulum.ps1 -Sessiz -Bilesenler "playwright-mcp,graphify,repomix-mcp"
           exit $LASTEXITCODE
 
+      - name: Kural metni (-Kurallar) sadece kurulu araclari iceriyor mu, dosyaya yazmiyor mu
+        shell: powershell
+        run: |
+          $md = "$env:USERPROFILE\.claude\CLAUDE.md"
+          $once = if (Test-Path $md) { (Get-FileHash $md).Hash } else { 'yok' }
+          $m = & .\installer\RepoKurulum.ps1 -Kurallar | Out-String
+          Write-Host $m
+          $hata = @()
+          if ($m -notmatch '\*\*context7\*\*') { $hata += 'kurulu context7 yok' }
+          if ($m -notmatch '\*\*playwright\*\*') { $hata += 'kurulu playwright yok' }
+          if ($m -match '\*\*tavily\*\*') { $hata += 'kurulu olmayan tavily var' }
+          $sonra = if (Test-Path $md) { (Get-FileHash $md).Hash } else { 'yok' }
+          if ($once -ne $sonra) { $hata += 'CLAUDE.md degisti (yazmamaliydi)' }
+          $hepsi = & .\installer\RepoKurulum.ps1 -TumKurallar | Out-String
+          if ($hepsi -notmatch '\*\*tavily\*\*') { $hata += '-TumKurallar tavily icermiyor' }
+          if ($hata) { $hata | ForEach-Object { Write-Host "::error::$_" }; exit 1 }
+
       - name: Arayuz acilip kapaniyor mu (pencere testi)
         shell: powershell
         timeout-minutes: 5

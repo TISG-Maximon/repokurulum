@@ -22,6 +22,8 @@ param(
     [string]$Bilesenler = '',
     [switch]$Liste,
     [switch]$Zorla,
+    [switch]$Kurallar,
+    [switch]$TumKurallar,
     [string]$Yapilandirma = ''
 )
 
@@ -394,6 +396,33 @@ $Tum = @($Config.bilesenler)
 $IdTablo = @{}
 foreach ($b in $Tum) { $IdTablo[$b.id] = $b }
 
+function Get-KuralMetni([switch]$Hepsi) {
+    <# CLAUDE.md'ye yapistirilacak arac secim kurallari. Varsayilan: sadece KURULU araclar.
+       Hicbir dosyaya yazmaz; metni dondurur. #>
+    $nl = "`n"
+    $satirlar = New-Object System.Collections.Generic.List[string]
+    $satirlar.Add('# ' + $Config.kural_basligi)
+    $satirlar.Add('')
+    foreach ($g in @($Config.genel_kurallar)) { $satirlar.Add('- ' + $g) }
+    $satirlar.Add('')
+    $kurallar = @()
+    foreach ($b in $Tum) {
+        if (-not $b.kurallar) { continue }
+        if (-not $Hepsi -and -not (Test-Bilesen $b)) { continue }
+        foreach ($k in @($b.kurallar)) { $kurallar += $k }
+    }
+    foreach ($ih in @($Config.ihtiyaclar)) {
+        $liste = @($kurallar | Where-Object { $_.ihtiyac -eq $ih.id } | Sort-Object { [int]$_.oncelik })
+        if ($liste.Count -eq 0) { continue }
+        $satirlar.Add('## ' + $ih.baslik)
+        $i = 1
+        foreach ($k in $liste) { $satirlar.Add(('{0}. {1}' -f $i, $k.metin)); $i++ }
+        if ($ih.not) { $satirlar.Add('- ' + $ih.not) }
+        $satirlar.Add('')
+    }
+    return (($satirlar -join $nl).TrimEnd() + $nl)
+}
+
 function Get-Bagimliliklarla([string[]]$Idler) {
     $secili = New-Object System.Collections.Generic.HashSet[string]
     $yigin = New-Object System.Collections.Stack
@@ -409,6 +438,13 @@ function Get-Bagimliliklarla([string[]]$Idler) {
 
 Update-EnvPath
 Write-Log "RepoKurulum $($Config.surum) - log: $LogFile"
+
+if ($Kurallar -or $TumKurallar) {
+    # Sadece metni yazdirir:  RepoKurulum.ps1 -Kurallar | Set-Clipboard
+    [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+    Get-KuralMetni -Hepsi:$TumKurallar
+    exit 0
+}
 
 if ($Liste) {
     foreach ($b in $Tum) {
@@ -537,7 +573,7 @@ $progress = New-Object System.Windows.Forms.ProgressBar
 $progress.Dock = 'Bottom'; $progress.Height = 14
 
 $panel = New-Object System.Windows.Forms.FlowLayoutPanel
-$panel.Dock = 'Bottom'; $panel.Height = 44; $panel.Padding = New-Object System.Windows.Forms.Padding(6)
+$panel.Dock = 'Bottom'; $panel.Height = 84; $panel.Padding = New-Object System.Windows.Forms.Padding(6)
 
 function New-Dugme([string]$Metin, [int]$Genislik = 140) {
     $d = New-Object System.Windows.Forms.Button
@@ -553,6 +589,7 @@ $btnVars     = New-Dugme 'Varsayilanlari Sec'
 $btnHic      = New-Dugme 'Secimi Temizle' 110
 $btnClaude   = New-Dugme "Claude'u Ac (giris)" 150
 $btnLog      = New-Dugme 'Log Klasoru' 100
+$btnKural    = New-Dugme 'Kurallari Kopyala' 140
 $chkZorla    = New-Object System.Windows.Forms.CheckBox
 $chkZorla.Text = 'MCP kayitlarini yeniden ekle'; $chkZorla.Width = 200; $chkZorla.Height = 30
 [void]$panel.Controls.Add($chkZorla)
@@ -560,6 +597,16 @@ $chkZorla.Text = 'MCP kayitlarini yeniden ekle'; $chkZorla.Width = 200; $chkZorl
 $btnVars.add_Click({ foreach ($it in $script:ListView.Items) { $it.Checked = [bool]$IdTablo[[string]$it.Tag].varsayilan } })
 $btnHic.add_Click({ foreach ($it in $script:ListView.Items) { $it.Checked = $false } })
 $btnLog.add_Click({ Start-Process explorer.exe $LogDir })
+$btnKural.add_Click({
+    $form.UseWaitCursor = $true
+    Reset-Onbellek
+    $metin = Get-KuralMetni
+    $form.UseWaitCursor = $false
+    [System.Windows.Forms.Clipboard]::SetText($metin.Replace("`n", "`r`n"))
+    $yol = Join-Path $env:USERPROFILE '.claude\CLAUDE.md'
+    Write-Log 'Arac secim kurallari panoya kopyalandi (sadece kurulu araclar). Hicbir dosya degistirilmedi.' 'OK'
+    [System.Windows.Forms.MessageBox]::Show("Kurulu araclarin secim kurallari panoya kopyalandi.`r`n`r`nSimdi su dosyayi ac ve Ctrl+V ile yapistir:`r`n$yol`r`n`r`nDosyada eski bir 'Arac secim kurallari' bolumu varsa once onu sil (iki kez olmasin).", 'Kurallar kopyalandi') | Out-Null
+})
 $btnYenile.add_Click({ $form.UseWaitCursor = $true; Update-TumDurumlar; $form.UseWaitCursor = $false })
 $btnClaude.add_Click({
     Update-EnvPath

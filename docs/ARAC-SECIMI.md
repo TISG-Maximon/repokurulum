@@ -1,11 +1,29 @@
-# Araç seçim kuralları (CLAUDE.md'ye kendin yapıştır)
+# Araç seçim kuralları
 
-Kurulum uygulaması bu dosyayı **yazmaz**. Aşağıdaki metni kopyalayıp `C:\Users\<sen>\.claude\CLAUDE.md` dosyasına kendin yapıştır. Claude bu dosyayı her oturum açılışında otomatik okur.
+Kurallar kurulum setup'ının içinde, her bileşenin kendi kaydında durur (`installer/bilesenler.json` → `kurallar`). Yeni bir araç eklendiğinde ne işe yaradığı ve hangi ihtiyaçta kaçıncı sırada deneneceği de orada yazılır.
 
-- Kurulu **olmayan** araçların satırlarını sil (örneğin anahtar almadıysan tavily/exa/firecrawl/github; kurmadıysan sequential-thinking/superpowers).
-- Aynı kuralları ikinci kez yazma; dosyada tek bir "Araç seçim kuralları" bölümü olsun.
+Kurulum uygulaması **hiçbir dosyaya yazmaz**. Metni sen alırsın:
+
+1. Kurulum penceresinde **Kurallari Kopyala**'ya bas. Yalnızca **o PC'de kurulu** araçların kuralları panoya kopyalanır.
+2. `C:\Users\<sen>\.claude\CLAUDE.md` dosyasını aç, eski "Araç seçim kuralları" bölümünü sil, **Ctrl+V** ile yapıştır, kaydet.
+3. Claude'u yeniden aç.
+
+Komut satırından da alabilirsin:
+```powershell
+& "$env:LOCALAPPDATA\RepoKurulum\app\installer\RepoKurulum.ps1" -Kurallar | Set-Clipboard
+```
+(`-TumKurallar` kurulu olmayanlar dahil hepsini verir.)
+
+## Yeni bir araç eklerken
+`bilesenler.json`'da bileşene bir `kurallar` alanı ekle:
+```json
+"kurallar": [ { "ihtiyac": "arama", "oncelik": 2, "metin": "**ornek**: Ne zaman kullanılacağı..." } ]
+```
+`ihtiyac` değerleri: `dokuman` (Kütüphane / framework / API dokümanı), `arama` (Web araması ve güncel bilgi), `sayfa` (Bilinen bir URL'nin içeriğini okumak), `tarayici` (Tarayıcıda etkileşim (tıklama, form, giriş, ekran görüntüsü)), `belge` (Yerel belge okuma (PDF, Word, Excel, PowerPoint, resim)), `proje` (Üzerinde çalıştığın projenin kodunu anlamak), `dis-repo` (Başka bir repoyu incelemek), `github` (GitHub işlemleri (issue, PR, inceleme, Actions)), `dusunme` (Karmaşık, çok adımlı problem), `is-akisi` (Geliştirme iş akışı). Aynı ihtiyaçta `oncelik` küçük olan önce denenir.
 
 ---
+
+## Tüm araçlar kuruluyken üretilen metin
 
 ````markdown
 # Araç seçim kuralları
@@ -57,5 +75,4 @@ Kurulum uygulaması bu dosyayı **yazmaz**. Aşağıdaki metni kopyalayıp `C:\U
 
 ## Geliştirme iş akışı
 1. **superpowers** skill'leri: Yeni özellik veya hata düzeltme işlerinde ilgili skill'i izle (beyin fırtınası → plan yazma → test önce → sistematik hata ayıklama → kod inceleme). Tek satırlık küçük değişikliklerde süreci uzatma.
-
 ````
