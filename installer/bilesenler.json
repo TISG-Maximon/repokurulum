@@ -275,7 +275,7 @@
         {
           "ihtiyac": "arama",
           "oncelik": 3,
-          "metin": "**duckduckgo**: Üsttekiler kurulu değilse, kotası bittiyse veya basit/hızlı bir arama yeterliyse. Ücretsiz ve anahtarsızdır."
+          "metin": "**duckduckgo**: Ücretsiz ve anahtarsız genel arama. Bu başlıkta üstünde başka bir arama aracı varsa onun yedeğidir (kota bittiğinde, hata verdiğinde veya basit/hızlı bir arama yeterliyse)."
         },
         {
           "ihtiyac": "sayfa",

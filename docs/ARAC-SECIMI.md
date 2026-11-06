@@ -26,7 +26,7 @@ Kurulum uygulamasındaki **"Arac secim kurallari (CLAUDE.md)"** bileşeni, `C:\U
 ## Web araması ve güncel bilgi
 1. **exa**: Varsayılan arama aracı. Kaynak, makale, şirket, kod örneği bulma ve "buna benzer" aramalar.
 2. **tavily**: Kaynak gösterilmesi gereken DERİN araştırmada veya bir siteyi baştan sona taramak (crawl/map) gerektiğinde.
-3. **duckduckgo**: Üsttekiler kurulu değilse, kotası bittiyse veya basit/hızlı bir arama yeterliyse. Ücretsiz ve anahtarsızdır.
+3. **duckduckgo**: Ücretsiz ve anahtarsız genel arama. Bu başlıkta üstünde başka bir arama aracı varsa onun yedeğidir (kota bittiğinde, hata verdiğinde veya basit/hızlı bir arama yeterliyse).
 - Bir arama yeterli sonuç verdiyse başka araçla aynı aramayı tekrarlama.
 
 ## Bilinen bir URL'nin içeriğini okumak
