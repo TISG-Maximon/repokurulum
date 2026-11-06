@@ -304,10 +304,14 @@ function Test-KuralBlogu {
     $yol = Get-ClaudeMdYolu
     if (-not (Test-Path -LiteralPath $yol)) { return $false }
     $metin = [IO.File]::ReadAllText($yol, [Text.Encoding]::UTF8) -replace "`r`n", "`n"
-    $m = [regex]::Match($metin, $script:KuralDesen)
-    if (-not $m.Success) { return $false }
-    return ($m.Value.TrimEnd() -eq (Get-KuralBlogu).TrimEnd())
+    if ([regex]::IsMatch($metin, $script:EskiKisaDesen)) { return $false }
+    $bloklar = [regex]::Matches($metin, $script:KuralDesen)
+    if ($bloklar.Count -ne 1) { return $false }
+    return ($bloklar[0].Value.TrimEnd() -eq (Get-KuralBlogu).TrimEnd())
 }
+
+# Daha once elle eklenmesi onerilen kisa "# Arac secimi" bolumu (yeni blokla ayni isi yapar -> kaldirilir)
+$script:EskiKisaDesen = '(?m)^# Arac secimi[ \t]*\n(?:- [^\n]*\n?)+\n*'
 
 function Write-KuralBlogu {
     $yol = Get-ClaudeMdYolu
@@ -315,13 +319,25 @@ function Write-KuralBlogu {
     $eski = ''
     if (Test-Path -LiteralPath $yol) { $eski = [IO.File]::ReadAllText($yol, [Text.Encoding]::UTF8) -replace "`r`n", "`n" }
     $blok = Get-KuralBlogu
-    if ([regex]::IsMatch($eski, $script:KuralDesen)) {
-        $yeni = [regex]::Replace($eski, $script:KuralDesen, [System.Text.RegularExpressions.MatchEvaluator] ({ param($m) $blok }.GetNewClosure()))
+    $taban = $eski
+    if ([regex]::IsMatch($taban, $script:EskiKisaDesen)) {
+        $taban = [regex]::Replace($taban, $script:EskiKisaDesen, '')
+        Write-Log "Eski kisa '# Arac secimi' bolumu kaldirildi (yeni kural blogu ayni isi yapiyor)" 'OK'
+    }
+    if ([regex]::IsMatch($taban, $script:KuralDesen)) {
+        # Ilk blogu guncelle, fazladan kopyalari sil
+        $durum = @{ ilk = $true }   # referans tipi: closure icinden degistirilebilir
+        $yeni = [regex]::Replace($taban, $script:KuralDesen, [System.Text.RegularExpressions.MatchEvaluator] ({
+            param($m)
+            if ($durum.ilk) { $durum.ilk = $false; return $blok }
+            return ''
+        }.GetNewClosure()))
     } else {
         $ayrac = ''
-        if ($eski) { $ayrac = "`n"; if (-not $eski.EndsWith("`n")) { $ayrac = "`n`n" } }
-        $yeni = $eski + $ayrac + $blok
+        if ($taban.Trim()) { $ayrac = "`n"; if (-not $taban.EndsWith("`n")) { $ayrac = "`n`n" } } else { $taban = '' }
+        $yeni = $taban + $ayrac + $blok
     }
+    $yeni = ([regex]::Replace($yeni, '\n{3,}', "`n`n")).TrimStart("`n")
     if ($yeni -ne $eski) {
         $yedek = $yol + '.repokurulum.bak'
         if ((Test-Path -LiteralPath $yol) -and -not (Test-Path -LiteralPath $yedek)) { Copy-Item -LiteralPath $yol -Destination $yedek }

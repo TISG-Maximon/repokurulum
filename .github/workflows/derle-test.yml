@@ -70,6 +70,25 @@ jobs:
           .\installer\RepoKurulum.ps1 -Sessiz -Bilesenler "playwright-mcp,graphify,repomix-mcp,yonlendirme"
           exit $LASTEXITCODE
 
+      - name: Kullanicinin elle duzenledigi CLAUDE.md dogru guncelleniyor mu
+        shell: powershell
+        run: |
+          $md = "$env:USERPROFILE\.claude\CLAUDE.md"
+          Copy-Item tests\claude-md-kullanici-ornegi.md $md -Force
+          .\installer\RepoKurulum.ps1 -Sessiz -Bilesenler "yonlendirme"
+          $t = Get-Content $md -Raw -Encoding UTF8
+          Write-Host $t
+          $hata = @()
+          if (([regex]::Matches($t, 'REPOKURULUM:BASLA')).Count -ne 1) { $hata += 'blok sayisi 1 degil' }
+          if ($t -match '(?m)^# Arac secimi') { $hata += 'eski kisa bolum kaldirilmadi' }
+          if ($t -notmatch 'Benim kendi notum') { $hata += 'kullanici notu silindi' }
+          if ($t -match '\*\*tavily\*\*') { $hata += 'kurulu olmayan tavily listede' }
+          if ($t -notmatch '\*\*duckduckgo\*\*') { $hata += 'kurulu duckduckgo listede yok' }
+          $once = (Get-FileHash $md).Hash
+          .\installer\RepoKurulum.ps1 -Sessiz -Bilesenler "yonlendirme" | Out-Null
+          if ((Get-FileHash $md).Hash -ne $once) { $hata += 'ikinci calistirmada dosya degisti' }
+          if ($hata) { $hata | ForEach-Object { Write-Host "::error::$_" }; exit 1 }
+
       - name: Arayuz acilip kapaniyor mu (pencere testi)
         shell: powershell
         timeout-minutes: 5
