@@ -53,18 +53,21 @@ jobs:
       - name: Sessiz kurulum (anahtarsiz bilesenler)
         shell: powershell
         run: |
-          .\installer\RepoKurulum.ps1 -Sessiz -Bilesenler "uv,claude,mcp-timeout,playwright-mcp,context7,duckduckgo-mcp,markitdown-mcp,graphify,repomix-mcp"
+          .\installer\RepoKurulum.ps1 -Sessiz -Bilesenler "uv,claude,mcp-timeout,playwright-mcp,context7,duckduckgo-mcp,markitdown-mcp,graphify,repomix-mcp,yonlendirme"
           $kod = $LASTEXITCODE
           Write-Host "Cikis kodu: $kod"
           $hatalar = Select-String -Path "$env:LOCALAPPDATA\RepoKurulum\logs\*.log" -Pattern '\[HATA\]'
           if ($hatalar) { $hatalar | ForEach-Object { Write-Host "::error::$($_.Line)" }; exit 1 }
+          $md = "$env:USERPROFILE\.claude\CLAUDE.md"
+          if (-not (Select-String -Path $md -Pattern 'REPOKURULUM:BITIS' -Quiet)) { Write-Host '::error::CLAUDE.md kural blogu yazilmadi'; exit 1 }
+          Get-Content $md -Encoding UTF8 | Write-Host
           exit $kod
 
       - name: Ikinci calistirma her seyi atlamali (idempotent)
         shell: powershell
         run: |
           .\installer\RepoKurulum.ps1 -Liste
-          .\installer\RepoKurulum.ps1 -Sessiz -Bilesenler "playwright-mcp,graphify,repomix-mcp"
+          .\installer\RepoKurulum.ps1 -Sessiz -Bilesenler "playwright-mcp,graphify,repomix-mcp,yonlendirme"
           exit $LASTEXITCODE
 
       - name: Arayuz acilip kapaniyor mu (pencere testi)

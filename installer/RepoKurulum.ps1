@@ -259,7 +259,86 @@ function Test-Bilesen($B) {
     if ($k.mcp) { return (@(Get-McpListesi) -contains $k.mcp) }
     if ($k.plugin) { return (Test-Plugin $k.plugin) }
     if ($k.ortam) { return [bool][Environment]::GetEnvironmentVariable($k.ortam, 'User') }
+    if ($k.kurallar) { return (Test-KuralBlogu) }
     return $false
+}
+
+# ------------------------------------------------------------------ Arac secim kurallari (~/.claude/CLAUDE.md)
+# Yalnizca KURULU araclarin kurallari, ihtiyaca gore gruplanip oncelik sirasiyla yazilir.
+# Blok isaretlerle ayrilir; kullanicinin CLAUDE.md'deki kendi metnine dokunulmaz.
+$script:KuralBasla = '<!-- REPOKURULUM:BASLA - bu blok RepoKurulum tarafindan otomatik yazilir; degistirmek icin uygulamayi tekrar calistir -->'
+$script:KuralBitis = '<!-- REPOKURULUM:BITIS -->'
+$script:KuralDesen = '(?s)' + [regex]::Escape('<!-- REPOKURULUM:BASLA') + '.*?' + [regex]::Escape('<!-- REPOKURULUM:BITIS -->') + '\r?\n?'
+
+function Get-ClaudeMdYolu { return (Join-Path $env:USERPROFILE '.claude\CLAUDE.md') }
+
+function Get-KuralBlogu {
+    $nl = "`n"
+    $satirlar = New-Object System.Collections.Generic.List[string]
+    $satirlar.Add($script:KuralBasla)
+    $satirlar.Add('# ' + $Config.kural_basligi)
+    $satirlar.Add('')
+    foreach ($g in @($Config.genel_kurallar)) { $satirlar.Add('- ' + $g) }
+    $satirlar.Add('')
+    # Kurulu araclarin kurallari (JSON sirasi korunur)
+    $kurallar = @()
+    foreach ($b in $Tum) {
+        if (-not $b.kurallar -or $b.id -eq 'yonlendirme') { continue }
+        if (-not (Test-Bilesen $b)) { continue }
+        foreach ($k in @($b.kurallar)) { $kurallar += $k }
+    }
+    foreach ($ih in @($Config.ihtiyaclar)) {
+        $liste = @($kurallar | Where-Object { $_.ihtiyac -eq $ih.id } | Sort-Object { [int]$_.oncelik })
+        if ($liste.Count -eq 0) { continue }
+        $satirlar.Add('## ' + $ih.baslik)
+        $i = 1
+        foreach ($k in $liste) { $satirlar.Add(('{0}. {1}' -f $i, $k.metin)); $i++ }
+        if ($ih.not) { $satirlar.Add('- ' + $ih.not) }
+        $satirlar.Add('')
+    }
+    $satirlar.Add($script:KuralBitis)
+    return (($satirlar -join $nl) + $nl)
+}
+
+function Test-KuralBlogu {
+    $yol = Get-ClaudeMdYolu
+    if (-not (Test-Path -LiteralPath $yol)) { return $false }
+    $metin = [IO.File]::ReadAllText($yol, [Text.Encoding]::UTF8) -replace "`r`n", "`n"
+    $m = [regex]::Match($metin, $script:KuralDesen)
+    if (-not $m.Success) { return $false }
+    return ($m.Value.TrimEnd() -eq (Get-KuralBlogu).TrimEnd())
+}
+
+function Write-KuralBlogu {
+    $yol = Get-ClaudeMdYolu
+    New-Item -ItemType Directory -Force -Path (Split-Path $yol) | Out-Null
+    $eski = ''
+    if (Test-Path -LiteralPath $yol) { $eski = [IO.File]::ReadAllText($yol, [Text.Encoding]::UTF8) -replace "`r`n", "`n" }
+    $blok = Get-KuralBlogu
+    if ([regex]::IsMatch($eski, $script:KuralDesen)) {
+        $yeni = [regex]::Replace($eski, $script:KuralDesen, [System.Text.RegularExpressions.MatchEvaluator] ({ param($m) $blok }.GetNewClosure()))
+    } else {
+        $ayrac = ''
+        if ($eski) { $ayrac = "`n"; if (-not $eski.EndsWith("`n")) { $ayrac = "`n`n" } }
+        $yeni = $eski + $ayrac + $blok
+    }
+    if ($yeni -ne $eski) {
+        $yedek = $yol + '.repokurulum.bak'
+        if ((Test-Path -LiteralPath $yol) -and -not (Test-Path -LiteralPath $yedek)) { Copy-Item -LiteralPath $yol -Destination $yedek }
+        [IO.File]::WriteAllText($yol, $yeni, (New-Object System.Text.UTF8Encoding($false)))
+        Write-Log "Arac secim kurallari yazildi: $yol" 'OK'
+    }
+    return 0
+}
+
+function Update-KurallarVarsa {
+    # Kurallar daha once yazildiysa, yeni kurulan araclara gore tazele
+    $yol = Get-ClaudeMdYolu
+    if (-not (Test-Path -LiteralPath $yol)) { return }
+    if ([IO.File]::ReadAllText($yol, [Text.Encoding]::UTF8) -match 'REPOKURULUM:BASLA') {
+        Reset-Onbellek
+        Write-KuralBlogu | Out-Null
+    }
 }
 
 # ------------------------------------------------------------------ Adimlar
@@ -343,6 +422,10 @@ function Invoke-Adim($A) {
             Write-Log "> claude mcp add -s user --transport http $($A.ad) $($A.url) (basliklar gizlendi)"
             Reset-Onbellek
             return $kod
+        }
+        'kurallar' {
+            Reset-Onbellek
+            return (Write-KuralBlogu)
         }
         default {
             Write-Log "Bilinmeyen adim turu: $($A.tur)" 'HATA'
@@ -429,6 +512,7 @@ if ($Sessiz) {
     Write-Log '---------------- OZET ----------------'
     foreach ($s in $ozet) { Write-Log $s }
     Write-Log "Hata sayisi: $($script:Hatalar)" $(if ($script:Hatalar) { 'HATA' } else { 'OK' })
+    Update-KurallarVarsa
     exit $script:Hatalar
 }
 
@@ -591,6 +675,8 @@ $btnKur.add_Click({
         foreach ($c in $panel.Controls) { $c.Enabled = $true }
         $script:ListView.Enabled = $true
     }
+    Update-KurallarVarsa
+    Set-Durum 'yonlendirme' $(if (Test-KuralBlogu) { 'Kurulu' } else { 'Yok' })
     if ($script:Hatalar -eq 0) {
         Write-Log "TAMAMLANDI. Simdi 'Claude'u Ac' ile giris yap ve /mcp yaz." 'OK'
         [System.Windows.Forms.MessageBox]::Show("Kurulum tamamlandi.`r`n`r`nSonraki adim: 'Claude'u Ac (giris)' dugmesine bas, tarayicida giris yap, sonra /mcp yaz.", 'Repo Kurulum') | Out-Null
