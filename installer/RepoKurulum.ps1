@@ -608,13 +608,19 @@ $form.Controls.Add($log)
 $form.Controls.Add($ust)
 $script:LogBox = $log
 
+$form.TopMost = $true   # baska pencerelerin arkasinda acilmasin
 $form.add_Shown({
     $form.Activate()
+    $form.TopMost = $false
     Write-Log "Log dosyasi: $LogFile"
     if (-not (Test-Komut 'winget')) { Write-Log "winget bulunamadi. Microsoft Store'dan 'App Installer' kur; bazi bilesenler alternatif yontemle kurulur." 'UYARI' }
     $form.UseWaitCursor = $true
     Update-TumDurumlar
     $form.UseWaitCursor = $false
+    if ($env:REPOKURULUM_ARAYUZ_TEST -eq '1') {
+        Write-Log ("ARAYUZ_OK - {0} satir listelendi" -f $script:ListView.Items.Count) 'OK'
+        $form.Close()
+    }
 })
 
 [void]$form.ShowDialog()

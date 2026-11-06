@@ -57,15 +57,33 @@ try {
     Remove-Item -LiteralPath $tmp -Recurse -Force -ErrorAction SilentlyContinue
 
     $uygulama = Join-Path $Hedef 'installer\RepoKurulum.ps1'
-    $arglar = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-STA', '-File', $uygulama)
+    $ayar = Join-Path $Hedef 'installer\bilesenler.json'
+
+    # Betik dosyasi -File ile degil, metin olarak calistirilir:
+    #  - Grup ilkesi (GPO) "betik calistirma kapali" olsa bile calisir
+    #  - Yoldaki bosluk / ozel karakterler sorun cikarmaz (tirnaklar burada kacirilir)
+    $q = { param($s) "'" + ($s -replace "'", "''") + "'" }
+    $ekler = " -Yapilandirma " + (& $q $ayar)
     if ($env:REPOKURULUM_SESSIZ -eq '1') {
-        $arglar += '-Sessiz'
-        if ($env:REPOKURULUM_BILESENLER) { $arglar += @('-Bilesenler', $env:REPOKURULUM_BILESENLER) }
-        & powershell.exe @arglar
-        Write-Host "Bitti. Cikis kodu: $LASTEXITCODE" -ForegroundColor Cyan
+        $ekler += ' -Sessiz'
+        if ($env:REPOKURULUM_BILESENLER) { $ekler += ' -Bilesenler ' + (& $q $env:REPOKURULUM_BILESENLER) }
+    }
+    $komut = "& ([scriptblock]::Create([IO.File]::ReadAllText(" + (& $q $uygulama) + ", [Text.Encoding]::UTF8)))" + $ekler
+
+    if ($env:REPOKURULUM_SESSIZ -ne '1') {
+        Write-Host ''
+        Write-Host 'Kurulum penceresi aciliyor... (gorev cubugunda da gorunebilir)' -ForegroundColor Green
+        Write-Host 'Pencereyi kapatana kadar bu PowerShell penceresini KAPATMA.' -ForegroundColor Green
+    }
+    & powershell.exe -NoProfile -ExecutionPolicy Bypass -STA -Command $komut
+    $kod = $LASTEXITCODE
+    if ($kod -ne 0) {
+        Write-Host ''
+        Write-Host "Uygulama hata koduyla kapandi: $kod" -ForegroundColor Red
+        Write-Host "Log klasoru: $env:LOCALAPPDATA\RepoKurulum\logs" -ForegroundColor Yellow
+        Write-Host 'Bu penceredeki kirmizi yazilari kopyalayip gonder.' -ForegroundColor Yellow
     } else {
-        Start-Process -FilePath 'powershell.exe' -ArgumentList $arglar -WindowStyle Hidden
-        Write-Host "Kurulum penceresi aciliyor: $Hedef" -ForegroundColor Green
+        Write-Host 'Bitti.' -ForegroundColor Cyan
     }
 } catch {
     Write-Host "HATA: $($_.Exception.Message)" -ForegroundColor Red

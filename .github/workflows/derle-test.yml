@@ -67,6 +67,29 @@ jobs:
           .\installer\RepoKurulum.ps1 -Sessiz -Bilesenler "playwright-mcp,graphify,repomix-mcp"
           exit $LASTEXITCODE
 
+      - name: Arayuz acilip kapaniyor mu (pencere testi)
+        shell: powershell
+        timeout-minutes: 5
+        run: |
+          $env:REPOKURULUM_ARAYUZ_TEST = '1'
+          $p = Start-Process powershell.exe -ArgumentList '-NoProfile','-ExecutionPolicy','Bypass','-STA','-File',"`"$PWD\installer\RepoKurulum.ps1`"" -PassThru -Wait
+          $log = Get-ChildItem "$env:LOCALAPPDATA\RepoKurulum\logs\*.log" | Sort-Object LastWriteTime | Select-Object -Last 1
+          Get-Content $log.FullName | Write-Host
+          if (-not (Select-String -Path $log.FullName -Pattern 'ARAYUZ_OK' -Quiet)) { Write-Host '::error::Arayuz acilmadi'; exit 1 }
+          if (Select-String -Path $log.FullName -Pattern 'Beklenmeyen hata|\[HATA\]' -Quiet) { Write-Host '::error::Arayuzde hata'; exit 1 }
+
+      - name: Tek satirlik baslatma (bootstrap) - bu commit ile, bosluklu kullanici yolu
+        shell: powershell
+        run: |
+          $env:REPOKURULUM_DAL = '${{ github.sha }}'
+          $env:REPOKURULUM_SESSIZ = '1'
+          $env:REPOKURULUM_BILESENLER = 'uv,playwright-mcp'
+          $env:LOCALAPPDATA = "$env:RUNNER_TEMP\Ali Veli'nin Klasoru"
+          New-Item -ItemType Directory -Force $env:LOCALAPPDATA | Out-Null
+          $cikti = & { Get-Content .\bootstrap.ps1 -Raw | Invoke-Expression } *>&1 | Out-String
+          Write-Host $cikti
+          if ($cikti -notmatch 'Bitti\.') { Write-Host '::error::bootstrap basarisiz'; exit 1 }
+
       - name: Loglari topla
         if: always()
         shell: powershell
