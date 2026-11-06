@@ -35,7 +35,7 @@ Diğer başlatma yolları:
 - Her çalıştırma `%LOCALAPPDATA%\RepoKurulum\logs\` içine log yazar.
 - GitHub Actions her push'ta uygulamayı **gerçek bir Windows makinesinde** sessiz modda kurar, ikinci çalıştırmanın her şeyi atladığını doğrular ve exe'yi derler.
 
-Hangi araçların neden seçildiği: **[docs/MIT-REPOLAR.md](docs/MIT-REPOLAR.md)**. Claude'un hangi işte hangi aracı kullanacağı: **[docs/ARAC-SECIMI.md](docs/ARAC-SECIMI.md)**. Yeni araç eklemek: `installer/bilesenler.json`.
+Hangi araçların neden seçildiği: **[docs/MIT-REPOLAR.md](docs/MIT-REPOLAR.md)**. Claude'un hangi işte hangi aracı kullanacağı (CLAUDE.md'ye kendin yapıştırırsın): **[docs/ARAC-SECIMI.md](docs/ARAC-SECIMI.md)**. Yeni araç eklemek: `installer/bilesenler.json`.
 
 ---
 

@@ -53,41 +53,19 @@ jobs:
       - name: Sessiz kurulum (anahtarsiz bilesenler)
         shell: powershell
         run: |
-          .\installer\RepoKurulum.ps1 -Sessiz -Bilesenler "uv,claude,mcp-timeout,playwright-mcp,context7,duckduckgo-mcp,markitdown-mcp,graphify,repomix-mcp,yonlendirme"
+          .\installer\RepoKurulum.ps1 -Sessiz -Bilesenler "uv,claude,mcp-timeout,playwright-mcp,context7,duckduckgo-mcp,markitdown-mcp,graphify,repomix-mcp"
           $kod = $LASTEXITCODE
           Write-Host "Cikis kodu: $kod"
           $hatalar = Select-String -Path "$env:LOCALAPPDATA\RepoKurulum\logs\*.log" -Pattern '\[HATA\]'
           if ($hatalar) { $hatalar | ForEach-Object { Write-Host "::error::$($_.Line)" }; exit 1 }
-          $md = "$env:USERPROFILE\.claude\CLAUDE.md"
-          if (-not (Select-String -Path $md -Pattern 'REPOKURULUM:BITIS' -Quiet)) { Write-Host '::error::CLAUDE.md kural blogu yazilmadi'; exit 1 }
-          Get-Content $md -Encoding UTF8 | Write-Host
           exit $kod
 
       - name: Ikinci calistirma her seyi atlamali (idempotent)
         shell: powershell
         run: |
           .\installer\RepoKurulum.ps1 -Liste
-          .\installer\RepoKurulum.ps1 -Sessiz -Bilesenler "playwright-mcp,graphify,repomix-mcp,yonlendirme"
+          .\installer\RepoKurulum.ps1 -Sessiz -Bilesenler "playwright-mcp,graphify,repomix-mcp"
           exit $LASTEXITCODE
-
-      - name: Kullanicinin elle duzenledigi CLAUDE.md dogru guncelleniyor mu
-        shell: powershell
-        run: |
-          $md = "$env:USERPROFILE\.claude\CLAUDE.md"
-          Copy-Item tests\claude-md-kullanici-ornegi.md $md -Force
-          .\installer\RepoKurulum.ps1 -Sessiz -Bilesenler "yonlendirme"
-          $t = Get-Content $md -Raw -Encoding UTF8
-          Write-Host $t
-          $hata = @()
-          if (([regex]::Matches($t, 'REPOKURULUM:BASLA')).Count -ne 1) { $hata += 'blok sayisi 1 degil' }
-          if ($t -match '(?m)^# Arac secimi') { $hata += 'eski kisa bolum kaldirilmadi' }
-          if ($t -notmatch 'Benim kendi notum') { $hata += 'kullanici notu silindi' }
-          if ($t -match '\*\*tavily\*\*') { $hata += 'kurulu olmayan tavily listede' }
-          if ($t -notmatch '\*\*duckduckgo\*\*') { $hata += 'kurulu duckduckgo listede yok' }
-          $once = (Get-FileHash $md).Hash
-          .\installer\RepoKurulum.ps1 -Sessiz -Bilesenler "yonlendirme" | Out-Null
-          if ((Get-FileHash $md).Hash -ne $once) { $hata += 'ikinci calistirmada dosya degisti' }
-          if ($hata) { $hata | ForEach-Object { Write-Host "::error::$_" }; exit 1 }
 
       - name: Arayuz acilip kapaniyor mu (pencere testi)
         shell: powershell

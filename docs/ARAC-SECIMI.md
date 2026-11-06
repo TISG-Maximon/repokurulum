@@ -1,15 +1,13 @@
-# Araç seçim kuralları (örnek çıktı)
+# Araç seçim kuralları (CLAUDE.md'ye kendin yapıştır)
 
-Kurulum uygulamasındaki **"Arac secim kurallari (CLAUDE.md)"** bileşeni, `C:\Users\<sen>\.claude\CLAUDE.md` dosyasına aşağıdaki gibi bir blok yazar. Claude bu dosyayı **her oturumda otomatik** okur.
+Kurulum uygulaması bu dosyayı **yazmaz**. Aşağıdaki metni kopyalayıp `C:\Users\<sen>\.claude\CLAUDE.md` dosyasına kendin yapıştır. Claude bu dosyayı her oturum açılışında otomatik okur.
 
-- Blokta yalnızca **o PC'de kurulu olan** araçların kuralları yer alır. Aşağıdaki örnekte bütün araçlar kurulu.
-- Yeni bir araç kurduğunda blok kendiliğinden güncellenir. Senin `CLAUDE.md`'ye yazdıklarına dokunulmaz; ilk yazımdan önce `CLAUDE.md.repokurulum.bak` adıyla yedek alınır.
-- Kuralları değiştirmek istersen `installer/bilesenler.json` içindeki `kurallar` / `ihtiyaclar` alanlarını düzenle ve uygulamayı tekrar çalıştır.
+- Kurulu **olmayan** araçların satırlarını sil (örneğin anahtar almadıysan tavily/exa/firecrawl/github; kurmadıysan sequential-thinking/superpowers).
+- Aynı kuralları ikinci kez yazma; dosyada tek bir "Araç seçim kuralları" bölümü olsun.
 
 ---
 
 ````markdown
-<!-- REPOKURULUM:BASLA ... -->
 # Araç seçim kuralları
 
 - Kullanıcı bir aracı adıyla isterse her zaman onu kullan; aşağıdaki sıra sadece varsayılandır.
@@ -60,5 +58,4 @@ Kurulum uygulamasındaki **"Arac secim kurallari (CLAUDE.md)"** bileşeni, `C:\U
 ## Geliştirme iş akışı
 1. **superpowers** skill'leri: Yeni özellik veya hata düzeltme işlerinde ilgili skill'i izle (beyin fırtınası → plan yazma → test önce → sistematik hata ayıklama → kod inceleme). Tek satırlık küçük değişikliklerde süreci uzatma.
 
-<!-- REPOKURULUM:BITIS -->
 ````
