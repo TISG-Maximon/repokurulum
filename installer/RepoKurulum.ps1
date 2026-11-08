@@ -767,7 +767,7 @@ $btnKur.Font = New-Object System.Drawing.Font('Segoe UI', 9, [System.Drawing.Fon
 $btnYenile   = New-Dugme 'Durumu Yenile'
 $btnVars     = New-Dugme 'Varsayilanlari Sec'
 $btnHic      = New-Dugme 'Secimi Temizle' 110
-$btnClaude   = New-Dugme "Claude'u Ac (giris)" 150
+$btnClaude   = New-Dugme "Claude'u Ac (klasor sec)" 170
 $btnLog      = New-Dugme 'Log Klasoru' 100
 $btnKural    = New-Dugme 'Kurallari Kopyala' 140
 $chkZorla    = New-Object System.Windows.Forms.CheckBox
@@ -791,10 +791,13 @@ $btnYenile.add_Click({ $form.UseWaitCursor = $true; Update-TumDurumlar; $form.Us
 $btnClaude.add_Click({
     Update-EnvPath
     if (-not (Test-Komut 'claude')) { [System.Windows.Forms.MessageBox]::Show('Claude Code henuz kurulu degil.') | Out-Null; return }
-    # Kullanici klasorunun tamami yerine ayri bir calisma klasoru (Claude butun kisisel dosyalara erismesin)
-    $calisma = Join-Path $env:USERPROFILE 'ClaudeProjeler'
-    New-Item -ItemType Directory -Force -Path $calisma | Out-Null
-    Start-Process $env:ComSpec -ArgumentList '/k', 'echo Ilk acilista tarayicida giris yap. "Quick safety check" sorusuna Yes de (bu klasor: ClaudeProjeler). Sonra /mcp yaz. Baska projede acmak icin ClaudeAc.bat kullan. && claude' -WorkingDirectory $calisma
+    # Klasoru kullanici secsin: ClaudeAc.bat (son klasor / klasor sec / yeni-devam-eski konusma)
+    $bat = Join-Path $script:Kok 'ClaudeAc.bat'
+    if (Test-Path -LiteralPath $bat) {
+        Start-Process $env:ComSpec -ArgumentList '/c', ('"' + $bat + '"') -WorkingDirectory $env:USERPROFILE
+    } else {
+        Start-Process $env:ComSpec -ArgumentList '/k', 'claude' -WorkingDirectory $env:USERPROFILE
+    }
 })
 
 $btnKur.add_Click({
@@ -822,8 +825,8 @@ $btnKur.add_Click({
         $script:ListView.Enabled = $true
     }
     if ($script:Hatalar -eq 0) {
-        Write-Log "TAMAMLANDI. Simdi 'Claude'u Ac' ile giris yap ve /mcp yaz." 'OK'
-        [System.Windows.Forms.MessageBox]::Show("Kurulum tamamlandi.`r`n`r`nSonraki adim: 'Claude'u Ac (giris)' dugmesine bas, tarayicida giris yap, sonra /mcp yaz.", 'Repo Kurulum') | Out-Null
+        Write-Log "TAMAMLANDI. Simdi 'Claude'u Ac (klasor sec)' ile klasorunu sec, giris yap ve /mcp yaz." 'OK'
+        [System.Windows.Forms.MessageBox]::Show("Kurulum tamamlandi.`r`n`r`nSonraki adim: 'Claude'u Ac (klasor sec)' dugmesine bas, calisacagin klasoru sec; ilk acilista tarayicida giris yap, sonra /mcp yaz.", 'Repo Kurulum') | Out-Null
     } else {
         Write-Log "$($script:Hatalar) bilesen kurulamadi. Log: $LogFile" 'HATA'
         [System.Windows.Forms.MessageBox]::Show("$($script:Hatalar) bilesen kurulamadi.`r`nLog: $LogFile`r`n`r`nInternet/proxy'yi kontrol edip tekrar 'Secilenleri Kur'a basabilirsin.", 'Repo Kurulum') | Out-Null

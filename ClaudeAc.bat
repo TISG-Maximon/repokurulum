@@ -82,6 +82,8 @@ echo.
 echo  Klasor : %KLASOR%
 echo  Komut  : claude %BAYRAK%
 echo  (Cikmak icin Claude icinde /exit yaz veya Ctrl+C'ye iki kez bas)
+echo  Ilk kez acilan klasorde "Quick safety check" sorusu gelir: kendi klasorunse "Yes, I trust this folder" sec.
+echo  Claude'a ilk girisinde tarayici acilir, hesabinla giris yap. Sonra /mcp ile sunuculari kontrol edebilirsin.
 echo.
 if "%CLAUDEAC_KURU%"=="1" (
   echo KURU CALISMA: claude %BAYRAK%
