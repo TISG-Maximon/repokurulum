@@ -791,7 +791,10 @@ $btnYenile.add_Click({ $form.UseWaitCursor = $true; Update-TumDurumlar; $form.Us
 $btnClaude.add_Click({
     Update-EnvPath
     if (-not (Test-Komut 'claude')) { [System.Windows.Forms.MessageBox]::Show('Claude Code henuz kurulu degil.') | Out-Null; return }
-    Start-Process $env:ComSpec -ArgumentList '/k', 'echo Ilk acilista tarayicida giris yap. Sonra /mcp yazip sunuculari kontrol et. && claude' -WorkingDirectory $env:USERPROFILE
+    # Kullanici klasorunun tamami yerine ayri bir calisma klasoru (Claude butun kisisel dosyalara erismesin)
+    $calisma = Join-Path $env:USERPROFILE 'ClaudeProjeler'
+    New-Item -ItemType Directory -Force -Path $calisma | Out-Null
+    Start-Process $env:ComSpec -ArgumentList '/k', 'echo Ilk acilista tarayicida giris yap. "Quick safety check" sorusuna Yes de (bu klasor: ClaudeProjeler). Sonra /mcp yaz. Baska projede acmak icin ClaudeAc.bat kullan. && claude' -WorkingDirectory $calisma
 })
 
 $btnKur.add_Click({
