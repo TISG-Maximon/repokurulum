@@ -19,7 +19,7 @@ Komut satırından da alabilirsin:
 ```json
 "kurallar": [ { "ihtiyac": "arama", "oncelik": 2, "metin": "**ornek**: Ne zaman kullanılacağı..." } ]
 ```
-`ihtiyac` değerleri: `dokuman` (Kütüphane / framework / API dokümanı), `arama` (Web araması ve güncel bilgi), `sayfa` (Bilinen bir URL'nin içeriğini okumak), `tarayici` (Tarayıcıda etkileşim (tıklama, form, giriş, ekran görüntüsü)), `belge` (Yerel belge okuma (PDF, Word, Excel, PowerPoint, resim)), `proje` (Üzerinde çalıştığın projenin kodunu anlamak), `dis-repo` (Başka bir repoyu incelemek), `github` (GitHub işlemleri (issue, PR, inceleme, Actions)), `dusunme` (Karmaşık, çok adımlı problem), `is-akisi` (Geliştirme iş akışı). Aynı ihtiyaçta `oncelik` küçük olan önce denenir.
+`ihtiyac` değerleri: `dokuman` (Kütüphane / framework / API dokümanı), `arama` (Web araması ve güncel bilgi), `sayfa` (Bilinen bir URL'nin içeriğini okumak), `tarayici` (Tarayıcıda etkileşim (tıklama, form, giriş, ekran görüntüsü)), `belge` (Yerel belge okuma (PDF, Word, Excel, PowerPoint, resim)), `kaynak` (Çok sayıda kaynağı analiz etmek, kaynaklı özet / podcast / slayt), `proje` (Üzerinde çalıştığın projenin kodunu anlamak), `dis-repo` (Başka bir repoyu incelemek), `github` (GitHub işlemleri (issue, PR, inceleme, Actions)), `dusunme` (Karmaşık, çok adımlı problem), `is-akisi` (Geliştirme iş akışı), `uygulama` (Var olan bir uygulamaya benzer ürün yapmak), `video` (Video ve animasyon üretmek). Aynı ihtiyaçta `oncelik` küçük olan önce denenir.
 
 ---
 
@@ -58,6 +58,10 @@ Komut satırından da alabilirsin:
 1. **markitdown**: PDF, Word, Excel, PowerPoint, HTML ve resim dosyalarını önce Markdown'a çevir, sonra oku. Büyük belgede önce içindekiler/başlıkları çıkar, gerekeni oku.
 - Düz metin, Markdown ve kod dosyaları için dönüştürme gerekmez; doğrudan Read kullan.
 
+## Çok sayıda kaynağı analiz etmek, kaynaklı özet / podcast / slayt
+1. **notebooklm**: Çok sayıda belge/URL/YouTube kaynağını analiz etmek, kaynaklı (alıntılı) cevap almak ya da bu kaynaklardan podcast, slayt, quiz, zihin haritası, rapor üretmek gerektiğinde. Ağır okumayı NotebookLM'e yaptır, sen sadece sonucu düzenle. Kullanıcı istemedikçe yeni notebook oluşturma ve paylaşım ayarı değiştirme.
+- Tek bir belge için markitdown yeterli.
+
 ## Üzerinde çalıştığın projenin kodunu anlamak
 1. **graphify**: Projede `graphify-out/graph.json` varsa geniş Grep/Glob aramalarından ÖNCE `graphify query "<soru>"`, `graphify path A B` veya `graphify explain "X"` kullan. Grafik yoksa ve proje büyükse kullanıcıya `/graphify .` öner; kendiliğinden çalıştırma (zaman ve token harcar).
 - Tek bir isim/dosya arıyorsan Grep/Glob yeterli.
@@ -74,5 +78,15 @@ Komut satırından da alabilirsin:
 1. **sequential-thinking**: Yalnızca çok adımlı ve belirsiz problemlerde (mimari karar, zor hata ayıklama, birbirine bağlı çok değişiklik) adım adım plan kurmak için. Basit işlerde kullanma.
 
 ## Geliştirme iş akışı
-1. **superpowers** skill'leri: Yeni özellik veya hata düzeltme işlerinde ilgili skill'i izle (beyin fırtınası → plan yazma → test önce → sistematik hata ayıklama → kod inceleme). Tek satırlık küçük değişikliklerde süreci uzatma.
+1. **karpathy ilkeleri**: Her kod değişikliğinde uygula: belirsizlikte varsayma, sor; istenenden fazlasını yazma, en basit çözüm; yalnızca işin gerektirdiği satırlara dokun; başarı ölçütünü (tercihen bir test) önce tanımla, doğrulayana kadar devam et.
+2. **superpowers** skill'leri: Büyük işlerde (yeni özellik, çok dosyalı değişiklik, zor hata) süreci izle: beyin fırtınası → plan yazma → test önce → sistematik hata ayıklama → kod inceleme. Tek satırlık küçük değişikliklerde süreci uzatma.
+
+## Var olan bir uygulamaya benzer ürün yapmak
+1. **replica-skill**: Var olan bir uygulamaya benzer bir ürün yapılacaksa skill'leri SIRAYLA kullan: recon → architect → design → build → backend → test → diff → entrepreneur → brand → launch → deploy. Her adım `replica/` klasöründeki bir öncekinin çıktısını okur. Orijinalin kodunu, logosunu, metnini ve içeriğini kopyalama; sadece işlevi yeniden kur.
+
+## Video ve animasyon üretmek
+1. **video-shotcraft**: Bir ürün/uygulama/site için tanıtım veya promo videosu (ekran görüntülerinden, hareketli grafik, müzikle senkron). Kod ile çizilir, gerçek ekranları kullanır.
+2. **claude-code-video-toolkit**: Seslendirmeli, müzikli, AI görsel/klip içeren videolar (açıklayıcı, sprint özeti, reklam, kısa dikey video). Kendi klasöründe (`ClaudeProjeler\claude-code-video-toolkit`) çalışır; başka klasördeysen kullanıcıya orada açmasını söyle.
+3. **ClaudeAnimationBase**: El çizimi/suluboya tarzı karakter animasyonu ve kısa çizgi film. Kendi klasöründe (`ClaudeProjeler\ClaudeAnimationBase`) çalışır; önce ANIMATION_GUIDE.md okunur.
+- Videonun türüne göre TEK araç seç; ikisini aynı videoda karıştırma.
 ````

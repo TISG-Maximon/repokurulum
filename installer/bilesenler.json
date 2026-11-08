@@ -1,5 +1,5 @@
 {
-  "surum": "1.2.0",
+  "surum": "1.3.0",
   "aciklama": "RepoKurulum bilesen listesi. Yeni bir arac eklerken 'kurallar' alanina ne ise yaradigini ve hangi ihtiyacta kacinci sirada denenecegini yaz; uygulamadaki 'Kurallari Kopyala' dugmesi bunlardan CLAUDE.md'ye yapistirilacak metni uretir. Sira onemlidir: bagimliliklar once gelmelidir.",
   "kural_basligi": "Araç seçim kuralları",
   "genel_kurallar": [
@@ -37,6 +37,11 @@
       "not": "Düz metin, Markdown ve kod dosyaları için dönüştürme gerekmez; doğrudan Read kullan."
     },
     {
+      "id": "kaynak",
+      "baslik": "Çok sayıda kaynağı analiz etmek, kaynaklı özet / podcast / slayt",
+      "not": "Tek bir belge için markitdown yeterli."
+    },
+    {
       "id": "proje",
       "baslik": "Üzerinde çalıştığın projenin kodunu anlamak",
       "not": "Tek bir isim/dosya arıyorsan Grep/Glob yeterli."
@@ -60,6 +65,16 @@
       "id": "is-akisi",
       "baslik": "Geliştirme iş akışı",
       "not": ""
+    },
+    {
+      "id": "uygulama",
+      "baslik": "Var olan bir uygulamaya benzer ürün yapmak",
+      "not": ""
+    },
+    {
+      "id": "video",
+      "baslik": "Video ve animasyon üretmek",
+      "not": "Videonun türüne göre TEK araç seç; ikisini aynı videoda karıştırma."
     }
   ],
   "bilesenler": [
@@ -161,6 +176,26 @@
           {
             "tur": "winget",
             "id": "Google.Chrome"
+          }
+        ]
+      ]
+    },
+    {
+      "id": "ffmpeg",
+      "ad": "FFmpeg",
+      "kategori": "1. Temel araclar",
+      "lisans": "LGPL/GPL",
+      "repo": "https://ffmpeg.org",
+      "aciklama": "Video/ses donusturme; video skill'leri icin gerekli",
+      "varsayilan": false,
+      "kontrol": {
+        "komut": "ffmpeg"
+      },
+      "kur": [
+        [
+          {
+            "tur": "winget",
+            "id": "Gyan.FFmpeg"
           }
         ]
       ]
@@ -724,8 +759,298 @@
       "kurallar": [
         {
           "ihtiyac": "is-akisi",
+          "oncelik": 2,
+          "metin": "**superpowers** skill'leri: Büyük işlerde (yeni özellik, çok dosyalı değişiklik, zor hata) süreci izle: beyin fırtınası → plan yazma → test önce → sistematik hata ayıklama → kod inceleme. Tek satırlık küçük değişikliklerde süreci uzatma."
+        }
+      ]
+    },
+    {
+      "id": "karpathy",
+      "ad": "Karpathy kodlama ilkeleri (plugin)",
+      "kategori": "5. Skill / is akisi eklentileri",
+      "lisans": "Belirtilmemis",
+      "repo": "https://github.com/multica-ai/andrej-karpathy-skills",
+      "aciklama": "4 ilke: varsaymadan once sor, en basit cozum, sadece gerekene dokun, basariyi testle tanimla",
+      "varsayilan": true,
+      "gerekir": [
+        "claude"
+      ],
+      "kontrol": {
+        "plugin": "andrej-karpathy-skills"
+      },
+      "kur": [
+        [
+          {
+            "tur": "calistir",
+            "dosya": "claude",
+            "argumanlar": [
+              "plugin",
+              "marketplace",
+              "add",
+              "multica-ai/andrej-karpathy-skills"
+            ]
+          },
+          {
+            "tur": "calistir",
+            "dosya": "claude",
+            "argumanlar": [
+              "plugin",
+              "install",
+              "andrej-karpathy-skills@karpathy-skills",
+              "-s",
+              "user"
+            ]
+          }
+        ]
+      ],
+      "kurallar": [
+        {
+          "ihtiyac": "is-akisi",
           "oncelik": 1,
-          "metin": "**superpowers** skill'leri: Yeni özellik veya hata düzeltme işlerinde ilgili skill'i izle (beyin fırtınası → plan yazma → test önce → sistematik hata ayıklama → kod inceleme). Tek satırlık küçük değişikliklerde süreci uzatma."
+          "metin": "**karpathy ilkeleri**: Her kod değişikliğinde uygula: belirsizlikte varsayma, sor; istenenden fazlasını yazma, en basit çözüm; yalnızca işin gerektirdiği satırlara dokun; başarı ölçütünü (tercihen bir test) önce tanımla, doğrulayana kadar devam et."
+        }
+      ]
+    },
+    {
+      "id": "replica-skill",
+      "ad": "Replica (uygulama klonlama skill'leri)",
+      "kategori": "5. Skill / is akisi eklentileri",
+      "lisans": "MIT",
+      "repo": "https://github.com/Jakeschincariol/replica-skill",
+      "aciklama": "11 skill: bir uygulamayi incele, yeniden insa et, test et, rakibin sikayetlerinden iyilestir, marka/yayin",
+      "varsayilan": false,
+      "gerekir": [
+        "claude"
+      ],
+      "kontrol": {
+        "plugin": "replica-skill"
+      },
+      "kur": [
+        [
+          {
+            "tur": "calistir",
+            "dosya": "claude",
+            "argumanlar": [
+              "plugin",
+              "marketplace",
+              "add",
+              "Jakeschincariol/replica-skill"
+            ]
+          },
+          {
+            "tur": "calistir",
+            "dosya": "claude",
+            "argumanlar": [
+              "plugin",
+              "install",
+              "replica-skill@replica-skill",
+              "-s",
+              "user"
+            ]
+          }
+        ]
+      ],
+      "kurallar": [
+        {
+          "ihtiyac": "uygulama",
+          "oncelik": 1,
+          "metin": "**replica-skill**: Var olan bir uygulamaya benzer bir ürün yapılacaksa skill'leri SIRAYLA kullan: recon → architect → design → build → backend → test → diff → entrepreneur → brand → launch → deploy. Her adım `replica/` klasöründeki bir öncekinin çıktısını okur. Orijinalin kodunu, logosunu, metnini ve içeriğini kopyalama; sadece işlevi yeniden kur."
+        }
+      ]
+    },
+    {
+      "id": "notebooklm",
+      "ad": "NotebookLM / Gemini Notebook (gayriresmi)",
+      "kategori": "2. Tarayici ve arastirma",
+      "lisans": "MIT",
+      "repo": "https://github.com/teng-lin/notebooklm-py",
+      "aciklama": "Kaynaklari NotebookLM'e yukle, kaynakli cevap al; podcast, slayt, quiz, zihin haritasi uret. Google girisi gerekir",
+      "varsayilan": false,
+      "gerekir": [
+        "uv",
+        "claude"
+      ],
+      "kontrol": {
+        "dosya": [
+          "%USERPROFILE%\\.claude\\skills\\notebooklm\\SKILL.md"
+        ]
+      },
+      "kur": [
+        [
+          {
+            "tur": "uvtool",
+            "paket": "notebooklm-py[browser]"
+          },
+          {
+            "tur": "calistir",
+            "dosya": "notebooklm",
+            "argumanlar": [
+              "skill",
+              "install"
+            ]
+          }
+        ]
+      ],
+      "kurulum_notu": "NotebookLM icin Google girisi gerekiyor: yeni bir PowerShell'de 'notebooklm login' calistir (tarayici acilir). Gayriresmi API'dir; ayri/ikincil bir Google hesabi onerilir.",
+      "kurallar": [
+        {
+          "ihtiyac": "kaynak",
+          "oncelik": 1,
+          "metin": "**notebooklm**: Çok sayıda belge/URL/YouTube kaynağını analiz etmek, kaynaklı (alıntılı) cevap almak ya da bu kaynaklardan podcast, slayt, quiz, zihin haritası, rapor üretmek gerektiğinde. Ağır okumayı NotebookLM'e yaptır, sen sadece sonucu düzenle. Kullanıcı istemedikçe yeni notebook oluşturma ve paylaşım ayarı değiştirme."
+        }
+      ]
+    },
+    {
+      "id": "video-shotcraft",
+      "ad": "video-shotcraft (urun tanitim videosu skill)",
+      "kategori": "7. Video ve animasyon",
+      "lisans": "Apache-2.0",
+      "repo": "https://github.com/Vincentwei1021/video-shotcraft",
+      "aciklama": "Urununun gercek ekranlarindan Remotion ile duzenlenebilir tanitim/promo videosu; API anahtari gerekmez",
+      "varsayilan": false,
+      "gerekir": [
+        "git",
+        "node",
+        "uv",
+        "ffmpeg",
+        "claude"
+      ],
+      "kontrol": {
+        "dosya": [
+          "%USERPROFILE%\\.claude\\skills\\video-shotcraft\\SKILL.md"
+        ]
+      },
+      "kur": [
+        [
+          {
+            "tur": "calistir",
+            "dosya": "git",
+            "argumanlar": [
+              "clone",
+              "--depth",
+              "1",
+              "https://github.com/Vincentwei1021/video-shotcraft.git",
+              "%USERPROFILE%\\.claude\\skills\\video-shotcraft"
+            ]
+          }
+        ]
+      ],
+      "kurulum_notu": "Remotion lisansi: bireyler ve kucuk ekipler icin ucretsiz, sirketler icin ucretli lisans gerekebilir.",
+      "kurallar": [
+        {
+          "ihtiyac": "video",
+          "oncelik": 1,
+          "metin": "**video-shotcraft**: Bir ürün/uygulama/site için tanıtım veya promo videosu (ekran görüntülerinden, hareketli grafik, müzikle senkron). Kod ile çizilir, gerçek ekranları kullanır."
+        }
+      ]
+    },
+    {
+      "id": "video-toolkit",
+      "ad": "claude-code-video-toolkit (calisma klasoru)",
+      "kategori": "7. Video ve animasyon",
+      "lisans": "MIT",
+      "repo": "https://github.com/digitalsamba/claude-code-video-toolkit",
+      "aciklama": "Senaryo, AI seslendirme, muzik, gorsel ve render; kendi klasorunde calisir. AI modelleri icin bulut GPU (Modal ucretsiz kota) onerilir",
+      "varsayilan": false,
+      "gerekir": [
+        "git",
+        "node",
+        "uv",
+        "ffmpeg",
+        "claude"
+      ],
+      "kontrol": {
+        "dosya": [
+          "%USERPROFILE%\\ClaudeProjeler\\claude-code-video-toolkit\\README.md"
+        ]
+      },
+      "kur": [
+        [
+          {
+            "tur": "calistir",
+            "dosya": "git",
+            "argumanlar": [
+              "clone",
+              "--depth",
+              "1",
+              "https://github.com/digitalsamba/claude-code-video-toolkit.git",
+              "%USERPROFILE%\\ClaudeProjeler\\claude-code-video-toolkit"
+            ]
+          }
+        ]
+      ],
+      "sonra": [
+        {
+          "tur": "calistir",
+          "dosya": "uv",
+          "argumanlar": [
+            "sync",
+            "--directory",
+            "%USERPROFILE%\\ClaudeProjeler\\claude-code-video-toolkit"
+          ]
+        }
+      ],
+      "kurulum_notu": "Video toolkit klasoru: %USERPROFILE%\\ClaudeProjeler\\claude-code-video-toolkit. Claude'u BU klasorde ac (ClaudeAc.bat ile), sonra /setup ve /video yaz.",
+      "kurallar": [
+        {
+          "ihtiyac": "video",
+          "oncelik": 2,
+          "metin": "**claude-code-video-toolkit**: Seslendirmeli, müzikli, AI görsel/klip içeren videolar (açıklayıcı, sprint özeti, reklam, kısa dikey video). Kendi klasöründe (`ClaudeProjeler\\claude-code-video-toolkit`) çalışır; başka klasördeysen kullanıcıya orada açmasını söyle."
+        }
+      ]
+    },
+    {
+      "id": "animation-base",
+      "ad": "ClaudeAnimationBase (el cizimi animasyon)",
+      "kategori": "7. Video ve animasyon",
+      "lisans": "MIT",
+      "repo": "https://github.com/JohnHeibel/ClaudeAnimationBase",
+      "aciklama": "p5.js ile suluboya tarzi karakter animasyonu (Clawd); kendi klasorunde calisir. Chrome ve ffmpeg gerekir",
+      "varsayilan": false,
+      "gerekir": [
+        "git",
+        "node",
+        "chrome",
+        "ffmpeg",
+        "claude"
+      ],
+      "kontrol": {
+        "dosya": [
+          "%USERPROFILE%\\ClaudeProjeler\\ClaudeAnimationBase\\ANIMATION_GUIDE.md"
+        ]
+      },
+      "kur": [
+        [
+          {
+            "tur": "calistir",
+            "dosya": "git",
+            "argumanlar": [
+              "clone",
+              "--depth",
+              "1",
+              "https://github.com/JohnHeibel/ClaudeAnimationBase.git",
+              "%USERPROFILE%\\ClaudeProjeler\\ClaudeAnimationBase"
+            ]
+          }
+        ]
+      ],
+      "sonra": [
+        {
+          "tur": "calistir",
+          "dosya": "npm",
+          "argumanlar": [
+            "install",
+            "--prefix",
+            "%USERPROFILE%\\ClaudeProjeler\\ClaudeAnimationBase"
+          ]
+        }
+      ],
+      "kurulum_notu": "Animasyon klasoru: %USERPROFILE%\\ClaudeProjeler\\ClaudeAnimationBase. Claude'u orada ac ve 'Read ANIMATION_GUIDE.md, then make a 15-second video of ...' gibi iste. GPU yoksa suluboya dolgularini kapatmasini soyle (render yavas).",
+      "kurallar": [
+        {
+          "ihtiyac": "video",
+          "oncelik": 3,
+          "metin": "**ClaudeAnimationBase**: El çizimi/suluboya tarzı karakter animasyonu ve kısa çizgi film. Kendi klasöründe (`ClaudeProjeler\\ClaudeAnimationBase`) çalışır; önce ANIMATION_GUIDE.md okunur."
         }
       ]
     }

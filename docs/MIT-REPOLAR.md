@@ -42,6 +42,28 @@ Lisanslar GitHub API'sinden **2026-11-05** tarihinde kontrol edildi. "Uygulamada
 | [K-Dense-AI/scientific-agent-skills](https://github.com/K-Dense-AI/scientific-agent-skills) | MIT | Bilimsel araştırma skill'leri: literatür tarama, veri analizi, biyoinformatik veri tabanları. | ❌ |
 | [OthmanAdi/planning-with-files](https://github.com/OthmanAdi/planning-with-files) | MIT | Uzun görevlerde planı Markdown dosyalarında tutar; oturum kopsa da kaldığı yerden devam eder. | ❌ |
 
+
+## 5. Değerlendirme: 2026-11-08 eklenenler
+
+Lisanslar GitHub API'sinden ve repolardaki LICENSE dosyalarından kontrol edildi.
+
+| Repo | Lisans | Ne işe yarar | Gereken | Uygulamada |
+|---|---|---|---|---|
+| [multica-ai/andrej-karpathy-skills](https://github.com/multica-ai/andrej-karpathy-skills) | **Belirtilmemiş** (LICENSE dosyası yok) | Claude'un kod yazma davranışı için 4 ilke: varsaymadan sor, en basit çözüm, sadece gerekene dokun, başarıyı testle tanımla. Tek bir CLAUDE.md/skill. | Hiçbir şey | ✅ varsayılan (plugin) |
+| [Jakeschincariol/replica-skill](https://github.com/Jakeschincariol/replica-skill) | MIT | 11 skill: bir uygulamayı incele → mimari → tasarım → kodla → backend → test → orijinalle karşılaştır → kullanıcı şikayetlerinden iyileştir → marka → yayın. İşlevi yeniden kurar, kodu/logoyu kopyalamaz. | Python 3.8+ | ✅ opsiyonel (plugin) |
+| [teng-lin/notebooklm-py](https://github.com/teng-lin/notebooklm-py) | MIT | NotebookLM'i (yeni adı Gemini Notebook) Claude'dan kullanma: kaynak yükle, kaynaklı cevap al, podcast/video/slayt/quiz/zihin haritası üret ve indir. Ağır okumayı Google'a yaptırıp token tasarrufu sağlar. | Google hesabı (`notebooklm login`). **Gayriresmi API**: Google değiştirirse bozulabilir, yoğun kullanımda kısıtlanabilir. | ✅ opsiyonel |
+| [Vincentwei1021/video-shotcraft](https://github.com/Vincentwei1021/video-shotcraft) | Apache-2.0 | Ürün/uygulama tanıtım videosu: gerçek ekranlarını yakalar, 150 hazır hareket tarifinden seçer, Remotion ile render eder, müziğe senkronlar. API anahtarı yok. | Node, ffmpeg, uv. Remotion şirketler için ücretli lisans isteyebilir. | ✅ opsiyonel |
+| [digitalsamba/claude-code-video-toolkit](https://github.com/digitalsamba/claude-code-video-toolkit) | MIT | Tam video stüdyosu: senaryo, AI seslendirme (Qwen3-TTS/ElevenLabs), müzik, AI görsel/klip, render, YouTube'a yükleme. Kendi klasöründe çalışır (`/setup`, `/video`). | Node 22+, uv, ffmpeg. AI modelleri için bulut GPU (Modal'ın aylık 30$ ücretsiz kotası öneriliyor); ElevenLabs opsiyonel. | ✅ opsiyonel (klasöre klonlanır) |
+| [JohnHeibel/ClaudeAnimationBase](https://github.com/JohnHeibel/ClaudeAnimationBase) | MIT | p5.js ile el çizimi/suluboya karakter animasyonu başlangıç kiti (Clawd karakteri, 31 duygu). Claude storyboard yapar, çizer, MP4 çıkarır. | Node, Chrome, ffmpeg. GPU yoksa render yavaş. | ✅ opsiyonel (klasöre klonlanır) |
+
+### Eklenmeyenler
+
+| Repo | Neden |
+|---|---|
+| "jev" repoları ([dzhng/jevgrep](https://github.com/dzhng/jevgrep), [tamaratran/fast-jev-compaction](https://github.com/tamaratran/fast-jev-compaction), [browser-use/jev-ultrafast](https://github.com/browser-use/jev-ultrafast)) | Jev, TypeSafe'in **ücretli** bir modeli. Üçü de TypeSafe (veya Vercel/OpenRouter) API anahtarı istiyor; jevgrep anahtarı ortam değişkeninden okumuyor, `jg auth` ile elle girilmesi gerekiyor. Ayrıca kaynak kodunu üçüncü taraf bir modele gönderiyorlar. graphify + Grep zaten aynı işi ücretsiz yapıyor. Hangisini kastettiğini söylersen ayrıca bakarım. |
+| [tashfeenahmed/freellmapi](https://github.com/tashfeenahmed/freellmapi) (MIT) | 34 sağlayıcının ücretsiz kotalarını tek bir API'de toplayan bir yönlendirici. Claude Code'u Claude yerine bu ücretsiz modellere bağlamak için kullanılır; Claude aboneliğinle çalışırken bir faydası yok ve README'si kişisel deneme amaçlı olduğunu, sağlayıcı kullanım şartlarının ayrıca incelenmesi gerektiğini söylüyor. Kendi uygulamanda ücretsiz LLM API'si gerekirse Windows `.exe` kurulumu var. |
+| [Vincentwei1021/video-talkcraft](https://github.com/Vincentwei1021/video-talkcraft) | **PolyForm Noncommercial** lisansı (ticari kullanım yasak), dokümanı Çince ve seslendirme için Fish Audio istiyor. Aynı yazarın video-shotcraft'ı daha uygun. |
+
 ## MIT olmayan ama kullandığımız (serbest lisanslı) araçlar
 - [microsoft/playwright-mcp](https://github.com/microsoft/playwright-mcp): **Apache-2.0**. Ticari kullanım serbest, lisans ve NOTICE metnini korumak gerekir.
 - [safishamsi/graphify](https://github.com/safishamsi/graphify): README'ye göre Apache-2.0/MIT.

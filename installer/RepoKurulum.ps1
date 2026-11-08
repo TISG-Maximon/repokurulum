@@ -378,6 +378,7 @@ function Install-Bilesen($B) {
         if (Test-Bilesen $B) {
             foreach ($adim in @($B.sonra)) { if ($adim) { Invoke-Adim $adim | Out-Null } }
             Write-Log "$($B.ad) kuruldu" 'OK'
+            if ($B.kurulum_notu) { Write-Log ('NOT: ' + [Environment]::ExpandEnvironmentVariables($B.kurulum_notu)) 'UYARI' }
             return 'Kuruldu'
         }
     }
