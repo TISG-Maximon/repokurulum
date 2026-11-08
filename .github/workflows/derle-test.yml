@@ -158,6 +158,15 @@ jobs:
           Get-Content "$env:LOCALAPPDATA\RepoKurulum\logs\hafiza.log" -ErrorAction SilentlyContinue | Write-Host
           if ($hata) { $hata | ForEach-Object { Write-Host "::error::$_" }; exit 1 }
 
+      - name: Guncelleme kontrolu (-GuncellemeKontrol) hatasiz calisiyor mu
+        shell: powershell
+        run: |
+          $cikti = .\installer\RepoKurulum.ps1 -GuncellemeKontrol *>&1 | Out-String
+          Write-Host $cikti
+          $kod = $LASTEXITCODE
+          if ($cikti -match '\[HATA\]|Beklenmeyen') { Write-Host '::error::guncelleme kontrolunde hata'; exit 1 }
+          exit $kod
+
       - name: Kural metni (-Kurallar) sadece kurulu araclari iceriyor mu, dosyaya yazmiyor mu
         shell: powershell
         run: |

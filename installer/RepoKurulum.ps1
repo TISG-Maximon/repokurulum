@@ -24,6 +24,8 @@ param(
     [switch]$Zorla,
     [switch]$Kurallar,
     [switch]$TumKurallar,
+    [switch]$GuncellemeKontrol,
+    [switch]$Guncelle,
     [string]$Yapilandirma = ''
 )
 
@@ -525,6 +527,8 @@ function Install-Bilesen($B) {
     if ($Zorla -and $B.kontrol.mcp) {
         Invoke-Harici 'claude' @('mcp', 'remove', $B.kontrol.mcp, '-s', 'user') -Sessizce | Out-Null
         Reset-Onbellek
+    } elseif ($script:Guncellemeler.ContainsKey($B.id) -and (Test-BilesenTemel $B)) {
+        return (Invoke-Guncelleme $B)
     } elseif (Test-Bilesen $B) {
         Write-Log "$($B.ad) zaten kurulu" 'OK'
         return 'Kurulu'
@@ -642,6 +646,149 @@ if ($Kurallar -or $TumKurallar) {
     exit 0
 }
 
+# ------------------------------------------------------------------ Guncelleme ve yeni bilesen tespiti
+$script:Guncellemeler = @{}      # id -> aciklama (guncelleme var)
+$script:YeniBilesenler = @{}     # id -> $true (kullanici ilk kez goruyor)
+$script:UvListe = $null
+$SurumDosyasi = Join-Path $env:LOCALAPPDATA 'RepoKurulum\surumler.json'
+$GorulduDosyasi = Join-Path $env:LOCALAPPDATA 'RepoKurulum\goruldu.json'
+
+function Read-JsonTablo([string]$Yol) {
+    $t = @{}
+    if (Test-Path -LiteralPath $Yol) {
+        try { $j = [IO.File]::ReadAllText($Yol) | ConvertFrom-Json; foreach ($p in $j.PSObject.Properties) { $t[$p.Name] = $p.Value } } catch { }
+    }
+    return $t
+}
+function Write-JsonTablo([string]$Yol, $Tablo) {
+    try { [IO.File]::WriteAllText($Yol, ($Tablo | ConvertTo-Json -Depth 4), (New-Object System.Text.UTF8Encoding($false))) } catch { }
+}
+
+function Find-YeniBilesenler {
+    # Ilk calistirmada hepsi "goruldu" sayilir; sonra eklenenler "Yeni" olur
+    $script:YeniBilesenler = @{}
+    if (-not (Test-Path -LiteralPath $GorulduDosyasi)) { return }
+    $g = Read-JsonTablo $GorulduDosyasi
+    foreach ($b in $Tum) { if (-not $g.ContainsKey($b.id)) { $script:YeniBilesenler[$b.id] = $true } }
+}
+function Save-Goruldu {
+    $g = @{}
+    foreach ($b in $Tum) { $g[$b.id] = $true }
+    Write-JsonTablo $GorulduDosyasi $g
+}
+
+function Get-UzakHead([string]$Url) {
+    Invoke-Harici 'git' @('ls-remote', $Url, 'HEAD') -ZamanAsimi 60 -Sessizce | Out-Null
+    $m = [regex]::Match([string]$script:SonCikti, '^([0-9a-f]{40})\s+HEAD', 'Multiline')
+    if ($m.Success) { return $m.Groups[1].Value }
+    return $null
+}
+
+function Get-UvSurum([string]$Paket) {
+    if ($null -eq $script:UvListe) {
+        Invoke-Harici 'uv' @('tool', 'list') -ZamanAsimi 60 -Sessizce | Out-Null
+        $script:UvListe = [string]$script:SonCikti
+    }
+    $m = [regex]::Match($script:UvListe, '(?m)^' + [regex]::Escape($Paket) + '\s+v(\S+)')
+    if ($m.Success) { return $m.Groups[1].Value }
+    return $null
+}
+
+function Test-Guncelleme($B) {
+    # Kurulu bir bilesen icin yeni surum var mi? Varsa kisa aciklama, yoksa $null
+    if (-not (Test-DosyalarGuncel $B)) { return 'kurulum dosyalari degisti' }
+    $g = $B.guncelleme
+    if (-not $g) { return $null }
+    try {
+        switch ($g.tur) {
+            'pypi' {
+                $kurulu = Get-UvSurum $g.paket
+                if (-not $kurulu) { return $null }
+                $son = (Invoke-RestMethod -Uri ("https://pypi.org/pypi/{0}/json" -f $g.paket) -TimeoutSec 20).info.version
+                if ($son -and $son -ne $kurulu) { return "$kurulu -> $son" }
+            }
+            'git' {
+                $dizin = Expand-Deger $g.dizin
+                if (-not (Test-Path -LiteralPath (Join-Path $dizin '.git'))) { return $null }
+                Invoke-Harici 'git' @('-C', $dizin, 'rev-parse', 'HEAD') -ZamanAsimi 30 -Sessizce | Out-Null
+                $yerel = ([string]$script:SonCikti).Trim()
+                $uzak = Get-UzakHead $g.url
+                if ($uzak -and $yerel -and $uzak -ne $yerel) { return 'yeni commit' }
+            }
+            'plugin' {
+                $uzak = Get-UzakHead $g.url
+                if (-not $uzak) { return $null }
+                $t = Read-JsonTablo $SurumDosyasi
+                if (-not $t.ContainsKey($B.id)) { $t[$B.id] = $uzak; Write-JsonTablo $SurumDosyasi $t; return $null }
+                if ($t[$B.id] -ne $uzak) { return 'eklentide yeni surum' }
+            }
+            'winget' {
+                if (-not (Test-Komut 'winget')) { return $null }
+                Invoke-Harici 'winget' @('list', '--id', $g.id, '-e', '--upgrade-available', '--accept-source-agreements', '--disable-interactivity') -ZamanAsimi 90 -Sessizce | Out-Null
+                if ([string]$script:SonCikti -match [regex]::Escape($g.id)) { return 'winget guncellemesi' }
+            }
+        }
+    } catch { Write-Log "Guncelleme kontrolu yapilamadi ($($B.id)): $($_.Exception.Message)" 'UYARI' }
+    return $null
+}
+
+function Find-Guncellemeler {
+    $script:Guncellemeler = @{}
+    $script:UvListe = $null
+    foreach ($b in $Tum) {
+        if (-not (Test-BilesenTemel $b)) { continue }
+        if ($script:DurumEtiketi) { $script:DurumEtiketi.Text = "  Guncellemeler kontrol ediliyor: $($b.ad)" }
+        Invoke-UiPump
+        $a = Test-Guncelleme $b
+        if ($a) { $script:Guncellemeler[$b.id] = $a; Write-Log "Guncelleme var: $($b.ad) ($a)" 'UYARI' }
+    }
+    if ($script:DurumEtiketi) { $script:DurumEtiketi.Text = '  Hazir' }
+}
+
+function Invoke-Guncelleme($B) {
+    # Kurulu bileseni gunceller. Kurulum dosyalari degistiyse normal kurulum adimlari tekrar calisir.
+    Write-Log "==== $($B.ad): guncelleniyor ($($script:Guncellemeler[$B.id])) ===="
+    if (-not (Test-DosyalarGuncel $B)) {
+        foreach ($adim in @($B.kur)[0]) { $kod = Invoke-Adim $adim; if ($kod -ne 0) { return 'Hata' } }
+        return 'Guncellendi'
+    }
+    $g = $B.guncelleme
+    $kod = 1
+    switch ($g.tur) {
+        'pypi' { $kod = Invoke-Harici 'uv' @('tool', 'upgrade', $g.paket) }
+        'git' {
+            $dizin = Expand-Deger $g.dizin
+            $kod = Invoke-Harici 'git' @('-C', $dizin, 'fetch', '--depth', '1', 'origin', 'HEAD')
+            if ($kod -eq 0) {
+                $kod = Invoke-Harici 'git' @('-C', $dizin, 'merge', '--ff-only', 'FETCH_HEAD')
+                if ($kod -ne 0) { Write-Log "Klasorde senin degisikliklerin var, otomatik guncellenmedi: $dizin (git -C ... pull ile elle guncelle)" 'UYARI' }
+            }
+        }
+        'plugin' {
+            Invoke-Harici 'claude' @('plugin', 'marketplace', 'update', $g.marketplace) | Out-Null
+            $kod = Invoke-Harici 'claude' @('plugin', 'update', $g.eklenti)
+            if ($kod -eq 0) { $t = Read-JsonTablo $SurumDosyasi; $t[$B.id] = (Get-UzakHead $g.url); Write-JsonTablo $SurumDosyasi $t }
+        }
+        'winget' {
+            $kod = Invoke-Harici 'winget' @('upgrade', '--id', $g.id, '-e', '--silent', '--accept-package-agreements', '--accept-source-agreements', '--disable-interactivity')
+            if ($kod -in @(-1978335189, -1978335135)) { $kod = 0 }
+        }
+    }
+    Update-EnvPath; Reset-Onbellek
+    if ($kod -eq 0) { $script:Guncellemeler.Remove($B.id); Write-Log "$($B.ad) guncellendi" 'OK'; return 'Guncellendi' }
+    $script:Hatalar++
+    Write-Log "$($B.ad) guncellenemedi. Ayrinti: $LogFile" 'HATA'
+    return 'Hata'
+}
+
+if ($GuncellemeKontrol -or $Guncelle) {
+    Find-Guncellemeler
+    if ($script:Guncellemeler.Count -eq 0) { Write-Log 'Guncelleme yok' 'OK' }
+    foreach ($k in @($script:Guncellemeler.Keys)) { '{0,-22} {1}' -f $k, $script:Guncellemeler[$k] }
+    if ($Guncelle) { foreach ($b in $Tum) { if ($script:Guncellemeler.ContainsKey($b.id)) { Invoke-Guncelleme $b | Out-Null } } }
+    exit $script:Hatalar
+}
+
 if ($Liste) {
     foreach ($b in $Tum) {
         $durum = 'yok'
@@ -689,16 +836,26 @@ $ust = New-Object System.Windows.Forms.Label
 $ust.Text = "Kurmak istediklerini isaretle ve 'Secilenleri Kur'a bas. Kurulu olanlar atlanir; bagimliliklar otomatik secilir. Anahtar isteyenler icin pencere acilir."
 $ust.Dock = 'Top'; $ust.Height = 34; $ust.Padding = New-Object System.Windows.Forms.Padding(8, 8, 8, 0)
 
+$bant = New-Object System.Windows.Forms.Label
+$bant.Dock = 'Top'; $bant.Height = 30; $bant.TextAlign = 'MiddleLeft'; $bant.Visible = $false
+$bant.BackColor = [System.Drawing.Color]::FromArgb(255, 236, 153)
+$bant.ForeColor = [System.Drawing.Color]::FromArgb(90, 60, 0)
+$bant.Font = New-Object System.Drawing.Font('Segoe UI', 9, [System.Drawing.FontStyle]::Bold)
+$script:Bant = $bant
+
 $lv = New-Object System.Windows.Forms.ListView
 $lv.View = 'Details'; $lv.CheckBoxes = $true; $lv.FullRowSelect = $true; $lv.GridLines = $true
 $lv.Dock = 'Fill'; $lv.ShowItemToolTips = $true
 [void]$lv.Columns.Add('Bilesen', 230)
-[void]$lv.Columns.Add('Durum', 80)
+[void]$lv.Columns.Add('Durum', 105)
 [void]$lv.Columns.Add('Lisans', 110)
 [void]$lv.Columns.Add('Ne ise yarar', 520)
 $script:ListView = $lv
 
 $gruplar = @{}
+$script:AsilGrup = @{}
+$script:GrupUst = New-Object System.Windows.Forms.ListViewGroup('0. Guncelleme / Yeni', '0. Guncelleme / Yeni')
+[void]$lv.Groups.Add($script:GrupUst)
 foreach ($b in $Tum) {
     if (-not $gruplar.ContainsKey($b.kategori)) {
         $g = New-Object System.Windows.Forms.ListViewGroup($b.kategori, $b.kategori)
@@ -709,6 +866,7 @@ foreach ($b in $Tum) {
     [void]$it.SubItems.Add([string]$b.lisans)
     [void]$it.SubItems.Add([string]$b.aciklama)
     $it.Group = $gruplar[$b.kategori]
+    $script:AsilGrup[$b.id] = $gruplar[$b.kategori]
     $it.Tag = $b.id
     $it.ToolTipText = [string]$b.repo
     $it.Checked = [bool]$b.varsayilan
@@ -741,7 +899,9 @@ function Set-Durum([string]$Id, [string]$Durum) {
                 'Kuruldu' { $it.ForeColor = [System.Drawing.Color]::Green }
                 'Hata'    { $it.ForeColor = [System.Drawing.Color]::Red }
                 'Atlandi' { $it.ForeColor = [System.Drawing.Color]::DarkOrange }
-                'Guncelle' { $it.ForeColor = [System.Drawing.Color]::Blue }
+                'Guncelleme var' { $it.ForeColor = [System.Drawing.Color]::Blue }
+                'Guncellendi' { $it.ForeColor = [System.Drawing.Color]::Green }
+                'Yeni'    { $it.ForeColor = [System.Drawing.Color]::Purple }
                 default   { $it.ForeColor = [System.Drawing.SystemColors]::WindowText }
             }
         }
@@ -756,12 +916,31 @@ function Update-TumDurumlar {
         $d = 'Yok'
         if (Test-BilesenTemel $b) {
             $d = 'Kurulu'
-            if (-not (Test-DosyalarGuncel $b)) { $d = 'Guncelle' }
-        }
+            # Hizli kontrol: kurulum dosyalari degistiyse hemen goster (ag gerektirmez)
+            if (-not (Test-DosyalarGuncel $b)) { $script:Guncellemeler[$b.id] = 'kurulum dosyalari degisti' }
+            if ($script:Guncellemeler.ContainsKey($b.id)) { $d = 'Guncelleme var' }
+        } elseif ($script:YeniBilesenler.ContainsKey($b.id)) { $d = 'Yeni' }
         Set-Durum $b.id $d
-        # Guncellemesi olanlari otomatik isaretle
-        if ($d -eq 'Guncelle') { foreach ($it in $script:ListView.Items) { if ($it.Tag -eq $b.id) { $it.Checked = $true } } }
+        if ($d -eq 'Guncelleme var') { foreach ($it in $script:ListView.Items) { if ($it.Tag -eq $b.id) { $it.Checked = $true } } }
     }
+    Update-UstGrup
+}
+
+function Update-UstGrup {
+    # Guncellemesi olan ve yeni bilesenleri listenin en ustundeki gruba tasi, bilgi seridini guncelle
+    $gun = @(); $yen = @()
+    foreach ($it in $script:ListView.Items) {
+        $id = [string]$it.Tag
+        $ustte = $false
+        if ($script:Guncellemeler.ContainsKey($id) -and $it.SubItems[1].Text -eq 'Guncelleme var') { $ustte = $true; $gun += $it.Text }
+        elseif ($it.SubItems[1].Text -eq 'Yeni') { $ustte = $true; $yen += $it.Text }
+        if ($ustte) { $it.Group = $script:GrupUst } else { $it.Group = $script:AsilGrup[$id] }
+    }
+    $parcalar = @()
+    if ($gun.Count -gt 0) { $parcalar += ('GUNCELLEME VAR ({0}): {1}  -> isaretlendi, Secilenleri Kur ile guncelle' -f $gun.Count, ($gun -join ', ')) }
+    if ($yen.Count -gt 0) { $parcalar += ('YENI BILESEN ({0}): {1}' -f $yen.Count, ($yen -join ', ')) }
+    if ($parcalar.Count -gt 0) { $script:Bant.Text = '  ' + ($parcalar -join '     |     '); $script:Bant.Visible = $true }
+    else { $script:Bant.Visible = $false }
 }
 
 $log = New-Object System.Windows.Forms.TextBox
@@ -792,6 +971,7 @@ function New-Dugme([string]$Metin, [int]$Genislik = 140) {
 $btnKur      = New-Dugme 'Secilenleri Kur' 150
 $btnKur.Font = New-Object System.Drawing.Font('Segoe UI', 9, [System.Drawing.FontStyle]::Bold)
 $btnYenile   = New-Dugme 'Durumu Yenile'
+$btnGuncel   = New-Dugme 'Guncellemeleri Kontrol Et' 170
 $btnVars     = New-Dugme 'Varsayilanlari Sec'
 $btnHic      = New-Dugme 'Secimi Temizle' 110
 $btnClaude   = New-Dugme "Claude'u Ac (klasor sec)" 170
@@ -815,6 +995,13 @@ $btnKural.add_Click({
     [System.Windows.Forms.MessageBox]::Show("Kurulu araclarin secim kurallari panoya kopyalandi.`r`n`r`nSimdi su dosyayi ac ve Ctrl+V ile yapistir:`r`n$yol`r`n`r`nDosyada eski bir 'Arac secim kurallari' bolumu varsa once onu sil (iki kez olmasin).", 'Kurallar kopyalandi') | Out-Null
 })
 $btnYenile.add_Click({ $form.UseWaitCursor = $true; Update-TumDurumlar; $form.UseWaitCursor = $false })
+$btnGuncel.add_Click({
+    foreach ($c in $panel.Controls) { $c.Enabled = $false }
+    Find-Guncellemeler
+    Update-TumDurumlar
+    foreach ($c in $panel.Controls) { $c.Enabled = $true }
+    if ($script:Guncellemeler.Count -eq 0) { Write-Log 'Kurulu bilesenler guncel.' 'OK' }
+})
 $btnClaude.add_Click({
     Update-EnvPath
     if (-not (Test-Komut 'claude')) { [System.Windows.Forms.MessageBox]::Show('Claude Code henuz kurulu degil.') | Out-Null; return }
@@ -850,6 +1037,7 @@ $btnKur.add_Click({
     } finally {
         foreach ($c in $panel.Controls) { $c.Enabled = $true }
         $script:ListView.Enabled = $true
+        Update-UstGrup
     }
     if ($script:Hatalar -eq 0) {
         Write-Log "TAMAMLANDI. Simdi 'Claude'u Ac (klasor sec)' ile klasorunu sec, giris yap ve /mcp yaz." 'OK'
@@ -866,6 +1054,7 @@ $form.Controls.Add($panel)
 $form.Controls.Add($durum)
 $form.Controls.Add($progress)
 $form.Controls.Add($log)
+$form.Controls.Add($bant)
 $form.Controls.Add($ust)
 $script:LogBox = $log
 $script:DurumEtiketi = $durum
@@ -877,12 +1066,21 @@ $form.add_Shown({
     Write-Log "Log dosyasi: $LogFile"
     if (-not (Test-Komut 'winget')) { Write-Log "winget bulunamadi. Microsoft Store'dan 'App Installer' kur; bazi bilesenler alternatif yontemle kurulur." 'UYARI' }
     $form.UseWaitCursor = $true
+    Find-YeniBilesenler
     Update-TumDurumlar
     $form.UseWaitCursor = $false
+    if ($env:REPOKURULUM_ARAYUZ_TEST -ne '1') {
+        # Ag kontrolu pencere acildiktan sonra; bu sirada dugmeler kapali
+        foreach ($c in $panel.Controls) { $c.Enabled = $false }
+        Find-Guncellemeler
+        Update-TumDurumlar
+        foreach ($c in $panel.Controls) { $c.Enabled = $true }
+    }
     if ($env:REPOKURULUM_ARAYUZ_TEST -eq '1') {
         Write-Log ("ARAYUZ_OK - {0} satir listelendi" -f $script:ListView.Items.Count) 'OK'
         $form.Close()
     }
 })
 
+$form.add_FormClosing({ Save-Goruldu })
 [void]$form.ShowDialog()

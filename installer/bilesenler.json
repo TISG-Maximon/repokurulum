@@ -1,5 +1,5 @@
 {
-  "surum": "1.6.1",
+  "surum": "1.7.0",
   "aciklama": "RepoKurulum bilesen listesi. Yeni bir arac eklerken 'kurallar' alanina ne ise yaradigini ve hangi ihtiyacta kacinci sirada denenecegini yaz; uygulamadaki 'Kurallari Kopyala' dugmesi bunlardan CLAUDE.md'ye yapistirilacak metni uretir. Sira onemlidir: bagimliliklar once gelmelidir.",
   "kural_basligi": "Araç seçim kuralları",
   "genel_kurallar": [
@@ -149,7 +149,11 @@
             "true"
           ]
         }
-      ]
+      ],
+      "guncelleme": {
+        "tur": "winget",
+        "id": "Git.Git"
+      }
     },
     {
       "id": "node",
@@ -169,7 +173,11 @@
             "id": "OpenJS.NodeJS.LTS"
           }
         ]
-      ]
+      ],
+      "guncelleme": {
+        "tur": "winget",
+        "id": "OpenJS.NodeJS.LTS"
+      }
     },
     {
       "id": "uv",
@@ -195,7 +203,11 @@
             "komut": "irm https://astral.sh/uv/install.ps1 | iex"
           }
         ]
-      ]
+      ],
+      "guncelleme": {
+        "tur": "winget",
+        "id": "astral-sh.uv"
+      }
     },
     {
       "id": "chrome",
@@ -260,7 +272,11 @@
       ],
       "gerekir": [
         "node"
-      ]
+      ],
+      "guncelleme": {
+        "tur": "winget",
+        "id": "Gyan.FFmpeg.Essentials"
+      }
     },
     {
       "id": "claude",
@@ -485,7 +501,11 @@
           ],
           "dogrula": "İçerik boş veya kısa geldiyse WebFetch ya da playwright ile tekrar dene."
         }
-      ]
+      ],
+      "guncelleme": {
+        "tur": "pypi",
+        "paket": "duckduckgo-mcp-server"
+      }
     },
     {
       "id": "sequential-thinking",
@@ -757,7 +777,11 @@
           ],
           "dogrula": "Tablo ve sayıları orijinal belgeyle karşılaştır; dönüştürmede bozulma varsa belirt."
         }
-      ]
+      ],
+      "guncelleme": {
+        "tur": "pypi",
+        "paket": "markitdown-mcp"
+      }
     },
     {
       "id": "graphify",
@@ -827,7 +851,11 @@
           ],
           "dogrula": "Grafiğin gösterdiği bağlantıyı ilgili dosyayı okuyarak teyit et (grafik eski olabilir)."
         }
-      ]
+      ],
+      "guncelleme": {
+        "tur": "pypi",
+        "paket": "graphifyy"
+      }
     },
     {
       "id": "repomix-mcp",
@@ -1004,7 +1032,13 @@
           ],
           "dogrula": "Planın her maddesi tamamlandı ve testler geçiyor."
         }
-      ]
+      ],
+      "guncelleme": {
+        "tur": "plugin",
+        "url": "https://github.com/obra/superpowers.git",
+        "marketplace": "superpowers-marketplace",
+        "eklenti": "superpowers@superpowers-marketplace"
+      }
     },
     {
       "id": "karpathy",
@@ -1063,7 +1097,13 @@
           ],
           "dogrula": "Değişen her satır isteğe bağlanabilmeli; test/çalıştırma ile sonucu göster."
         }
-      ]
+      ],
+      "guncelleme": {
+        "tur": "plugin",
+        "url": "https://github.com/multica-ai/andrej-karpathy-skills.git",
+        "marketplace": "karpathy-skills",
+        "eklenti": "andrej-karpathy-skills@karpathy-skills"
+      }
     },
     {
       "id": "replica-skill",
@@ -1123,7 +1163,13 @@
           ],
           "dogrula": "`diff` adımındaki benzerlik puanı ve eksikler listesiyle ilerlemeyi ölç."
         }
-      ]
+      ],
+      "guncelleme": {
+        "tur": "plugin",
+        "url": "https://github.com/Jakeschincariol/replica-skill.git",
+        "marketplace": "replica-skill",
+        "eklenti": "replica-skill@replica-skill"
+      }
     },
     {
       "id": "notebooklm",
@@ -1180,7 +1226,11 @@
           ],
           "dogrula": "Cevaplardaki alıntıların kaynakta gerçekten olduğunu kontrol et."
         }
-      ]
+      ],
+      "guncelleme": {
+        "tur": "pypi",
+        "paket": "notebooklm-py"
+      }
     },
     {
       "id": "video-shotcraft",
@@ -1237,7 +1287,12 @@
           ],
           "dogrula": "Render edilen karelerden örnekler al ve kontrol et (metin taşması, boş kare, senkron)."
         }
-      ]
+      ],
+      "guncelleme": {
+        "tur": "git",
+        "dizin": "%USERPROFILE%\\.claude\\skills\\video-shotcraft",
+        "url": "https://github.com/Vincentwei1021/video-shotcraft.git"
+      }
     },
     {
       "id": "video-toolkit",
@@ -1304,7 +1359,12 @@
           ],
           "dogrula": "Sahne sahne inceleme (`/scene-review`) yap."
         }
-      ]
+      ],
+      "guncelleme": {
+        "tur": "git",
+        "dizin": "%USERPROFILE%\\ClaudeProjeler\\claude-code-video-toolkit",
+        "url": "https://github.com/digitalsamba/claude-code-video-toolkit.git"
+      }
     },
     {
       "id": "animation-base",
@@ -1371,7 +1431,12 @@
           ],
           "dogrula": "Kontak sayfası (contact sheet) render edip kareleri kontrol et."
         }
-      ]
+      ],
+      "guncelleme": {
+        "tur": "git",
+        "dizin": "%USERPROFILE%\\ClaudeProjeler\\ClaudeAnimationBase",
+        "url": "https://github.com/JohnHeibel/ClaudeAnimationBase.git"
+      }
     },
     {
       "id": "durum-satiri",
