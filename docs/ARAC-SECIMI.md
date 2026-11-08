@@ -43,6 +43,19 @@ Komut satırından da alabilirsin:
 
 | Koşul / eylem | Araç |
 |---|---|
+| İş birkaç araç çağrısıyla bitecek | **ana oturum (Opus, medium)** |
+| Kullanıcıyla konuşarak ilerleyen, bağlamı önemli işler | **ana oturum (Opus, medium)** |
+| Sonucu alt ajana anlatmak işi yapmaktan uzun sürecek | **ana oturum (Opus, medium)** |
+| Çok dosyada arama/okuma/özetleme ana bağlamı şişirecek | **hizli-isci (Sonnet, medium)** |
+| Toplu, mekanik düzenleme (yeniden adlandırma, format, tekrar eden kalıp) | **hizli-isci (Sonnet, medium)** |
+| Log/test çıktısı tarama | **hizli-isci (Sonnet, medium)** |
+| Birbirinden bağımsız alt işler (paralel çalıştır) | **hizli-isci (Sonnet, medium)** |
+| Sebebi belirsiz, birden çok bileşene yayılan hata | **derin-analist (Opus, high)** |
+| Mimari/tasarım kararı, seçenek karşılaştırması | **derin-analist (Opus, high)** |
+| Güvenlik veya veri kaybı riski olan değişiklik | **derin-analist (Opus, high)** |
+| Ana bağlamı kirletmeden uzun araştırma | **derin-analist (Opus, high)** |
+| Çok dosyalı veya riskli değişiklik tamamlandı | **dogrulayici (Sonnet, medium)** |
+| Kullanıcıya teslim edilecek önemli bir sonuç var | **dogrulayici (Sonnet, medium)** |
 | Bir dış paketin API'sini kullanan kod yazacak/düzeltecek isen (kullanıcı istemese de) | **context7** |
 | Hata bir kütüphaneden geliyorsa | **context7** |
 | Kullanıcı belirli bir sürüm söylediyse | **context7** |
@@ -79,6 +92,40 @@ Komut satırından da alabilirsin:
 | Karakterli animasyon, çizgi film, hikâye anlatan kısa animasyon | **ClaudeAnimationBase** |
 
 # Araç ayrıntıları (ihtiyaca göre)
+
+## Model ve alt ajan seçimi
+**Tetikleyici:** Her istek. Önce işi parçalara ayır; her parça için aşağıdaki sırayla karar ver.
+Araçları bu sırayla değerlendir: ana oturum (Opus, medium) > hizli-isci (Sonnet, medium) > derin-analist (Opus, high) > dogrulayici (Sonnet, medium)
+
+### 1. **ana oturum (Opus, medium)**
+- **Amaç:** Varsayılan: işi kendin, doğrudan yap.
+- **Ne zaman:** İş birkaç araç çağrısıyla bitecek; Kullanıcıyla konuşarak ilerleyen, bağlamı önemli işler; Sonucu alt ajana anlatmak işi yapmaktan uzun sürecek
+- **Ne zaman değil:** Çok dosya okuma/arama ana bağlamı şişirecekse (hizli-isci); Zor ve uzun analiz bağlamı kirletecekse (derin-analist)
+- **Nasıl:** Önce işi böl: hangi parçalar rutin, hangileri zor, hangileri birbirinden bağımsız; Alt ajana verirken hedefi, başarı ölçütünü ve dönüş biçimini (kanıtlı, kısa) açıkça yaz
+- **Doğrula:** Alt ajandan gelen sonucu, verdiği kanıtla (dosya:satır, komut çıktısı) kontrol et; körü körüne kabul etme.
+
+### 2. **hizli-isci (Sonnet, medium)**
+- **Amaç:** Rutin, iyi tanımlı, kolay doğrulanan işler.
+- **Ne zaman:** Çok dosyada arama/okuma/özetleme ana bağlamı şişirecek; Toplu, mekanik düzenleme (yeniden adlandırma, format, tekrar eden kalıp); Log/test çıktısı tarama; Birbirinden bağımsız alt işler (paralel çalıştır)
+- **Ne zaman değil:** İş küçük (doğrudan yap); İnce yargı, mimari karar veya riskli değişiklik; Sonucu doğrulamak işi yapmaktan pahalı
+- **Nasıl:** Bağımsız işleri tek mesajda paralel başlat
+- **Doğrula:** Raporundaki kanıtlardan rastgele 1–2 tanesini kendin kontrol et.
+
+### 3. **derin-analist (Opus, high)**
+- **Amaç:** Zor ve riskli işler.
+- **Ne zaman:** Sebebi belirsiz, birden çok bileşene yayılan hata; Mimari/tasarım kararı, seçenek karşılaştırması; Güvenlik veya veri kaybı riski olan değişiklik; Ana bağlamı kirletmeden uzun araştırma
+- **Ne zaman değil:** Basit veya iyi tanımlı işler; Sadece bilgi arama
+- **Nasıl:** Problemi, kısıtları ve başarı ölçütünü eksiksiz aktar
+- **Doğrula:** Önerilen çözümü uygulamadan önce kanıtlarını oku; uyguladıktan sonra test et.
+
+### 4. **dogrulayici (Sonnet, medium)**
+- **Amaç:** Büyük/riskli işten sonra bağımsız kontrol.
+- **Ne zaman:** Çok dosyalı veya riskli değişiklik tamamlandı; Kullanıcıya teslim edilecek önemli bir sonuç var
+- **Ne zaman değil:** Küçük değişiklik (testi kendin çalıştır); Doğrulamanın toplam maliyeti (ajan başlatma + bağlam aktarımı + raporu okuma) işin kendisinden fazla
+- **Nasıl:** Başarı ölçütlerini madde madde ver
+- **Doğrula:** KALDI veya DOĞRULANAMADI dönen her maddeyi düzelt ya da kullanıcıya bildir.
+
+> Not: Alt ajan bağlamı sıfırdan kurar (ek token). Görev + bağlam aktarımı + sonucu doğrulama toplamı işi doğrudan yapmaktan fazlaysa alt ajan KULLANMA.
 
 ## Kütüphane / framework / API dokümanı
 **Tetikleyici:** Kod bir dış paket, framework, SDK, CLI veya API kullanıyorsa; "nasıl kullanılır", "hangi parametre", "son sürümde ne değişti", hata mesajı bir kütüphaneden geliyorsa.

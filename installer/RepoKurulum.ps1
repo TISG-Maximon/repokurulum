@@ -34,6 +34,8 @@ try {
 } catch { }
 
 if (-not $Yapilandirma) { $Yapilandirma = Join-Path $PSScriptRoot 'bilesenler.json' }
+# Repo kok dizini (installer klasorunun bir ustu); -File veya scriptblock ile calismada da dogru
+$script:Kok = Split-Path -Parent (Split-Path -Parent ([IO.Path]::GetFullPath($Yapilandirma)))
 
 # ------------------------------------------------------------------ Durum
 $script:LogBox      = $null
@@ -268,6 +270,39 @@ function Test-Plugin([string]$Ad) {
 
 function Reset-Onbellek { $script:McpOnbellek = $null; $script:PluginCikti = $null }
 
+# ------------------------------------------------------------------ ~/.claude/settings.json
+function Get-AyarYolu { return (Join-Path $env:USERPROFILE '.claude\settings.json') }
+
+function Read-Ayarlar {
+    # Gecersiz JSON'da hata firlatir (cagiran yakalar; dosyaya dokunulmaz)
+    $yol = Get-AyarYolu
+    if (-not (Test-Path -LiteralPath $yol)) { return (New-Object PSObject) }
+    $metin = [IO.File]::ReadAllText($yol, [Text.Encoding]::UTF8)
+    if (-not $metin.Trim()) { return (New-Object PSObject) }
+    return ($metin | ConvertFrom-Json -ErrorAction Stop)
+}
+
+function Get-AyarDegeri($Ayar, [string]$Anahtar) {
+    $o = $Ayar
+    foreach ($p in $Anahtar.Split('.')) { if ($null -eq $o) { return $null }; $o = $o.$p }
+    return $o
+}
+
+function ConvertTo-GenisDeger($D, [bool]$Egik) {
+    # Dizelerdeki %DEGISKEN% ve {GIZLI} degerlerini acar; istenirse \ -> / yapar (Git Bash icin)
+    if ($D -is [string]) {
+        $x = Expand-Deger $D
+        if ($Egik) { $x = $x.Replace('\', '/') }
+        return $x
+    }
+    if ($D -is [System.Management.Automation.PSCustomObject]) {
+        $y = New-Object PSObject
+        foreach ($p in $D.PSObject.Properties) { $y | Add-Member -NotePropertyName $p.Name -NotePropertyValue (ConvertTo-GenisDeger $p.Value $Egik) }
+        return $y
+    }
+    return $D
+}
+
 function Test-Bilesen($B) {
     $k = $B.kontrol
     if (-not $k) { return $false }
@@ -281,6 +316,11 @@ function Test-Bilesen($B) {
     if ($k.mcp) { return (@(Get-McpListesi) -contains $k.mcp) }
     if ($k.plugin) { return (Test-Plugin $k.plugin) }
     if ($k.ortam) { return [bool][Environment]::GetEnvironmentVariable($k.ortam, 'User') }
+    if ($k.ayar) {
+        try { $v = Get-AyarDegeri (Read-Ayarlar) $k.ayar.anahtar } catch { return $false }
+        if ($null -eq $v) { return $false }
+        return ([string]$v -like ('*' + $k.ayar.icerir + '*'))
+    }
     return $false
 }
 
@@ -374,6 +414,37 @@ function Invoke-Adim($A) {
             Write-Log "> claude mcp add -s user --transport http $($A.ad) $($A.url) (basliklar gizlendi)"
             Reset-Onbellek
             return $kod
+        }
+        'ayar' {
+            # ~/.claude/settings.json icine tek bir anahtar yazar; diger ayarlara dokunmaz, ilk seferde yedek alir
+            try { $ayar = Read-Ayarlar } catch {
+                Write-Log ("settings.json okunamadi (gecersiz JSON?), DEGISTIRILMEDI: " + (Get-AyarYolu)) 'HATA'
+                return 1
+            }
+            $deger = ConvertTo-GenisDeger $A.deger ([bool]$A.egik_cizgi)
+            $yol = Get-AyarYolu
+            New-Item -ItemType Directory -Force -Path (Split-Path $yol) | Out-Null
+            $yedek = $yol + '.repokurulum.bak'
+            if ((Test-Path -LiteralPath $yol) -and -not (Test-Path -LiteralPath $yedek)) { Copy-Item -LiteralPath $yol -Destination $yedek }
+            if ($ayar.PSObject.Properties[$A.anahtar]) { $ayar.($A.anahtar) = $deger }
+            else { $ayar | Add-Member -NotePropertyName $A.anahtar -NotePropertyValue $deger }
+            [IO.File]::WriteAllText($yol, ($ayar | ConvertTo-Json -Depth 32), (New-Object System.Text.UTF8Encoding($false)))
+            Write-Log "settings.json: '$($A.anahtar)' ayarlandi"
+            return 0
+        }
+        'dosya-kopyala' {
+            # Repodaki bir dosyayi kopyalar. Hedef kullaniciya aitse (icinde 'repokurulum' isareti yoksa) dokunmaz.
+            $kaynak = Join-Path $script:Kok $A.kaynak
+            $hedef = Expand-Deger $A.hedef
+            if (-not (Test-Path -LiteralPath $kaynak)) { Write-Log "Kaynak dosya yok: $kaynak" 'HATA'; return 1 }
+            if ((Test-Path -LiteralPath $hedef) -and -not ([IO.File]::ReadAllText($hedef) -match 'repokurulum')) {
+                Write-Log "Hedef dosya sana ait (isaret yok), dokunulmadi: $hedef" 'UYARI'
+                return 0
+            }
+            New-Item -ItemType Directory -Force -Path (Split-Path $hedef) | Out-Null
+            Copy-Item -LiteralPath $kaynak -Destination $hedef -Force
+            Write-Log "Dosya kuruldu: $hedef"
+            return 0
         }
         default {
             Write-Log "Bilinmeyen adim turu: $($A.tur)" 'HATA'

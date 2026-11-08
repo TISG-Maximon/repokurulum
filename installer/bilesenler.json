@@ -1,5 +1,5 @@
 {
-  "surum": "1.4.1",
+  "surum": "1.5.0",
   "aciklama": "RepoKurulum bilesen listesi. Yeni bir arac eklerken 'kurallar' alanina ne ise yaradigini ve hangi ihtiyacta kacinci sirada denenecegini yaz; uygulamadaki 'Kurallari Kopyala' dugmesi bunlardan CLAUDE.md'ye yapistirilacak metni uretir. Sira onemlidir: bagimliliklar once gelmelidir.",
   "kural_basligi": "Araç seçim kuralları",
   "genel_kurallar": [
@@ -27,6 +27,12 @@
     "detay": "Araç ayrıntıları (ihtiyaca göre)"
   },
   "ihtiyaclar": [
+    {
+      "id": "model",
+      "baslik": "Model ve alt ajan seçimi",
+      "tetik": "Her istek. Önce işi parçalara ayır; her parça için aşağıdaki sırayla karar ver.",
+      "not": "Alt ajan bağlamı sıfırdan kurar (ek token). Görev + bağlam aktarımı + sonucu doğrulama toplamı işi doğrudan yapmaktan fazlaysa alt ajan KULLANMA."
+    },
     {
       "id": "dokuman",
       "baslik": "Kütüphane / framework / API dokümanı",
@@ -1349,6 +1355,173 @@
             "GPU yoksa suluboya dolgularını azalt (render yavaş)"
           ],
           "dogrula": "Kontak sayfası (contact sheet) render edip kareleri kontrol et."
+        }
+      ]
+    },
+    {
+      "id": "durum-satiri",
+      "ad": "Durum satiri (token, limit, repo, model)",
+      "kategori": "6. Claude ayarlari",
+      "lisans": "-",
+      "repo": "",
+      "aciklama": "Claude altinda: model, efor, proje/dal, son kullanilan arac, baglam doluluk, 5 saatlik ve haftalik limit + sifirlanma, oturum token/maliyet. Token harcamaz",
+      "varsayilan": true,
+      "gerekir": [
+        "claude"
+      ],
+      "kontrol": {
+        "ayar": {
+          "anahtar": "statusLine.command",
+          "icerir": "repokurulum-statusline"
+        }
+      },
+      "kur": [
+        [
+          {
+            "tur": "dosya-kopyala",
+            "kaynak": "installer/claude/repokurulum-statusline.ps1",
+            "hedef": "%USERPROFILE%\\.claude\\repokurulum-statusline.ps1"
+          },
+          {
+            "tur": "ayar",
+            "anahtar": "statusLine",
+            "egik_cizgi": true,
+            "deger": {
+              "type": "command",
+              "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"%USERPROFILE%/.claude/repokurulum-statusline.ps1\"",
+              "padding": 0,
+              "refreshInterval": 30
+            }
+          }
+        ]
+      ],
+      "kurulum_notu": "Durum satiri Claude'u yeniden actiginda gorunur. Limit bilgisi Pro/Max aboneliklerinde ilk cevaptan sonra gelir."
+    },
+    {
+      "id": "model-secimi",
+      "ad": "Model secimi: Opus ana + Sonnet/Opus alt ajanlar",
+      "kategori": "6. Claude ayarlari",
+      "lisans": "-",
+      "repo": "",
+      "aciklama": "Ana oturum Opus (medium). Alt ajanlar: hizli-isci (Sonnet medium), derin-analist (Opus high), dogrulayici (Sonnet medium). settings.json yedeklenir",
+      "varsayilan": true,
+      "gerekir": [
+        "claude"
+      ],
+      "kontrol": {
+        "dosya": [
+          "%USERPROFILE%\\.claude\\agents\\hizli-isci.md"
+        ]
+      },
+      "kur": [
+        [
+          {
+            "tur": "ayar",
+            "anahtar": "model",
+            "deger": "opus"
+          },
+          {
+            "tur": "ayar",
+            "anahtar": "effortLevel",
+            "deger": "medium"
+          },
+          {
+            "tur": "dosya-kopyala",
+            "kaynak": "installer/claude/agents/hizli-isci.md",
+            "hedef": "%USERPROFILE%\\.claude\\agents\\hizli-isci.md"
+          },
+          {
+            "tur": "dosya-kopyala",
+            "kaynak": "installer/claude/agents/derin-analist.md",
+            "hedef": "%USERPROFILE%\\.claude\\agents\\derin-analist.md"
+          },
+          {
+            "tur": "dosya-kopyala",
+            "kaynak": "installer/claude/agents/dogrulayici.md",
+            "hedef": "%USERPROFILE%\\.claude\\agents\\dogrulayici.md"
+          }
+        ]
+      ],
+      "kurulum_notu": "Model ayari Claude'u yeniden actiginda gecerli olur. Tek seferlik degistirmek icin Claude icinde /model ve /effort kullanabilirsin.",
+      "kurallar": [
+        {
+          "ihtiyac": "model",
+          "oncelik": 1,
+          "arac": "ana oturum (Opus, medium)",
+          "metin": "Varsayılan: işi kendin, doğrudan yap.",
+          "ne_zaman": [
+            "İş birkaç araç çağrısıyla bitecek",
+            "Kullanıcıyla konuşarak ilerleyen, bağlamı önemli işler",
+            "Sonucu alt ajana anlatmak işi yapmaktan uzun sürecek"
+          ],
+          "ne_zaman_degil": [
+            "Çok dosya okuma/arama ana bağlamı şişirecekse (hizli-isci)",
+            "Zor ve uzun analiz bağlamı kirletecekse (derin-analist)"
+          ],
+          "nasil": [
+            "Önce işi böl: hangi parçalar rutin, hangileri zor, hangileri birbirinden bağımsız",
+            "Alt ajana verirken hedefi, başarı ölçütünü ve dönüş biçimini (kanıtlı, kısa) açıkça yaz"
+          ],
+          "dogrula": "Alt ajandan gelen sonucu, verdiği kanıtla (dosya:satır, komut çıktısı) kontrol et; körü körüne kabul etme."
+        },
+        {
+          "ihtiyac": "model",
+          "oncelik": 2,
+          "arac": "hizli-isci (Sonnet, medium)",
+          "metin": "Rutin, iyi tanımlı, kolay doğrulanan işler.",
+          "ne_zaman": [
+            "Çok dosyada arama/okuma/özetleme ana bağlamı şişirecek",
+            "Toplu, mekanik düzenleme (yeniden adlandırma, format, tekrar eden kalıp)",
+            "Log/test çıktısı tarama",
+            "Birbirinden bağımsız alt işler (paralel çalıştır)"
+          ],
+          "ne_zaman_degil": [
+            "İş küçük (doğrudan yap)",
+            "İnce yargı, mimari karar veya riskli değişiklik",
+            "Sonucu doğrulamak işi yapmaktan pahalı"
+          ],
+          "nasil": [
+            "Bağımsız işleri tek mesajda paralel başlat"
+          ],
+          "dogrula": "Raporundaki kanıtlardan rastgele 1–2 tanesini kendin kontrol et."
+        },
+        {
+          "ihtiyac": "model",
+          "oncelik": 3,
+          "arac": "derin-analist (Opus, high)",
+          "metin": "Zor ve riskli işler.",
+          "ne_zaman": [
+            "Sebebi belirsiz, birden çok bileşene yayılan hata",
+            "Mimari/tasarım kararı, seçenek karşılaştırması",
+            "Güvenlik veya veri kaybı riski olan değişiklik",
+            "Ana bağlamı kirletmeden uzun araştırma"
+          ],
+          "ne_zaman_degil": [
+            "Basit veya iyi tanımlı işler",
+            "Sadece bilgi arama"
+          ],
+          "nasil": [
+            "Problemi, kısıtları ve başarı ölçütünü eksiksiz aktar"
+          ],
+          "dogrula": "Önerilen çözümü uygulamadan önce kanıtlarını oku; uyguladıktan sonra test et."
+        },
+        {
+          "ihtiyac": "model",
+          "oncelik": 4,
+          "arac": "dogrulayici (Sonnet, medium)",
+          "metin": "Büyük/riskli işten sonra bağımsız kontrol.",
+          "ne_zaman": [
+            "Çok dosyalı veya riskli değişiklik tamamlandı",
+            "Kullanıcıya teslim edilecek önemli bir sonuç var"
+          ],
+          "ne_zaman_degil": [
+            "Küçük değişiklik (testi kendin çalıştır)",
+            "Doğrulamanın toplam maliyeti (ajan başlatma + bağlam aktarımı + raporu okuma) işin kendisinden fazla"
+          ],
+          "nasil": [
+            "Başarı ölçütlerini madde madde ver"
+          ],
+          "dogrula": "KALDI veya DOĞRULANAMADI dönen her maddeyi düzelt ya da kullanıcıya bildir."
         }
       ]
     }

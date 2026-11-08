@@ -26,6 +26,8 @@ Diğer başlatma yolları:
   ```
 - **Durum listesi**: `RepoKurulum.bat -Liste`
 - **Claude Code'u açmak**: `ClaudeAc.bat`'a çift tıkla (klasör ve "yeni / devam / eski konuşma" sorar) ya da bir klasörü üzerine sürükle-bırak. Masaüstüne kopyalayabilirsin.
+- **Durum satırı** (setup → "Durum satiri"): Claude'un altında model, efor, proje/dal, son kullanılan araç (MCP/skill/ajan), bağlam doluluğu, 5 saatlik ve haftalık limit (sıfırlanma zamanıyla), oturum token/maliyeti. Yerelde çalışır, token harcamaz. Ayrıntılı kullanım için Claude'da `/usage`.
+- **Model seçimi** (setup → "Model secimi"): ana oturum Opus (medium); rutin işler `hizli-isci` (Sonnet medium), zor işler `derin-analist` (Opus high), büyük işlerden sonra `dogrulayici` (Sonnet medium) alt ajanları. Ne zaman ajan kullanılacağı araç seçim kurallarında. `settings.json` ilk değişiklikten önce `settings.json.repokurulum.bak` olarak yedeklenir.
 
 ### Uygulamanın hata azaltma özellikleri
 - Her bileşen önce **kontrol edilir**; kuruluysa atlanır (tekrar çalıştırmak güvenli).

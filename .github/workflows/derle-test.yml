@@ -79,6 +79,38 @@ jobs:
           .\installer\RepoKurulum.ps1 -Liste
           exit $kod
 
+      - name: Durum satiri ve model secimi (settings.json birlestirme)
+        shell: powershell
+        run: |
+          $hata = @()
+          # 1) Durum satiri betigi ornek oturum verisiyle
+          $cikti = Get-Content tests\statusline-ornek.json -Raw | powershell -NoProfile -ExecutionPolicy Bypass -File installer\claude\repokurulum-statusline.ps1 | Out-String
+          Write-Host $cikti
+          foreach ($b in 'Opus 5.5','TISG-Maximon/repokurulum','Baglam','42%','5 saat','23%','Haftalik','61%','Oturum') { if ($cikti -notmatch [regex]::Escape($b)) { $hata += "durum satirinda yok: $b" } }
+          # 2) Kullanicinin mevcut ayari korunmali
+          $md = "$env:USERPROFILE\.claude"; New-Item -ItemType Directory -Force $md | Out-Null
+          $ayar = "$md\settings.json"
+          if (Test-Path $ayar) { $mevcut = Get-Content $ayar -Raw | ConvertFrom-Json } else { $mevcut = New-Object PSObject }
+          $mevcut | Add-Member -NotePropertyName ozelTestAyari -NotePropertyValue 'korunmali' -Force
+          $mevcut | ConvertTo-Json -Depth 32 | Set-Content $ayar -Encoding UTF8
+          .\installer\RepoKurulum.ps1 -Sessiz -Bilesenler "durum-satiri,model-secimi"
+          if ($LASTEXITCODE -ne 0) { $hata += "kurulum cikis kodu $LASTEXITCODE" }
+          $s = Get-Content $ayar -Raw | ConvertFrom-Json
+          Get-Content $ayar -Raw | Write-Host
+          if ($s.ozelTestAyari -ne 'korunmali') { $hata += 'mevcut ayar silindi' }
+          if ($s.statusLine.command -notmatch 'repokurulum-statusline') { $hata += 'statusLine yazilmadi' }
+          if ($s.statusLine.command -match '\\') { $hata += 'statusLine yolunda ters egik cizgi var' }
+          if ($s.model -ne 'opus') { $hata += 'model opus degil' }
+          if ($s.effortLevel -ne 'medium') { $hata += 'effortLevel medium degil' }
+          if (-not (Test-Path "$ayar.repokurulum.bak")) { $hata += 'yedek alinmadi' }
+          foreach ($a in 'hizli-isci','derin-analist','dogrulayici') { if (-not (Test-Path "$md\agents\$a.md")) { $hata += "ajan yok: $a" } }
+          # 3) settings.json'daki komut gercekten calisiyor mu
+          $komutCikti = Get-Content tests\statusline-ornek.json -Raw | cmd /c $s.statusLine.command | Out-String
+          if ($komutCikti -notmatch 'Baglam') { $hata += 'settings.json komutu calismadi' }
+          # 4) Ikinci calistirma atlamali
+          .\installer\RepoKurulum.ps1 -Sessiz -Bilesenler "durum-satiri,model-secimi" | Out-Null
+          if ($hata) { $hata | ForEach-Object { Write-Host "::error::$_" }; exit 1 }
+
       - name: Kural metni (-Kurallar) sadece kurulu araclari iceriyor mu, dosyaya yazmiyor mu
         shell: powershell
         run: |
