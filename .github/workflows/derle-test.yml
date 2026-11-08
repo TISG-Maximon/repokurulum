@@ -198,13 +198,17 @@ jobs:
           $hedef1 = [DateTime]::Parse((($c1 -split "`n") | Where-Object { $_ -match '^HEDEF=' } | Select-Object -First 1).Substring(6))
           $beklenen = [DateTimeOffset]::FromUnixTimeSeconds($sifir).LocalDateTime.AddSeconds(90)
           if ([Math]::Abs(($hedef1 - $beklenen).TotalSeconds) -gt 5) { $hata += "hedef zaman yanlis: $hedef1 beklenen $beklenen" }
-          # 2) Dosya yok -> hata metninden "resets 1:40pm (UTC)"
+          # 2) Dosya yok -> hata metninden "resets h:mmpm (UTC)" (saatten bagimsiz: 2 saat sonrasi)
           Remove-Item $ld -Force
-          $c2 = '{"session_id":"t2","hook_event_name":"StopFailure","error":"rate_limit","error_details":"You have hit your 5-hour limit - resets 1:40pm (UTC)"}' | powershell -NoProfile -ExecutionPolicy Bypass -File $betik 2>&1 | Out-String
+          $u = [DateTime]::UtcNow.AddHours(2)
+          $metinSaat = $u.ToString('h:mmtt', [Globalization.CultureInfo]::InvariantCulture).ToLower()
+          $giris = '{"session_id":"t2","hook_event_name":"StopFailure","error":"rate_limit","error_details":"You have hit your 5-hour limit - resets ' + $metinSaat + ' (UTC)"}'
+          $c2 = $giris | powershell -NoProfile -ExecutionPolicy Bypass -File $betik 2>&1 | Out-String
           Write-Host $c2
           if ($c2 -notmatch 'KAYNAK=hata metni') { $hata += 'hata metni ayristirilamadi' }
           $hedef2 = [DateTime]::Parse((($c2 -split "`n") | Where-Object { $_ -match '^HEDEF=' } | Select-Object -First 1).Substring(6)).ToUniversalTime()
-          if ($hedef2.Hour -ne 13 -or $hedef2.Minute -ne 41) { $hata += "UTC 13:41 bekleniyordu, gelen: $hedef2" }
+          $beklenen2 = (New-Object DateTime($u.Year, $u.Month, $u.Day, $u.Hour, $u.Minute, 0, [DateTimeKind]::Utc)).AddSeconds(90)
+          if ([Math]::Abs(($hedef2 - $beklenen2).TotalSeconds) -gt 5) { $hata += "hata metninden hedef yanlis: $hedef2 beklenen $beklenen2 (metin: $metinSaat UTC)" }
           # 3) Limit disi hata -> devreye girmemeli
           $c3 = '{"session_id":"t3","hook_event_name":"StopFailure","error":"server_error"}' | powershell -NoProfile -ExecutionPolicy Bypass -File $betik 2>&1 | Out-String
           if ($LASTEXITCODE -ne 0 -or $c3 -match 'HEDEF=') { $hata += 'limit disi hatada devreye girdi' }
