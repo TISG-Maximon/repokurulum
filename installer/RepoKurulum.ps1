@@ -303,7 +303,28 @@ function ConvertTo-GenisDeger($D, [bool]$Egik) {
     return $D
 }
 
+function Test-DosyalarGuncel($B) {
+    # Bilesenin kurdugu (isaretli) dosyalar repodaki surumle ayni mi? Degilse guncelleme gerekir.
+    foreach ($yontem in @($B.kur)) {
+        foreach ($a in @($yontem)) {
+            if ($a.tur -ne 'dosya-kopyala') { continue }
+            $kaynak = Join-Path $script:Kok $a.kaynak
+            $hedef = Expand-Deger $a.hedef
+            if (-not (Test-Path -LiteralPath $kaynak) -or -not (Test-Path -LiteralPath $hedef)) { continue }
+            $hedefMetin = [IO.File]::ReadAllText($hedef)
+            if ($hedefMetin -notmatch 'repokurulum') { continue }   # kullanici sahiplenmis, dokunma
+            if ((Get-FileHash -LiteralPath $kaynak).Hash -ne (Get-FileHash -LiteralPath $hedef).Hash) { return $false }
+        }
+    }
+    return $true
+}
+
 function Test-Bilesen($B) {
+    if (-not (Test-BilesenTemel $B)) { return $false }
+    return (Test-DosyalarGuncel $B)
+}
+
+function Test-BilesenTemel($B) {
     $k = $B.kontrol
     if (-not $k) { return $false }
     if ($k.komut) { return (Test-Komut $k.komut) }
@@ -720,6 +741,7 @@ function Set-Durum([string]$Id, [string]$Durum) {
                 'Kuruldu' { $it.ForeColor = [System.Drawing.Color]::Green }
                 'Hata'    { $it.ForeColor = [System.Drawing.Color]::Red }
                 'Atlandi' { $it.ForeColor = [System.Drawing.Color]::DarkOrange }
+                'Guncelle' { $it.ForeColor = [System.Drawing.Color]::Blue }
                 default   { $it.ForeColor = [System.Drawing.SystemColors]::WindowText }
             }
         }
@@ -732,8 +754,13 @@ function Update-TumDurumlar {
     Update-EnvPath
     foreach ($b in $Tum) {
         $d = 'Yok'
-        if (Test-Bilesen $b) { $d = 'Kurulu' }
+        if (Test-BilesenTemel $b) {
+            $d = 'Kurulu'
+            if (-not (Test-DosyalarGuncel $b)) { $d = 'Guncelle' }
+        }
         Set-Durum $b.id $d
+        # Guncellemesi olanlari otomatik isaretle
+        if ($d -eq 'Guncelle') { foreach ($it in $script:ListView.Items) { if ($it.Tag -eq $b.id) { $it.Checked = $true } } }
     }
 }
 
