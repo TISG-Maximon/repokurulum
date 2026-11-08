@@ -9,6 +9,15 @@ try { [Console]::OutputEncoding = [System.Text.Encoding]::UTF8 } catch { }
 $ham = [Console]::In.ReadToEnd()
 try { $j = $ham | ConvertFrom-Json } catch { Write-Output 'Claude'; exit 0 }
 
+# Limit bilgisini kaydet: limit dolunca "devam" hook'u sifirlanma zamanini buradan okur
+if ($j.rate_limits) {
+    try {
+        $limitDosyasi = Join-Path $env:LOCALAPPDATA 'RepoKurulum\limit-durum.json'
+        New-Item -ItemType Directory -Force -Path (Split-Path $limitDosyasi) | Out-Null
+        [IO.File]::WriteAllText($limitDosyasi, ($j.rate_limits | ConvertTo-Json -Depth 4 -Compress), (New-Object System.Text.UTF8Encoding($false)))
+    } catch { }
+}
+
 $E = [char]27
 $RenkSifir = "$E[0m"; $RenkGri = "$E[90m"; $RenkCamgobegi = "$E[36m"; $RenkMor = "$E[35m"; $RenkKalin = "$E[1m"
 

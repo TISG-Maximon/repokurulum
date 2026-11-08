@@ -473,7 +473,11 @@ function Invoke-Adim($A) {
                 if ($kalan.Count -gt 0) { $g.hooks = $kalan; $yeni += $g }
             }
             $h = [pscustomobject]@{ type = 'command'; command = $komut; timeout = 30 }
-            $yeni += [pscustomobject]@{ hooks = @($h) }
+            # Istege bagli ek hook ozellikleri (orn. asyncRewake, timeout)
+            if ($A.ozellikler) { foreach ($p in $A.ozellikler.PSObject.Properties) { $h | Add-Member -NotePropertyName $p.Name -NotePropertyValue $p.Value -Force } }
+            $grupYeni = [pscustomobject]@{ hooks = @($h) }
+            if ($A.matcher) { $grupYeni = [pscustomobject]@{ matcher = $A.matcher; hooks = @($h) } }
+            $yeni += $grupYeni
             if ($ayar.hooks.PSObject.Properties[$A.olay]) { $ayar.hooks.($A.olay) = $yeni }
             else { $ayar.hooks | Add-Member -NotePropertyName $A.olay -NotePropertyValue $yeni }
             $yol = Get-AyarYolu

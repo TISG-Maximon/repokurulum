@@ -167,6 +167,47 @@ jobs:
           if ($cikti -match '\[HATA\]|Beklenmeyen') { Write-Host '::error::guncelleme kontrolunde hata'; exit 1 }
           exit $kod
 
+      - name: Limit dolunca bekle ve devam et (hook ve zaman hesabi)
+        shell: powershell
+        run: |
+          $hata = @()
+          .\installer\RepoKurulum.ps1 -Sessiz -Bilesenler "limit-devam"
+          if ($LASTEXITCODE -ne 0) { $hata += "kurulum cikis kodu $LASTEXITCODE" }
+          $s = Get-Content "$env:USERPROFILE\.claude\settings.json" -Raw | ConvertFrom-Json
+          $g = @($s.hooks.StopFailure) | Where-Object { @($_.hooks | Where-Object { $_.command -match 'repokurulum-limit-devam' }).Count -gt 0 } | Select-Object -First 1
+          if (-not $g) { $hata += 'StopFailure hook-u yok' } else {
+            if ($g.matcher -ne 'rate_limit') { $hata += "matcher rate_limit degil: $($g.matcher)" }
+            $h = @($g.hooks)[0]
+            if ($h.asyncRewake -ne $true) { $hata += 'asyncRewake true degil' }
+            if ([int]$h.timeout -lt 21600) { $hata += "timeout kucuk: $($h.timeout)" }
+          }
+          $betik = "$env:USERPROFILE\.claude\repokurulum-limit-devam.ps1"
+          $env:REPOKURULUM_LIMIT_TEST = '1'
+          $ld = "$env:LOCALAPPDATA\RepoKurulum\limit-durum.json"
+          # 1) Durum satiri dosyasindan: 5 saatlik pencere dolu, 2 saat sonra sifirlaniyor
+          $sifir = [DateTimeOffset]::UtcNow.AddHours(2).ToUnixTimeSeconds()
+          ('{"five_hour":{"used_percentage":100,"resets_at":' + $sifir + '},"seven_day":{"used_percentage":40,"resets_at":' + ($sifir + 300000) + '}}') | Set-Content $ld -Encoding UTF8
+          $c1 = '{"session_id":"t1","hook_event_name":"StopFailure","error":"rate_limit","error_details":"limit"}' | powershell -NoProfile -ExecutionPolicy Bypass -File $betik 2>&1 | Out-String
+          $k1 = $LASTEXITCODE
+          Write-Host $c1
+          if ($k1 -ne 2) { $hata += "durum dosyali senaryoda cikis kodu 2 degil: $k1" }
+          if ($c1 -notmatch 'KAYNAK=durum satiri \(five_hour') { $hata += 'durum satiri dosyasi kullanilmadi' }
+          if ($c1 -notmatch 'KALDIGIN YERDEN') { $hata += 'uyandirma mesaji yok' }
+          $hedef1 = [DateTime]::Parse((($c1 -split "`n") | Where-Object { $_ -match '^HEDEF=' } | Select-Object -First 1).Substring(6))
+          $beklenen = [DateTimeOffset]::FromUnixTimeSeconds($sifir).LocalDateTime.AddSeconds(90)
+          if ([Math]::Abs(($hedef1 - $beklenen).TotalSeconds) -gt 5) { $hata += "hedef zaman yanlis: $hedef1 beklenen $beklenen" }
+          # 2) Dosya yok -> hata metninden "resets 1:40pm (UTC)"
+          Remove-Item $ld -Force
+          $c2 = '{"session_id":"t2","hook_event_name":"StopFailure","error":"rate_limit","error_details":"You have hit your 5-hour limit - resets 1:40pm (UTC)"}' | powershell -NoProfile -ExecutionPolicy Bypass -File $betik 2>&1 | Out-String
+          Write-Host $c2
+          if ($c2 -notmatch 'KAYNAK=hata metni') { $hata += 'hata metni ayristirilamadi' }
+          $hedef2 = [DateTime]::Parse((($c2 -split "`n") | Where-Object { $_ -match '^HEDEF=' } | Select-Object -First 1).Substring(6)).ToUniversalTime()
+          if ($hedef2.Hour -ne 13 -or $hedef2.Minute -ne 41) { $hata += "UTC 13:41 bekleniyordu, gelen: $hedef2" }
+          # 3) Limit disi hata -> devreye girmemeli
+          $c3 = '{"session_id":"t3","hook_event_name":"StopFailure","error":"server_error"}' | powershell -NoProfile -ExecutionPolicy Bypass -File $betik 2>&1 | Out-String
+          if ($LASTEXITCODE -ne 0 -or $c3 -match 'HEDEF=') { $hata += 'limit disi hatada devreye girdi' }
+          if ($hata) { $hata | ForEach-Object { Write-Host "::error::$_" }; exit 1 }
+
       - name: Kural metni (-Kurallar) sadece kurulu araclari iceriyor mu, dosyaya yazmiyor mu
         shell: powershell
         run: |

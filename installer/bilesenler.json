@@ -1,5 +1,5 @@
 {
-  "surum": "1.7.0",
+  "surum": "1.8.0",
   "aciklama": "RepoKurulum bilesen listesi. Yeni bir arac eklerken 'kurallar' alanina ne ise yaradigini ve hangi ihtiyacta kacinci sirada denenecegini yaz; uygulamadaki 'Kurallari Kopyala' dugmesi bunlardan CLAUDE.md'ye yapistirilacak metni uretir. Sira onemlidir: bagimliliklar once gelmelidir.",
   "kural_basligi": "Araç seçim kuralları",
   "genel_kurallar": [
@@ -1712,6 +1712,47 @@
           "dogrula": "Komut çıktısındaki `source.id` alanının dolu olduğunu kontrol et."
         }
       ]
+    },
+    {
+      "id": "limit-devam",
+      "ad": "Limit dolunca bekle ve otomatik devam et",
+      "kategori": "6. Claude ayarlari",
+      "lisans": "-",
+      "repo": "",
+      "aciklama": "Kullanim limiti (5 saatlik/haftalik) dolunca sifirlanma saatine kadar bekler, sonra Claude kaldigi yerden onay sormadan devam eder. Durum satiri ile birlikte en dogru calisir",
+      "varsayilan": true,
+      "gerekir": [
+        "claude",
+        "durum-satiri"
+      ],
+      "kontrol": {
+        "hook": {
+          "olay": "StopFailure",
+          "icerir": "repokurulum-limit-devam"
+        }
+      },
+      "kur": [
+        [
+          {
+            "tur": "dosya-kopyala",
+            "kaynak": "installer/claude/repokurulum-limit-devam.ps1",
+            "hedef": "%USERPROFILE%\\.claude\\repokurulum-limit-devam.ps1"
+          },
+          {
+            "tur": "hook-ekle",
+            "olay": "StopFailure",
+            "matcher": "rate_limit",
+            "isaret": "repokurulum-limit-devam",
+            "komut": "powershell -NoProfile -ExecutionPolicy Bypass -File \"%USERPROFILE%/.claude/repokurulum-limit-devam.ps1\"",
+            "egik_cizgi": true,
+            "ozellikler": {
+              "asyncRewake": true,
+              "timeout": 21600
+            }
+          }
+        ]
+      ],
+      "kurulum_notu": "Limit devam: limit dolunca Claude acik kaldigi surece sifirlanmayi bekler ve kendiliginden devam eder. Claude penceresini kapatma. Log: %LOCALAPPDATA%\\RepoKurulum\\logs\\limit-devam.log"
     }
   ]
 }
