@@ -67,6 +67,18 @@ jobs:
           .\installer\RepoKurulum.ps1 -Sessiz -Bilesenler "playwright-mcp,graphify,repomix-mcp"
           exit $LASTEXITCODE
 
+      - name: Yeni bilesenler (plugin, NotebookLM, FFmpeg, video skill, animasyon)
+        shell: powershell
+        timeout-minutes: 20
+        run: |
+          .\installer\RepoKurulum.ps1 -Sessiz -Bilesenler "karpathy,replica-skill,notebooklm,ffmpeg,video-shotcraft,animation-base"
+          $kod = $LASTEXITCODE
+          $log = Get-ChildItem "$env:LOCALAPPDATA\RepoKurulum\logs\*.log" | Sort-Object LastWriteTime | Select-Object -Last 1
+          $hatalar = Select-String -Path $log.FullName -Pattern '\[HATA\]'
+          if ($hatalar) { $hatalar | ForEach-Object { Write-Host "::error::$($_.Line)" }; exit 1 }
+          .\installer\RepoKurulum.ps1 -Liste
+          exit $kod
+
       - name: Kural metni (-Kurallar) sadece kurulu araclari iceriyor mu, dosyaya yazmiyor mu
         shell: powershell
         run: |
