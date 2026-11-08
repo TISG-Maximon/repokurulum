@@ -1,5 +1,5 @@
 {
-  "surum": "1.6.0",
+  "surum": "1.6.1",
   "aciklama": "RepoKurulum bilesen listesi. Yeni bir arac eklerken 'kurallar' alanina ne ise yaradigini ve hangi ihtiyacta kacinci sirada denenecegini yaz; uygulamadaki 'Kurallari Kopyala' dugmesi bunlardan CLAUDE.md'ye yapistirilacak metni uretir. Sira onemlidir: bagimliliklar once gelmelidir.",
   "kural_basligi": "Araç seçim kuralları",
   "genel_kurallar": [
@@ -227,7 +227,7 @@
       "kategori": "1. Temel araclar",
       "lisans": "LGPL/GPL",
       "repo": "https://ffmpeg.org",
-      "aciklama": "Video/ses donusturme; video skill'leri icin gerekli (winget; olmazsa GitHub'daki resmi derleme kullanici klasorune)",
+      "aciklama": "Video/ses donusturme; video skill'leri icin gerekli (winget > GitHub derlemesi > npm yedegi)",
       "varsayilan": false,
       "kontrol": {
         "komut": "ffmpeg"
@@ -250,7 +250,16 @@
             "tur": "ps",
             "komut": "$ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; [Net.ServicePointManager]::SecurityProtocol=[Net.ServicePointManager]::SecurityProtocol -bor 3072; $h=Join-Path $env:LOCALAPPDATA 'Programs\\ffmpeg'; $z=Join-Path $env:TEMP 'ffmpeg-builds.zip'; $ok=$false; foreach ($u in @('https://github.com/FFmpeg-Builds/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip','https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip')) { for ($i=1; $i -le 3 -and -not $ok; $i++) { try { Write-Output ('indiriliyor: ' + $u); Invoke-WebRequest -UseBasicParsing -Uri $u -OutFile $z -TimeoutSec 600; $ok=$true } catch { Write-Output $_.Exception.Message; Start-Sleep -Seconds (5*$i) } } if ($ok) { break } }; if (-not $ok) { exit 1 }; if (Test-Path $h) { Remove-Item $h -Recurse -Force }; Expand-Archive -LiteralPath $z -DestinationPath $h -Force; Remove-Item $z -Force; $bin=(Get-ChildItem $h -Recurse -Filter ffmpeg.exe | Select-Object -First 1).DirectoryName; if (-not $bin) { exit 1 }; $p=[Environment]::GetEnvironmentVariable('Path','User'); if (-not $p) { $p='' }; if ($p -notlike ('*' + $bin + '*')) { [Environment]::SetEnvironmentVariable('Path', ($p.TrimEnd(';') + ';' + $bin).TrimStart(';'), 'User') }; Write-Output ('ffmpeg: ' + $bin)"
           }
+        ],
+        [
+          {
+            "tur": "ps",
+            "komut": "$ErrorActionPreference='Stop'; $t=Join-Path $env:TEMP 'repokurulum-ffmpeg-npm'; $h=Join-Path $env:LOCALAPPDATA 'Programs\\ffmpeg\\bin'; New-Item -ItemType Directory -Force $t,$h | Out-Null; & npm.cmd install --prefix $t --no-audit --no-fund @ffmpeg-installer/win32-x64 @ffprobe-installer/win32-x64; if ($LASTEXITCODE -ne 0) { exit 1 }; Get-ChildItem $t -Recurse -Include ffmpeg.exe,ffprobe.exe | Copy-Item -Destination $h -Force; if (-not (Test-Path (Join-Path $h 'ffmpeg.exe'))) { exit 1 }; Remove-Item $t -Recurse -Force -ErrorAction SilentlyContinue; $p=[Environment]::GetEnvironmentVariable('Path','User'); if (-not $p) { $p='' }; if ($p -notlike ('*' + $h + '*')) { [Environment]::SetEnvironmentVariable('Path', ($p.TrimEnd(';') + ';' + $h).TrimStart(';'), 'User') }; Write-Output ('ffmpeg (npm yedegi, eski surum): ' + $h)"
+          }
         ]
+      ],
+      "gerekir": [
+        "node"
       ]
     },
     {
