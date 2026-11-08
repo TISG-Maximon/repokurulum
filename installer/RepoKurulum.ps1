@@ -37,6 +37,7 @@ if (-not $Yapilandirma) { $Yapilandirma = Join-Path $PSScriptRoot 'bilesenler.js
 
 # ------------------------------------------------------------------ Durum
 $script:LogBox      = $null
+$script:DurumEtiketi = $null
 $script:ListView    = $null
 $script:McpOnbellek = $null
 $script:PluginCikti = $null
@@ -129,9 +130,27 @@ function Invoke-Harici {
     $outTask = $p.StandardOutput.ReadToEndAsync()
     $errTask = $p.StandardError.ReadToEndAsync()
     $sw = [System.Diagnostics.Stopwatch]::StartNew()
+    # Uzun adimlarda "devam ediyor" gostergesi: pencerede donen simge + sure, logda her 20 sn bir satir
+    $isim = $Dosya
+    if ($Argumanlar.Count -gt 0) { $isim = $Dosya + ' ' + (($Argumanlar | Select-Object -First 3) -join ' ') }
+    $sonNabiz = 0
+    $simgeler = '|/-\'
     while (-not $p.HasExited) {
         Invoke-UiPump
         Start-Sleep -Milliseconds 150
+        $sn = [int]$sw.Elapsed.TotalSeconds
+        if ($script:DurumEtiketi) {
+            $simge = $simgeler[[int]($sw.ElapsedMilliseconds / 250) % 4]
+            $script:DurumEtiketi.Text = ('  {0}  Calisiyor ({1:mm\:ss}):  {2}' -f $simge, $sw.Elapsed, $isim)
+        }
+        if (-not $Sessizce -and $sn -ge ($sonNabiz + 20)) {
+            $sonNabiz = $sn
+            if ($sn -ge 300) {
+                Write-Log ("... hala devam ediyor ({0} dk) - buyuk indirme veya yavas internet olabilir; en fazla {1} dk beklenir" -f [int]($sn / 60), [int]($ZamanAsimi / 60))
+            } else {
+                Write-Log ("... devam ediyor ({0} sn) - takilmadi, bekleniyor" -f $sn)
+            }
+        }
         if ($sw.Elapsed.TotalSeconds -gt $ZamanAsimi) {
             Write-Log "Zaman asimi ($ZamanAsimi sn): $Dosya - durduruluyor" 'UYARI'
             Stop-ProcessTree $p.Id
@@ -139,6 +158,7 @@ function Invoke-Harici {
         }
     }
     try { $p.WaitForExit(5000) | Out-Null } catch { }
+    if ($script:DurumEtiketi) { $script:DurumEtiketi.Text = '  Hazir' }
     $cikti = ''
     try { $cikti = $outTask.Result + $errTask.Result } catch { }
     $script:SonCikti = $cikti
@@ -286,10 +306,19 @@ function Invoke-Adim($A) {
                 Write-Log "winget yok (Microsoft Store > 'App Installer'). $($A.id) bu yontemle kurulamadi." 'UYARI'
                 return 1
             }
-            $kod = Invoke-Harici 'winget' @('install', '--id', $A.id, '-e', '--source', 'winget', '--silent',
+            $wargs = @('install', '--id', $A.id, '-e', '--source', 'winget', '--silent',
                 '--accept-package-agreements', '--accept-source-agreements', '--disable-interactivity')
+            $kod = Invoke-Harici 'winget' $wargs
             # -1978335189 = zaten kurulu ; -1978335135 = guncelleme yok
             if ($kod -in @(0, -1978335189, -1978335135)) { return 0 }
+            # Indirme/ag hatasi (HTTP 5xx, baglanti kesildi vb.) -> 10 sn sonra bir kez daha dene
+            $agHatasi = (($kod -band 0xFFFF0000) -eq 0x80190000) -or (($kod -band 0xFFFF0000) -eq 0x80070000 -and $script:SonCikti -match '(?i)download|network|timeout') -or ($script:SonCikti -match '(?i)download fail|network|0x8019|0x80072|timeout|zaman asimi')
+            if ($kod -ne 0 -and $agHatasi) {
+                Write-Log "Indirme hatasi, 10 sn sonra tekrar deneniyor: $($A.id)" 'UYARI'
+                for ($i = 0; $i -lt 66; $i++) { Invoke-UiPump; Start-Sleep -Milliseconds 150 }
+                $kod = Invoke-Harici 'winget' $wargs
+                if ($kod -in @(0, -1978335189, -1978335135)) { return 0 }
+            }
             return $kod
         }
         'ps' {
@@ -573,6 +602,11 @@ $log.ForeColor = [System.Drawing.Color]::Gainsboro
 $progress = New-Object System.Windows.Forms.ProgressBar
 $progress.Dock = 'Bottom'; $progress.Height = 14
 
+$durum = New-Object System.Windows.Forms.Label
+$durum.Dock = 'Bottom'; $durum.Height = 22; $durum.TextAlign = 'MiddleLeft'
+$durum.Font = New-Object System.Drawing.Font('Consolas', 9, [System.Drawing.FontStyle]::Bold)
+$durum.Text = '  Hazir'
+
 $panel = New-Object System.Windows.Forms.FlowLayoutPanel
 $panel.Dock = 'Bottom'; $panel.Height = 84; $panel.Padding = New-Object System.Windows.Forms.Padding(6)
 
@@ -651,10 +685,12 @@ $btnKur.add_Click({
 # Dock sirasi: once Fill, sonra Bottom/Top (WinForms ters sirayla yerlestirir)
 $form.Controls.Add($lv)
 $form.Controls.Add($panel)
+$form.Controls.Add($durum)
 $form.Controls.Add($progress)
 $form.Controls.Add($log)
 $form.Controls.Add($ust)
 $script:LogBox = $log
+$script:DurumEtiketi = $durum
 
 $form.TopMost = $true   # baska pencerelerin arkasinda acilmasin
 $form.add_Shown({

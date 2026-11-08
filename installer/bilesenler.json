@@ -1,5 +1,5 @@
 {
-  "surum": "1.3.0",
+  "surum": "1.3.1",
   "aciklama": "RepoKurulum bilesen listesi. Yeni bir arac eklerken 'kurallar' alanina ne ise yaradigini ve hangi ihtiyacta kacinci sirada denenecegini yaz; uygulamadaki 'Kurallari Kopyala' dugmesi bunlardan CLAUDE.md'ye yapistirilacak metni uretir. Sira onemlidir: bagimliliklar once gelmelidir.",
   "kural_basligi": "Araç seçim kuralları",
   "genel_kurallar": [
@@ -186,12 +186,18 @@
       "kategori": "1. Temel araclar",
       "lisans": "LGPL/GPL",
       "repo": "https://ffmpeg.org",
-      "aciklama": "Video/ses donusturme; video skill'leri icin gerekli",
+      "aciklama": "Video/ses donusturme; video skill'leri icin gerekli (kucuk 'Essentials' surumu, olmazsa tam surum)",
       "varsayilan": false,
       "kontrol": {
         "komut": "ffmpeg"
       },
       "kur": [
+        [
+          {
+            "tur": "winget",
+            "id": "Gyan.FFmpeg.Essentials"
+          }
+        ],
         [
           {
             "tur": "winget",
