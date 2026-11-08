@@ -87,6 +87,14 @@ jobs:
           $cikti = Get-Content tests\statusline-ornek.json -Raw | powershell -NoProfile -ExecutionPolicy Bypass -File installer\claude\repokurulum-statusline.ps1 | Out-String
           Write-Host $cikti
           foreach ($b in 'Opus 5.5','TISG-Maximon/repokurulum','Baglam','42%','5 saat','23%','Haftalik','61%','Oturum') { if ($cikti -notmatch [regex]::Escape($b)) { $hata += "durum satirinda yok: $b" } }
+          # Transkriptli calisma: son arac dogru bulunmali, renk kodlari bozulmamali (degisken cakismasi testi)
+          $ornek = Get-Content tests\statusline-ornek.json -Raw | ConvertFrom-Json
+          $ornek.transcript_path = "$PWD\tests\transkript-ornek.jsonl"
+          $cikti2 = ($ornek | ConvertTo-Json -Depth 10) | powershell -NoProfile -ExecutionPolicy Bypass -File installer\claude\repokurulum-statusline.ps1 | Out-String
+          Write-Host $cikti2
+          if ($cikti2 -notmatch 'son arac: .*playwright > browser_navigate') { $hata += 'son arac bulunamadi' }
+          foreach ($kotu in '@{','api-request','tool_use','"type"') { if ($cikti2 -match [regex]::Escape($kotu)) { $hata += "durum satirinda ham veri sizdi: $kotu" } }
+          if (($cikti2 -split "`n" | Where-Object { $_.Trim() }).Count -ne 2) { $hata += 'durum satiri 2 satir olmali' }
           # 2) Kullanicinin mevcut ayari korunmali
           $md = "$env:USERPROFILE\.claude"; New-Item -ItemType Directory -Force $md | Out-Null
           $ayar = "$md\settings.json"

@@ -10,7 +10,7 @@ $ham = [Console]::In.ReadToEnd()
 try { $j = $ham | ConvertFrom-Json } catch { Write-Output 'Claude'; exit 0 }
 
 $E = [char]27
-$S = "$E[0m"; $G = "$E[90m"; $C = "$E[36m"; $M = "$E[35m"; $K = "$E[1m"
+$RenkSifir = "$E[0m"; $RenkGri = "$E[90m"; $RenkCamgobegi = "$E[36m"; $RenkMor = "$E[35m"; $RenkKalin = "$E[1m"
 
 function Renk([double]$y) {
     if ($y -ge 85) { return "$E[31m" }
@@ -30,15 +30,15 @@ function Kisa([double]$t) {
 function KalanSure($epoch) {
     if (-not $epoch) { return '' }
     $t = [DateTimeOffset]::FromUnixTimeSeconds([long]$epoch).LocalDateTime
-    $k = $t - (Get-Date)
-    if ($k.TotalMinutes -lt 0) { return 'simdi' }
-    if ($k.TotalHours -ge 24) { return $t.ToString('ddd HH:mm', [Globalization.CultureInfo]::GetCultureInfo('tr-TR')) }
-    return ('{0}sa{1:00}dk' -f [int][Math]::Floor($k.TotalHours), $k.Minutes)
+    $fark = $t - (Get-Date)
+    if ($fark.TotalMinutes -lt 0) { return 'simdi' }
+    if ($fark.TotalHours -ge 24) { return $t.ToString('ddd HH:mm', [Globalization.CultureInfo]::GetCultureInfo('tr-TR')) }
+    return ('{0}sa{1:00}dk' -f [int][Math]::Floor($fark.TotalHours), $fark.Minutes)
 }
 function Limit([string]$Ad, $L) {
-    if (-not $L -or $null -eq $L.used_percentage) { return "${G}${Ad}: -${S}" }
+    if (-not $L -or $null -eq $L.used_percentage) { return "${RenkGri}${Ad}: -${RenkSifir}" }
     $y = [double]$L.used_percentage
-    return ('{0}: {1}{2:0}% [{3}]{4} {5}sifirlanma {6}{4}' -f $Ad, (Renk $y), $y, (Cubuk $y), $S, $G, (KalanSure $L.resets_at))
+    return ('{0}: {1}{2:0}% [{3}]{4} {5}sifirlanma {6}{4}' -f $Ad, (Renk $y), $y, (Cubuk $y), $RenkSifir, $RenkGri, (KalanSure $L.resets_at))
 }
 
 # ---- 1. satir --------------------------------------------------------------
@@ -64,33 +64,34 @@ $arac = ''
 if ($j.transcript_path -and (Test-Path -LiteralPath $j.transcript_path)) {
     $satirlar = @(Get-Content -LiteralPath $j.transcript_path -Tail 30 -Encoding UTF8)
     for ($i = $satirlar.Count - 1; $i -ge 0 -and -not $arac; $i--) {
-        $s = $satirlar[$i]
-        if ($s.Length -gt 300000 -or $s -notmatch 'tool_use') { continue }
-        try { $o = $s | ConvertFrom-Json } catch { continue }
-        $icerik = @($o.message.content)
-        for ($k = $icerik.Count - 1; $k -ge 0 -and -not $arac; $k--) {
-            $c = $icerik[$k]
-            if ($c.type -ne 'tool_use') { continue }
-            $ad = [string]$c.name
+        $tSatir = $satirlar[$i]
+        if ($tSatir.Length -gt 300000 -or $tSatir -notmatch 'tool_use') { continue }
+        try { $tKayit = $tSatir | ConvertFrom-Json } catch { continue }
+        if ($tKayit.type -ne 'assistant') { continue }
+        $icerik = @($tKayit.message.content)
+        for ($ki = $icerik.Count - 1; $ki -ge 0 -and -not $arac; $ki--) {
+            $parca = $icerik[$ki]
+            if ($parca.type -ne 'tool_use') { continue }
+            $ad = [string]$parca.name
             if ($ad -like 'mcp__*') {
-                $p = $ad -split '__'
-                $sunucu = $p[1] -replace '^plugin_[^_]+_', ''
-                $arac = "$sunucu > $($p[2])"
-            } elseif ($ad -eq 'Skill') { $arac = "skill > $($c.input.skill)" }
+                $adParca = $ad -split '__'
+                $sunucu = $adParca[1] -replace '^plugin_[^_]+_', ''
+                $arac = "$sunucu > $($adParca[2])"
+            } elseif ($ad -eq 'Skill') { $arac = "skill > $($parca.input.skill)" }
             elseif ($ad -in @('Agent', 'Task')) {
-                $tip = $c.input.subagent_type; if (-not $tip) { $tip = 'genel' }
+                $tip = $parca.input.subagent_type; if (-not $tip) { $tip = 'genel' }
                 $arac = "ajan > $tip"
             } else { $arac = $ad }
         }
     }
 }
 
-$s1 = "${K}${C}$model${S}"
-if ($efor) { $s1 += " ${G}efor:${S}$efor" }
-$s1 += "  ${G}|${S}  ${K}$proje${S}"
-if ($dal) { $s1 += " ${G}($dal)${S}" }
-if ($j.agent.name) { $s1 += "  ${G}|${S}  ${M}ajan: $($j.agent.name)${S}" }
-if ($arac) { $s1 += "  ${G}|${S}  son arac: ${M}$arac${S}" }
+$s1 = "${RenkKalin}${RenkCamgobegi}$model${RenkSifir}"
+if ($efor) { $s1 += " ${RenkGri}efor:${RenkSifir}$efor" }
+$s1 += "  ${RenkGri}|${RenkSifir}  ${RenkKalin}$proje${RenkSifir}"
+if ($dal) { $s1 += " ${RenkGri}($dal)${RenkSifir}" }
+if ($j.agent.name) { $s1 += "  ${RenkGri}|${RenkSifir}  ${RenkMor}ajan: $($j.agent.name)${RenkSifir}" }
+if ($arac) { $s1 += "  ${RenkGri}|${RenkSifir}  son arac: ${RenkMor}$arac${RenkSifir}" }
 
 # ---- 2. satir --------------------------------------------------------------
 $cw = $j.context_window
@@ -99,17 +100,17 @@ if ($null -ne $cw.used_percentage) {
     $boyut = [double]$cw.context_window_size
     if (-not $boyut) { $boyut = 200000 }
     $kul = $boyut * $y / 100
-    $baglam = ('Baglam: {0}{1:0}% [{2}]{3} {4}/{5} {6}kalan {7}{3}' -f (Renk $y), $y, (Cubuk $y), $S, (Kisa $kul), (Kisa $boyut), $G, (Kisa ($boyut - $kul)))
-} else { $baglam = "${G}Baglam: -${S}" }
+    $baglam = ('Baglam: {0}{1:0}% [{2}]{3} {4}/{5} {6}kalan {7}{3}' -f (Renk $y), $y, (Cubuk $y), $RenkSifir, (Kisa $kul), (Kisa $boyut), $RenkGri, (Kisa ($boyut - $kul)))
+} else { $baglam = "${RenkGri}Baglam: -${RenkSifir}" }
 
 $rl = $j.rate_limits
-if ($rl) { $limitler = (Limit '5 saat' $rl.five_hour) + "  ${G}|${S}  " + (Limit 'Haftalik' $rl.seven_day) }
-else { $limitler = "${G}Limit: ilk cevaptan sonra gorunur${S}" }
+if ($rl) { $limitler = (Limit '5 saat' $rl.five_hour) + "  ${RenkGri}|${RenkSifir}  " + (Limit 'Haftalik' $rl.seven_day) }
+else { $limitler = "${RenkGri}Limit: ilk cevaptan sonra gorunur${RenkSifir}" }
 
 $tok = [double]$cw.total_input_tokens + [double]$cw.total_output_tokens
-$oturum = ('{0}Oturum: {1} token' -f $G, (Kisa $tok))
+$oturum = ('{0}Oturum: {1} token' -f $RenkGri, (Kisa $tok))
 if ($null -ne $j.cost.total_cost_usd) { $oturum += (' ~${0:0.00}' -f [double]$j.cost.total_cost_usd) }
-$oturum += $S
+$oturum += $RenkSifir
 
 Write-Output $s1
-Write-Output ("$baglam  ${G}|${S}  $limitler  ${G}|${S}  $oturum")
+Write-Output ("$baglam  ${RenkGri}|${RenkSifir}  $limitler  ${RenkGri}|${RenkSifir}  $oturum")
