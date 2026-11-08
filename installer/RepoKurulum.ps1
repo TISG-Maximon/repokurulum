@@ -441,14 +441,42 @@ function Get-KuralMetni([switch]$Hepsi) {
         if (-not $Hepsi -and -not (Test-Bilesen $b)) { continue }
         foreach ($k in @($b.kurallar)) { $kurallar += $k }
     }
+    $e = $Config.etiketler
+    # Hizli esleme tablosu: her kuralin 'ne_zaman' kosullari -> arac (ihtiyac ve oncelik sirasiyla)
+    $satirlar.Add('## ' + $e.esleme)
+    $satirlar.Add($e.esleme_aciklama)
+    $satirlar.Add('')
+    $satirlar.Add('| ' + $e.kosul + ' | ' + $e.arac + ' |')
+    $satirlar.Add('|---|---|')
+    foreach ($ih in @($Config.ihtiyaclar)) {
+        foreach ($k in @($kurallar | Where-Object { $_.ihtiyac -eq $ih.id } | Sort-Object { [int]$_.oncelik })) {
+            foreach ($nz in @($k.ne_zaman | Where-Object { $_ })) {
+                $satirlar.Add('| ' + ($nz -replace '\|', '/') + ' | **' + $k.arac + '** |')
+            }
+        }
+    }
+    $satirlar.Add('')
+    $satirlar.Add('# ' + $e.detay)
+    $satirlar.Add('')
     foreach ($ih in @($Config.ihtiyaclar)) {
         $liste = @($kurallar | Where-Object { $_.ihtiyac -eq $ih.id } | Sort-Object { [int]$_.oncelik })
         if ($liste.Count -eq 0) { continue }
         $satirlar.Add('## ' + $ih.baslik)
-        $i = 1
-        foreach ($k in $liste) { $satirlar.Add(('{0}. {1}' -f $i, $k.metin)); $i++ }
-        if ($ih.not) { $satirlar.Add('- ' + $ih.not) }
+        if ($ih.tetik) { $satirlar.Add('**' + $e.tetik + ':** ' + $ih.tetik) }
+        if ($liste.Count -gt 1) { $satirlar.Add($e.sira + ' ' + (($liste | ForEach-Object { $_.arac }) -join ' > ')) }
         $satirlar.Add('')
+        $i = 1
+        foreach ($k in $liste) {
+            $satirlar.Add(('### {0}. **{1}**' -f $i, $k.arac))
+            if ($k.metin) { $satirlar.Add('- **' + $e.amac + ':** ' + $k.metin) }
+            if (@($k.ne_zaman | Where-Object { $_ }).Count -gt 0) { $satirlar.Add('- **' + $e.ne_zaman + ':** ' + (@($k.ne_zaman | Where-Object { $_ }) -join '; ')) }
+            if (@($k.ne_zaman_degil | Where-Object { $_ }).Count -gt 0) { $satirlar.Add('- **' + $e.ne_zaman_degil + ':** ' + (@($k.ne_zaman_degil | Where-Object { $_ }) -join '; ')) }
+            if (@($k.nasil | Where-Object { $_ }).Count -gt 0) { $satirlar.Add('- **' + $e.nasil + ':** ' + (@($k.nasil | Where-Object { $_ }) -join '; ')) }
+            if ($k.dogrula) { $satirlar.Add('- **' + $e.dogrula + ':** ' + $k.dogrula) }
+            $satirlar.Add('')
+            $i++
+        }
+        if ($ih.not) { $satirlar.Add('> ' + $e.not + ': ' + $ih.not); $satirlar.Add('') }
     }
     return (($satirlar -join $nl).TrimEnd() + $nl)
 }

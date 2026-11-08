@@ -1,80 +1,109 @@
 {
-  "surum": "1.3.1",
+  "surum": "1.4.0",
   "aciklama": "RepoKurulum bilesen listesi. Yeni bir arac eklerken 'kurallar' alanina ne ise yaradigini ve hangi ihtiyacta kacinci sirada denenecegini yaz; uygulamadaki 'Kurallari Kopyala' dugmesi bunlardan CLAUDE.md'ye yapistirilacak metni uretir. Sira onemlidir: bagimliliklar once gelmelidir.",
   "kural_basligi": "Araç seçim kuralları",
   "genel_kurallar": [
-    "Kullanıcı bir aracı adıyla isterse her zaman onu kullan; aşağıdaki sıra sadece varsayılandır.",
-    "Her ihtiyaç için araçları listedeki SIRAYLA düşün; ilk araç yeterli sonuç verdiyse dur, aynı işi başka araçla tekrarlama.",
-    "Bir araç hata verirse, kota dolduysa veya bağlı değilse listedeki bir sonrakine geç; hiçbiri yoksa Claude Code'un kendi araçlarını (WebSearch, WebFetch, Read, Grep, Glob) kullan.",
-    "Yerel dosyalar için Read/Grep/Glob/Edit; internet, tarayıcı ve dış servisler için MCP araçları.",
-    "Anahtarlı araçlar (exa, tavily, firecrawl, github) kota tüketir: gereksiz tekrar ve çok geniş sorgulardan kaçın.",
-    "Hangi aracı neden seçtiğini uzun uzun anlatma; işi yap, kullandığın kaynağı belirt."
+    "**Karar süreci (her istekte bu sırayla):** (1) İsteğin amacını ve gerektirdiği eylemleri çıkar (örn. \"bu PDF'teki tabloyu al, güncel fiyatlarla karşılaştır\" → belge okuma + web araması). (2) Her eylemi aşağıdaki **Hızlı eşleme** tablosunda bul; koşulu tutan aracı seç. (3) Aracın **Ne zaman değil** satırı tutuyorsa aynı başlıktaki bir sonrakine geç. (4) Eylemleri sırayla uygula, her sonucu **Doğrula** satırına göre kontrol et. (5) Ancak sonra cevap ver.",
+    "**Proaktif ol:** Bir aracın Ne zaman koşulu tutuyorsa kullanıcı adını söylemese de kullan. Kullanıcı bir aracı adıyla isterse her zaman onu kullan.",
+    "**Doğruluk önce gelir:** Güncel bilgi, sürüm, fiyat, tarih, API imzası gibi değişebilen her şeyi araçla doğrula; ezberden yazma. Cevapta kullandığın kaynağı (URL, dosya:satır, doküman) belirt.",
+    "**Verimlilik:** Aynı bilgiyi iki araçla çekme. İlk araç yeterli ve güvenilir sonuç verdiyse dur. Bağımsız çağrıları paralel yap. Büyük çıktıyı tamamen okuma; ara, daralt, gerekeni oku.",
+    "**Yerel mi dış mı:** Yerel dosya/kod için yerleşik Read/Grep/Glob/Edit; internet, tarayıcı, dış servis ve belge dönüştürme için MCP araçları.",
+    "**Hata durumunda:** Araç hata verirse veya bağlı değilse aynı başlıktaki bir sonraki araca geç; listede araç kalmadıysa yerleşik araçları (WebSearch, WebFetch, Read, Grep) kullan. Aynı araçla 2 başarısız denemeden sonra kullanıcıya ne denediğini ve neyin başarısız olduğunu söyle.",
+    "**Anahtarlı/kotalı araçlar** (exa, tavily, firecrawl, github): gereksiz tekrar ve çok geniş sorgulardan kaçın; önce sorguyu daralt."
   ],
+  "etiketler": {
+    "tetik": "Tetikleyici",
+    "ne_zaman": "Ne zaman",
+    "ne_zaman_degil": "Ne zaman değil",
+    "nasil": "Nasıl",
+    "dogrula": "Doğrula",
+    "not": "Not",
+    "sira": "Araçları bu sırayla değerlendir:",
+    "amac": "Amaç",
+    "esleme": "Hızlı eşleme: koşul → araç",
+    "esleme_aciklama": "İstekteki eylemi/koşulu bu tabloda bul, eşleşen aracı kullan; ayrıntı ve sınırlar için aşağıdaki ilgili bölüme bak. Birden fazla satır eşleşirse ihtiyaç başlığındaki sırayı izle.",
+    "kosul": "Koşul / eylem",
+    "arac": "Araç",
+    "detay": "Araç ayrıntıları (ihtiyaca göre)"
+  },
   "ihtiyaclar": [
     {
       "id": "dokuman",
       "baslik": "Kütüphane / framework / API dokümanı",
-      "not": "Kod yazarken bir paketin nasıl kullanıldığından emin değilsen ezberden yazma."
+      "tetik": "Kod bir dış paket, framework, SDK, CLI veya API kullanıyorsa; \"nasıl kullanılır\", \"hangi parametre\", \"son sürümde ne değişti\", hata mesajı bir kütüphaneden geliyorsa.",
+      "not": ""
     },
     {
       "id": "arama",
       "baslik": "Web araması ve güncel bilgi",
+      "tetik": "\"araştır\", \"bul\", \"güncel\", \"son\", \"karşılaştır\", \"en iyi ... hangisi\", haber, fiyat, sürüm, olay; bilgin eğitim tarihinden sonra değişmiş olabilecek her şey.",
       "not": "Bir arama yeterli sonuç verdiyse başka araçla aynı aramayı tekrarlama."
     },
     {
       "id": "sayfa",
       "baslik": "Bilinen bir URL'nin içeriğini okumak",
+      "tetik": "Kullanıcı bir URL verdi veya aramada bulunan bir sayfanın tam içeriği gerekiyor.",
       "not": "Hiçbiri yoksa Claude Code'un kendi WebFetch aracını kullan."
     },
     {
       "id": "tarayici",
-      "baslik": "Tarayıcıda etkileşim (tıklama, form, giriş, ekran görüntüsü)",
-      "not": "Sadece okumak için tarayıcı açma; yukarıdaki arama/sayfa araçları daha hızlı ve ucuzdur."
+      "baslik": "Tarayıcıda etkileşim",
+      "tetik": "Tıklama, form doldurma, giriş yapma, ekran görüntüsü, JavaScript ile sonradan yüklenen içerik, bir web uygulamasını test etme, \"sitede şunu yap\".",
+      "not": "Sadece okumak için tarayıcı açma; arama/sayfa araçları daha hızlı ve ucuzdur."
     },
     {
       "id": "belge",
-      "baslik": "Yerel belge okuma (PDF, Word, Excel, PowerPoint, resim)",
+      "baslik": "Yerel belge okuma",
+      "tetik": "Uzantısı .pdf .docx .doc .xlsx .xls .pptx .ppt .html .epub .jpg .png olan bir dosyayı okumak, özetlemek, içinden veri çıkarmak.",
       "not": "Düz metin, Markdown ve kod dosyaları için dönüştürme gerekmez; doğrudan Read kullan."
     },
     {
       "id": "kaynak",
-      "baslik": "Çok sayıda kaynağı analiz etmek, kaynaklı özet / podcast / slayt",
+      "baslik": "Çok sayıda kaynağı analiz etmek",
+      "tetik": "5+ belge/URL/YouTube videosu birlikte analiz edilecek; kaynaklı (alıntılı) karşılaştırma; bu kaynaklardan podcast, slayt, quiz, zihin haritası, çalışma notu istendi.",
       "not": "Tek bir belge için markitdown yeterli."
     },
     {
       "id": "proje",
       "baslik": "Üzerinde çalıştığın projenin kodunu anlamak",
+      "tetik": "\"bu proje nasıl çalışıyor\", \"X nerede/nasıl kullanılıyor\", \"A ile B nasıl bağlı\", mimari, akış, etki analizi, büyük bir değişiklikten önce keşif.",
       "not": "Tek bir isim/dosya arıyorsan Grep/Glob yeterli."
     },
     {
       "id": "dis-repo",
       "baslik": "Başka bir repoyu incelemek",
+      "tetik": "Kullanıcı bir GitHub URL'si veya başka bir klasör verdi: \"bu repo ne yapıyor\", \"buna bak\", \"işime yarar mı\", \"şu özelliği nasıl yapmışlar\".",
       "not": ""
     },
     {
       "id": "github",
-      "baslik": "GitHub işlemleri (issue, PR, inceleme, Actions)",
-      "not": "Yerel dosyaları okumak/yazmak ve commit için GitHub MCP değil yerel git ve dosya araçlarını kullan."
+      "baslik": "GitHub işlemleri",
+      "tetik": "Issue, pull request, inceleme yorumu, Actions/CI sonucu veya logu, release, GitHub'da kod arama.",
+      "not": "Yerel dosyaları okumak/yazmak ve commit/push için GitHub MCP değil yerel git ve dosya araçlarını kullan."
     },
     {
       "id": "dusunme",
       "baslik": "Karmaşık, çok adımlı problem",
+      "tetik": "Birbirine bağlı çok sayıda karar, birden fazla geçerli çözüm, belirsiz gereksinim, zor hata ayıklama.",
       "not": ""
     },
     {
       "id": "is-akisi",
-      "baslik": "Geliştirme iş akışı",
+      "baslik": "Kod yazma davranışı ve iş akışı",
+      "tetik": "Her kod yazma, düzeltme, refactor isteği.",
       "not": ""
     },
     {
       "id": "uygulama",
       "baslik": "Var olan bir uygulamaya benzer ürün yapmak",
+      "tetik": "\"şu uygulamanın benzerini/klonunu yap\", \"X gibi bir uygulama\", rakip analizi + yeniden yapım.",
       "not": ""
     },
     {
       "id": "video",
       "baslik": "Video ve animasyon üretmek",
-      "not": "Videonun türüne göre TEK araç seç; ikisini aynı videoda karıştırma."
+      "tetik": "\"video\", \"tanıtım\", \"promo\", \"reels/shorts\", \"animasyon\", \"çizgi film\", \"seslendirme\".",
+      "not": "Videonun türüne göre TEK araç seç; aynı videoda araçları karıştırma."
     }
   ],
   "bilesenler": [
@@ -294,7 +323,23 @@
         {
           "ihtiyac": "tarayici",
           "oncelik": 1,
-          "metin": "**playwright**: SADECE sayfayla etkileşim gerektiğinde: tıklama, form doldurma, giriş yapma, ekran görüntüsü, JavaScript ile sonradan yüklenen içerik, bir web uygulamasını test etmek. İş bitince tarayıcıyı kapat."
+          "arac": "playwright",
+          "metin": "Gerçek tarayıcıyla etkileşim ve web uygulaması testi.",
+          "ne_zaman": [
+            "Tıklama, form, giriş, dosya yükleme, ekran görüntüsü gerekiyor",
+            "İçerik yalnızca JavaScript çalışınca görünüyor ve diğer araçlar boş döndü",
+            "Kullanıcının geliştirdiği web uygulamasını test etmek veya görsel kontrol"
+          ],
+          "ne_zaman_degil": [
+            "Sadece metin okumak (arama/sayfa araçları)",
+            "Giriş bilgisi/ödeme gerektiren işlemi kullanıcı onayı olmadan yapmak"
+          ],
+          "nasil": [
+            "Eylem için önce sayfa anlık görüntüsünü (snapshot) al, öğeleri oradan seç; ekran görüntüsünü sadece görsel kontrol için kullan",
+            "Her adımdan sonra sayfanın beklenen duruma geldiğini kontrol et",
+            "İş bitince tarayıcıyı kapat"
+          ],
+          "dogrula": "Son durumun ekran görüntüsünü veya snapshot'ını al ve beklenen sonucu gösterdiğini kontrol et."
         }
       ]
     },
@@ -330,7 +375,22 @@
         {
           "ihtiyac": "dokuman",
           "oncelik": 1,
-          "metin": "**context7**: Bir kütüphane, framework, SDK veya API kullanırken ÖNCE context7 ile güncel dokümanı ve örnekleri al. Sürüm belirtilmişse o sürümün dokümanını iste."
+          "arac": "context7",
+          "metin": "Güncel ve sürüme uygun kütüphane dokümanı ve kod örnekleri.",
+          "ne_zaman": [
+            "Bir dış paketin API'sini kullanan kod yazacak/düzeltecek isen (kullanıcı istemese de)",
+            "Hata bir kütüphaneden geliyorsa",
+            "Kullanıcı belirli bir sürüm söylediyse"
+          ],
+          "ne_zaman_degil": [
+            "Dil çekirdeği/standart kütüphane için emin olduğun temel şeyler",
+            "Projenin kendi kodu (onun için proje başlığı)"
+          ],
+          "nasil": [
+            "Önce kütüphane kimliğini çözümle, sonra konuya özel (topic) doküman iste; tüm dokümanı çekme",
+            "Projedeki sürümü package.json/requirements/lock dosyasından oku ve o sürümü iste"
+          ],
+          "dogrula": "Yazdığın çağrı imzası dokümandaki örnekle birebir uyuşmalı; mümkünse kodu çalıştır/test et."
         }
       ]
     },
@@ -368,12 +428,35 @@
         {
           "ihtiyac": "arama",
           "oncelik": 3,
-          "metin": "**duckduckgo**: Ücretsiz ve anahtarsız genel arama. Bu başlıkta üstünde başka bir arama aracı varsa onun yedeğidir (kota bittiğinde, hata verdiğinde veya basit/hızlı bir arama yeterliyse)."
+          "arac": "duckduckgo",
+          "metin": "Ücretsiz, anahtarsız genel arama; listede üstte başka arama aracı varsa onun yedeği.",
+          "ne_zaman": [
+            "Hızlı tek gerçek kontrolü, resmi site/doküman sayfası bulma",
+            "Üstteki arama araçları yoksa, hata verdiyse veya kotası bittiyse"
+          ],
+          "ne_zaman_degil": [
+            "Kaynaklı derin araştırma istendiyse ve tavily kuruluysa"
+          ],
+          "nasil": [
+            "Kısa anahtar kelimelerle ara; gerekirse içerik çekme ile sayfayı oku"
+          ],
+          "dogrula": "Bulunan bilginin kaynağının resmi/güvenilir olduğunu kontrol et."
         },
         {
           "ihtiyac": "sayfa",
           "oncelik": 2,
-          "metin": "**duckduckgo** (içerik çekme): Tek bir sayfanın metnini hızlıca okumak için."
+          "arac": "duckduckgo (içerik çekme)",
+          "metin": "Tek bir sayfanın metnini hızlıca okumak.",
+          "ne_zaman": [
+            "Tek bir URL'nin metni yeterli"
+          ],
+          "ne_zaman_degil": [
+            "Sayfa giriş/tıklama gerektiriyorsa (playwright)"
+          ],
+          "nasil": [
+            "URL'yi doğrudan ver"
+          ],
+          "dogrula": "İçerik boş veya kısa geldiyse WebFetch ya da playwright ile tekrar dene."
         }
       ]
     },
@@ -409,7 +492,19 @@
         {
           "ihtiyac": "dusunme",
           "oncelik": 1,
-          "metin": "**sequential-thinking**: Yalnızca çok adımlı ve belirsiz problemlerde (mimari karar, zor hata ayıklama, birbirine bağlı çok değişiklik) adım adım plan kurmak için. Basit işlerde kullanma."
+          "arac": "sequential-thinking",
+          "metin": "Adım adım, revize edilebilir plan kurma.",
+          "ne_zaman": [
+            "Birbirine bağlı 3+ karar veya birden fazla geçerli çözüm var",
+            "Zor, sebebi belirsiz hata"
+          ],
+          "ne_zaman_degil": [
+            "Basit, tek adımlı işler"
+          ],
+          "nasil": [
+            "Planı adımlara böl, her adımın doğrulama ölçütünü yaz"
+          ],
+          "dogrula": "Plan bittiğinde her adımın ölçütünün karşılandığını kontrol et."
         }
       ]
     },
@@ -454,7 +549,19 @@
         {
           "ihtiyac": "arama",
           "oncelik": 2,
-          "metin": "**tavily**: Kaynak gösterilmesi gereken DERİN araştırmada veya bir siteyi baştan sona taramak (crawl/map) gerektiğinde."
+          "arac": "tavily",
+          "metin": "Derin araştırma, kaynaklı rapor, bir siteyi baştan sona tarama (crawl/map).",
+          "ne_zaman": [
+            "Kullanıcı \"derin araştır\", \"rapor\", \"tüm kaynaklarıyla\" dedi",
+            "Bir sitenin birçok sayfasını tarayıp toplamak gerekiyor"
+          ],
+          "ne_zaman_degil": [
+            "Tek bir hızlı arama yeterliyse"
+          ],
+          "nasil": [
+            "Önce kapsamı (alan adı, tarih aralığı, derinlik) belirle; geniş crawl'dan kaçın"
+          ],
+          "dogrula": "Rapordaki her önemli iddiaya kaynak URL ekle."
         }
       ]
     },
@@ -499,7 +606,20 @@
         {
           "ihtiyac": "arama",
           "oncelik": 1,
-          "metin": "**exa**: Varsayılan arama aracı. Kaynak, makale, şirket, kod örneği bulma ve \"buna benzer\" aramalar."
+          "arac": "exa",
+          "metin": "Varsayılan arama: kaynak, makale, şirket, kod örneği, \"buna benzer\" araması.",
+          "ne_zaman": [
+            "Genel araştırma ve kaynak bulma",
+            "Anlam bazlı arama (\"şuna benzer projeler\", \"X'i anlatan makaleler\")"
+          ],
+          "ne_zaman_degil": [
+            "Kota bittiyse veya basit tek bir gerçek kontrolü yeterliyse (duckduckgo)"
+          ],
+          "nasil": [
+            "Sorguyu tam bir cümle olarak yaz; tarih/dil/alan gerekiyorsa belirt",
+            "İlk 3–5 sonucu değerlendir, gerekirse 1 tanesinin tam içeriğini oku"
+          ],
+          "dogrula": "Önemli iddiaları en az 2 bağımsız kaynakla teyit et; tarihleri kontrol et."
         }
       ]
     },
@@ -544,7 +664,20 @@
         {
           "ihtiyac": "sayfa",
           "oncelik": 1,
-          "metin": "**firecrawl**: Bir veya birden çok sayfayı temiz Markdown olarak çekmek, toplu scrape, sayfadan yapılandırılmış veri çıkarmak."
+          "arac": "firecrawl",
+          "metin": "Sayfayı/sayfaları temiz Markdown olarak çekme, toplu scrape, yapılandırılmış veri çıkarma.",
+          "ne_zaman": [
+            "Birden çok sayfa toplanacak",
+            "Sayfadan tablo/liste gibi yapılandırılmış veri çıkarılacak",
+            "JavaScript ile yüklenen ama etkileşim gerektirmeyen sayfa"
+          ],
+          "ne_zaman_degil": [
+            "Tek bir basit sayfa (duckduckgo içerik çekme yeterli)"
+          ],
+          "nasil": [
+            "Sadece gereken sayfaları/alanları iste"
+          ],
+          "dogrula": "Çekilen veride boş/eksik alan var mı kontrol et."
         }
       ]
     },
@@ -582,7 +715,20 @@
         {
           "ihtiyac": "belge",
           "oncelik": 1,
-          "metin": "**markitdown**: PDF, Word, Excel, PowerPoint, HTML ve resim dosyalarını önce Markdown'a çevir, sonra oku. Büyük belgede önce içindekiler/başlıkları çıkar, gerekeni oku."
+          "arac": "markitdown",
+          "metin": "PDF, Office, HTML, resim dosyalarını Markdown'a çevirip okumak.",
+          "ne_zaman": [
+            "Desteklenen uzantılı bir dosya okunacak/özetlenecek/içinden veri çıkarılacak"
+          ],
+          "ne_zaman_degil": [
+            "Düz metin, Markdown, kod dosyaları",
+            "5+ belge birlikte analiz edilecekse ve notebooklm kuruluysa"
+          ],
+          "nasil": [
+            "Dosya yolunu tam yol / file:/// URI olarak ver",
+            "Büyük belgede önce başlıkları çıkar, sonra gereken bölümleri oku"
+          ],
+          "dogrula": "Tablo ve sayıları orijinal belgeyle karşılaştır; dönüştürmede bozulma varsa belirt."
         }
       ]
     },
@@ -637,7 +783,22 @@
         {
           "ihtiyac": "proje",
           "oncelik": 1,
-          "metin": "**graphify**: Projede `graphify-out/graph.json` varsa geniş Grep/Glob aramalarından ÖNCE `graphify query \"<soru>\"`, `graphify path A B` veya `graphify explain \"X\"` kullan. Grafik yoksa ve proje büyükse kullanıcıya `/graphify .` öner; kendiliğinden çalıştırma (zaman ve token harcar)."
+          "arac": "graphify",
+          "metin": "Projenin bilgi grafiği üzerinden kod/mimari sorgulama.",
+          "ne_zaman": [
+            "`graphify-out/graph.json` varsa: mimari, bağlantı, etki analizi soruları ve büyük değişiklik öncesi keşif (Grep/Glob'dan ÖNCE)",
+            "Proje büyük (yüzlerce dosya) ve grafik yoksa: kullanıcıya bir kez `/graphify .` öner"
+          ],
+          "ne_zaman_degil": [
+            "Tek bir isim/dosya arıyorsan (Grep/Glob)",
+            "Grafik yoksa kendiliğinden oluşturma (zaman ve token harcar)"
+          ],
+          "nasil": [
+            "`graphify query \"<soru>\"` (genel), `graphify path A B` (iki şey nasıl bağlı), `graphify explain \"X\"` (bir kavram)",
+            "Grafikten gelen dosya:satır bilgisiyle sadece ilgili dosyaları oku",
+            "Önemli kod değişikliklerinden sonra `/graphify . --update` öner"
+          ],
+          "dogrula": "Grafiğin gösterdiği bağlantıyı ilgili dosyayı okuyarak teyit et (grafik eski olabilir)."
         }
       ]
     },
@@ -674,7 +835,21 @@
         {
           "ihtiyac": "dis-repo",
           "oncelik": 1,
-          "metin": "**repomix**: Başka bir repoyu (GitHub URL veya yerel klasör) baştan anlamak için paketle. Büyük repolarda include/ignore desenleriyle daralt; çıktının tamamını okumaya çalışma, önce yapıyı ve ana dosyaları incele."
+          "arac": "repomix",
+          "metin": "Başka bir repoyu tek bir yapay zeka dostu dosyaya paketleyip incelemek.",
+          "ne_zaman": [
+            "Bir repo baştan anlaşılacak, değerlendirilecek veya özelliği incelenecek"
+          ],
+          "ne_zaman_degil": [
+            "Sadece tek dosya/issue/PR gerekiyorsa (github)",
+            "Kendi projen (graphify / Grep)"
+          ],
+          "nasil": [
+            "Büyük repolarda include/ignore desenleriyle daralt (örn. sadece src, docs)",
+            "Paketin tamamını okuma; içinde ara ve sadece gereken bölümleri oku",
+            "Önce README + dizin yapısı + giriş noktası"
+          ],
+          "dogrula": "Lisansı ve son güncelleme tarihini kontrol et; iddiaları koddan teyit et."
         }
       ]
     },
@@ -714,12 +889,35 @@
         {
           "ihtiyac": "dis-repo",
           "oncelik": 2,
-          "metin": "**github**: Başka bir repoda yalnızca tek bir dosyaya, issue'ya veya PR'a bakmak yeterliyse (tüm repoyu paketlemeye gerek yoksa)."
+          "arac": "github",
+          "metin": "Başka bir repoda tek dosya, issue veya PR'a bakmak.",
+          "ne_zaman": [
+            "Sadece belirli bir dosya, issue, PR, release gerekiyor"
+          ],
+          "ne_zaman_degil": [
+            "Repo baştan anlaşılacaksa (repomix)"
+          ],
+          "nasil": [
+            "Doğrudan ilgili dosyayı/issue'yu iste"
+          ],
+          "dogrula": "Doğru dalı/sürümü okuduğunu kontrol et."
         },
         {
           "ihtiyac": "github",
           "oncelik": 1,
-          "metin": "**github**: Issue/PR okuma-oluşturma, yorum, kod inceleme, Actions/CI sonuçları ve logları, GitHub'da kod arama."
+          "arac": "github",
+          "metin": "Issue/PR okuma-oluşturma, yorum, inceleme, Actions/CI sonucu ve logları, kod arama.",
+          "ne_zaman": [
+            "İstek GitHub'daki bir nesneyle ilgili (issue, PR, CI, release)"
+          ],
+          "ne_zaman_degil": [
+            "Yerel dosya okuma/yazma, commit, push (yerel git)",
+            "Kullanıcı istemeden issue/PR/yorum oluşturmak"
+          ],
+          "nasil": [
+            "CI hatasında önce başarısız işin logunun son kısmını oku"
+          ],
+          "dogrula": "Oluşturduğun/değiştirdiğin nesnenin bağlantısını kullanıcıya ver."
         }
       ]
     },
@@ -766,7 +964,18 @@
         {
           "ihtiyac": "is-akisi",
           "oncelik": 2,
-          "metin": "**superpowers** skill'leri: Büyük işlerde (yeni özellik, çok dosyalı değişiklik, zor hata) süreci izle: beyin fırtınası → plan yazma → test önce → sistematik hata ayıklama → kod inceleme. Tek satırlık küçük değişikliklerde süreci uzatma."
+          "arac": "superpowers",
+          "metin": "Büyük işler için süreç skill'leri.",
+          "ne_zaman": [
+            "Yeni özellik, çok dosyalı değişiklik, zor hata"
+          ],
+          "ne_zaman_degil": [
+            "Tek satırlık/küçük değişiklikler"
+          ],
+          "nasil": [
+            "Beyin fırtınası → plan yazma → test önce → sistematik hata ayıklama → kod inceleme"
+          ],
+          "dogrula": "Planın her maddesi tamamlandı ve testler geçiyor."
         }
       ]
     },
@@ -813,7 +1022,19 @@
         {
           "ihtiyac": "is-akisi",
           "oncelik": 1,
-          "metin": "**karpathy ilkeleri**: Her kod değişikliğinde uygula: belirsizlikte varsayma, sor; istenenden fazlasını yazma, en basit çözüm; yalnızca işin gerektirdiği satırlara dokun; başarı ölçütünü (tercihen bir test) önce tanımla, doğrulayana kadar devam et."
+          "arac": "karpathy ilkeleri",
+          "metin": "Her kod değişikliğinde uygulanacak 4 ilke.",
+          "ne_zaman": [
+            "Her kod yazma, düzeltme, refactor"
+          ],
+          "ne_zaman_degil": [],
+          "nasil": [
+            "Belirsizlikte varsayma, sor veya seçenekleri göster",
+            "İstenenden fazlasını yazma; en basit çözüm",
+            "Sadece işin gerektirdiği satırlara dokun; ilgisiz kodu değiştirme",
+            "Başarı ölçütünü (tercihen bir test) önce tanımla, sağlanana kadar devam et"
+          ],
+          "dogrula": "Değişen her satır isteğe bağlanabilmeli; test/çalıştırma ile sonucu göster."
         }
       ]
     },
@@ -860,7 +1081,20 @@
         {
           "ihtiyac": "uygulama",
           "oncelik": 1,
-          "metin": "**replica-skill**: Var olan bir uygulamaya benzer bir ürün yapılacaksa skill'leri SIRAYLA kullan: recon → architect → design → build → backend → test → diff → entrepreneur → brand → launch → deploy. Her adım `replica/` klasöründeki bir öncekinin çıktısını okur. Orijinalin kodunu, logosunu, metnini ve içeriğini kopyalama; sadece işlevi yeniden kur."
+          "arac": "replica-skill",
+          "metin": "Var olan bir uygulamanın işlevini sıfırdan yeniden kurmak.",
+          "ne_zaman": [
+            "\"X'in benzerini/klonunu yap\", rakip uygulama incelemesi + yeniden yapım"
+          ],
+          "ne_zaman_degil": [
+            "Orijinalin kodunu, logosunu, metnini, içeriğini kopyalamak (yasak)",
+            "Sıfırdan özgün uygulama (normal geliştirme)"
+          ],
+          "nasil": [
+            "Skill'leri SIRAYLA: recon → architect → design → build → backend → test → diff → entrepreneur → brand → launch → deploy",
+            "Her adım `replica/` klasöründeki önceki çıktıyı okur; adım atlama"
+          ],
+          "dogrula": "`diff` adımındaki benzerlik puanı ve eksikler listesiyle ilerlemeyi ölç."
         }
       ]
     },
@@ -902,7 +1136,22 @@
         {
           "ihtiyac": "kaynak",
           "oncelik": 1,
-          "metin": "**notebooklm**: Çok sayıda belge/URL/YouTube kaynağını analiz etmek, kaynaklı (alıntılı) cevap almak ya da bu kaynaklardan podcast, slayt, quiz, zihin haritası, rapor üretmek gerektiğinde. Ağır okumayı NotebookLM'e yaptır, sen sadece sonucu düzenle. Kullanıcı istemedikçe yeni notebook oluşturma ve paylaşım ayarı değiştirme."
+          "arac": "notebooklm",
+          "metin": "Çok kaynaklı analizi Google NotebookLM'e yaptırmak; podcast/slayt/quiz üretmek.",
+          "ne_zaman": [
+            "5+ belge/URL/video birlikte analiz edilecek",
+            "Kaynaklı (alıntılı) cevap gerekiyor",
+            "Podcast, video özet, slayt, quiz, flashcard, zihin haritası istendi"
+          ],
+          "ne_zaman_degil": [
+            "Tek belge (markitdown)",
+            "Gizli/kişisel veri içeren belgeler (Google'a yüklenir) - önce kullanıcıya sor"
+          ],
+          "nasil": [
+            "Konuya özel bir notebook oluştur, kaynakları ekle, sorularını sor; ağır okumayı NotebookLM yapsın",
+            "Üretilen dosyaları indirip yerel klasöre kaydet"
+          ],
+          "dogrula": "Cevaplardaki alıntıların kaynakta gerçekten olduğunu kontrol et."
         }
       ]
     },
@@ -946,7 +1195,20 @@
         {
           "ihtiyac": "video",
           "oncelik": 1,
-          "metin": "**video-shotcraft**: Bir ürün/uygulama/site için tanıtım veya promo videosu (ekran görüntülerinden, hareketli grafik, müzikle senkron). Kod ile çizilir, gerçek ekranları kullanır."
+          "arac": "video-shotcraft",
+          "metin": "Ürün/uygulama/site tanıtım ve promo videosu (hareketli grafik, müzik senkronu).",
+          "ne_zaman": [
+            "Bir ürünün, uygulamanın veya sitenin tanıtım/promo/özellik videosu",
+            "Gerçek ekran görüntülerinden hareketli video"
+          ],
+          "ne_zaman_degil": [
+            "Karakter animasyonu/çizgi film (ClaudeAnimationBase)",
+            "Gerçek kamera görüntüsü düzenleme"
+          ],
+          "nasil": [
+            "Önce ekranları yakala ve storyboard'u kullanıcıya göster, onaydan sonra render et"
+          ],
+          "dogrula": "Render edilen karelerden örnekler al ve kontrol et (metin taşması, boş kare, senkron)."
         }
       ]
     },
@@ -1001,7 +1263,19 @@
         {
           "ihtiyac": "video",
           "oncelik": 2,
-          "metin": "**claude-code-video-toolkit**: Seslendirmeli, müzikli, AI görsel/klip içeren videolar (açıklayıcı, sprint özeti, reklam, kısa dikey video). Kendi klasöründe (`ClaudeProjeler\\claude-code-video-toolkit`) çalışır; başka klasördeysen kullanıcıya orada açmasını söyle."
+          "arac": "claude-code-video-toolkit",
+          "metin": "Seslendirmeli, müzikli, AI görsel/klip içeren videolar.",
+          "ne_zaman": [
+            "Seslendirme/anlatım, müzik veya AI görsel gereken açıklayıcı video, kısa dikey video, reklam"
+          ],
+          "ne_zaman_degil": [
+            "Bulut GPU hesabı kurulmadıysa AI ses/görsel adımları (önce /setup)"
+          ],
+          "nasil": [
+            "Kendi klasöründe (`ClaudeProjeler\\claude-code-video-toolkit`) çalışır; başka klasördeysen kullanıcıya orada açmasını söyle",
+            "`/video` ile şablondan başla"
+          ],
+          "dogrula": "Sahne sahne inceleme (`/scene-review`) yap."
         }
       ]
     },
@@ -1056,7 +1330,19 @@
         {
           "ihtiyac": "video",
           "oncelik": 3,
-          "metin": "**ClaudeAnimationBase**: El çizimi/suluboya tarzı karakter animasyonu ve kısa çizgi film. Kendi klasöründe (`ClaudeProjeler\\ClaudeAnimationBase`) çalışır; önce ANIMATION_GUIDE.md okunur."
+          "arac": "ClaudeAnimationBase",
+          "metin": "El çizimi/suluboya tarzı karakter animasyonu ve kısa çizgi film.",
+          "ne_zaman": [
+            "Karakterli animasyon, çizgi film, hikâye anlatan kısa animasyon"
+          ],
+          "ne_zaman_degil": [
+            "Ürün tanıtımı (video-shotcraft)"
+          ],
+          "nasil": [
+            "Kendi klasöründe (`ClaudeProjeler\\ClaudeAnimationBase`) çalışır; önce ANIMATION_GUIDE.md okunur",
+            "GPU yoksa suluboya dolgularını azalt (render yavaş)"
+          ],
+          "dogrula": "Kontak sayfası (contact sheet) render edip kareleri kontrol et."
         }
       ]
     }
