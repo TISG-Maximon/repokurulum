@@ -772,6 +772,13 @@ function Invoke-Guncelleme($B) {
         'winget' {
             $kod = Invoke-Harici 'winget' @('upgrade', '--id', $g.id, '-e', '--silent', '--accept-package-agreements', '--accept-source-agreements', '--disable-interactivity')
             if ($kod -in @(-1978335189, -1978335135)) { $kod = 0 }
+            if ($kod -ne 0) {
+                # Sistem araci guncellemesi istege bagli: hata sayma, nedenini ve cozumunu yaz
+                $son = (([string]$script:SonCikti -split "`n") | Where-Object { $_.Trim() } | Select-Object -Last 3) -join ' / '
+                Write-Log ("{0} guncellenemedi (winget cikis kodu 0x{1:X8}): {2}" -f $B.ad, $kod, $son) 'UYARI'
+                Write-Log ("Cozum: Claude Code ve Git Bash/terminal pencerelerini kapat, YONETICI PowerShell'de calistir:  winget upgrade --id {0} -e" -f $g.id) 'UYARI'
+                return 'Atlandi'
+            }
         }
     }
     Update-EnvPath; Reset-Onbellek
@@ -921,7 +928,10 @@ function Update-TumDurumlar {
             if ($script:Guncellemeler.ContainsKey($b.id)) { $d = 'Guncelleme var' }
         } elseif ($script:YeniBilesenler.ContainsKey($b.id)) { $d = 'Yeni' }
         Set-Durum $b.id $d
-        if ($d -eq 'Guncelleme var') { foreach ($it in $script:ListView.Items) { if ($it.Tag -eq $b.id) { $it.Checked = $true } } }
+        # Uygulama/skill guncellemeleri otomatik isaretlenir; sistem araclari (winget) istege bagli
+        if ($d -eq 'Guncelleme var' -and -not ($b.guncelleme.tur -eq 'winget' -and $script:Guncellemeler[$b.id] -eq 'winget guncellemesi')) {
+            foreach ($it in $script:ListView.Items) { if ($it.Tag -eq $b.id) { $it.Checked = $true } }
+        }
     }
     Update-UstGrup
 }
@@ -937,7 +947,7 @@ function Update-UstGrup {
         if ($ustte) { $it.Group = $script:GrupUst } else { $it.Group = $script:AsilGrup[$id] }
     }
     $parcalar = @()
-    if ($gun.Count -gt 0) { $parcalar += ('GUNCELLEME VAR ({0}): {1}  -> isaretlendi, Secilenleri Kur ile guncelle' -f $gun.Count, ($gun -join ', ')) }
+    if ($gun.Count -gt 0) { $parcalar += ('GUNCELLEME VAR ({0}): {1}  -> isaretliler Secilenleri Kur ile guncellenir (sistem araclari istege bagli)' -f $gun.Count, ($gun -join ', ')) }
     if ($yen.Count -gt 0) { $parcalar += ('YENI BILESEN ({0}): {1}' -f $yen.Count, ($yen -join ', ')) }
     if ($parcalar.Count -gt 0) { $script:Bant.Text = '  ' + ($parcalar -join '     |     '); $script:Bant.Visible = $true }
     else { $script:Bant.Visible = $false }
