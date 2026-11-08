@@ -170,6 +170,8 @@ jobs:
       - name: Limit dolunca bekle ve devam et (hook ve zaman hesabi)
         shell: powershell
         run: |
+          # Uyandirma mesaji tasarim geregi stderr'e yazilir; Actions'in 'Stop' ayari bunu olumcul sayar
+          $ErrorActionPreference = 'Continue'
           $hata = @()
           .\installer\RepoKurulum.ps1 -Sessiz -Bilesenler "limit-devam"
           if ($LASTEXITCODE -ne 0) { $hata += "kurulum cikis kodu $LASTEXITCODE" }
