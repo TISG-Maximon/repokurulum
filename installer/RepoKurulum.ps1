@@ -316,6 +316,11 @@ function Test-Bilesen($B) {
     if ($k.mcp) { return (@(Get-McpListesi) -contains $k.mcp) }
     if ($k.plugin) { return (Test-Plugin $k.plugin) }
     if ($k.ortam) { return [bool][Environment]::GetEnvironmentVariable($k.ortam, 'User') }
+    if ($k.hook) {
+        try { $liste = Get-AyarDegeri (Read-Ayarlar) ('hooks.' + $k.hook.olay) } catch { return $false }
+        foreach ($g in @($liste)) { foreach ($h in @($g.hooks)) { if ([string]$h.command -like ('*' + $k.hook.icerir + '*')) { return $true } } }
+        return $false
+    }
     if ($k.ayar) {
         try { $v = Get-AyarDegeri (Read-Ayarlar) $k.ayar.anahtar } catch { return $false }
         if ($null -eq $v) { return $false }
@@ -430,6 +435,47 @@ function Invoke-Adim($A) {
             else { $ayar | Add-Member -NotePropertyName $A.anahtar -NotePropertyValue $deger }
             [IO.File]::WriteAllText($yol, ($ayar | ConvertTo-Json -Depth 32), (New-Object System.Text.UTF8Encoding($false)))
             Write-Log "settings.json: '$($A.anahtar)' ayarlandi"
+            return 0
+        }
+        'hook-ekle' {
+            # settings.json hooks.<olay> listesine komut ekler; ayni isaretli komut varsa gunceller, digerlerine dokunmaz
+            try { $ayar = Read-Ayarlar } catch { Write-Log ("settings.json okunamadi, DEGISTIRILMEDI: " + (Get-AyarYolu)) 'HATA'; return 1 }
+            $komut = ConvertTo-GenisDeger $A.komut ([bool]$A.egik_cizgi)
+            if (-not $ayar.PSObject.Properties['hooks']) { $ayar | Add-Member -NotePropertyName hooks -NotePropertyValue (New-Object PSObject) }
+            $grup = @()
+            if ($ayar.hooks.PSObject.Properties[$A.olay]) { $grup = @($ayar.hooks.($A.olay)) }
+            $yeni = @()
+            foreach ($g in $grup) {
+                $kalan = @(@($g.hooks) | Where-Object { [string]$_.command -notlike ('*' + $A.isaret + '*') })
+                if ($kalan.Count -gt 0) { $g.hooks = $kalan; $yeni += $g }
+            }
+            $h = [pscustomobject]@{ type = 'command'; command = $komut; timeout = 30 }
+            $yeni += [pscustomobject]@{ hooks = @($h) }
+            if ($ayar.hooks.PSObject.Properties[$A.olay]) { $ayar.hooks.($A.olay) = $yeni }
+            else { $ayar.hooks | Add-Member -NotePropertyName $A.olay -NotePropertyValue $yeni }
+            $yol = Get-AyarYolu
+            New-Item -ItemType Directory -Force -Path (Split-Path $yol) | Out-Null
+            $yedek = $yol + '.repokurulum.bak'
+            if ((Test-Path -LiteralPath $yol) -and -not (Test-Path -LiteralPath $yedek)) { Copy-Item -LiteralPath $yol -Destination $yedek }
+            [IO.File]::WriteAllText($yol, ($ayar | ConvertTo-Json -Depth 32), (New-Object System.Text.UTF8Encoding($false)))
+            Write-Log "settings.json: '$($A.olay)' hook'u eklendi"
+            return 0
+        }
+        'izin-ekle' {
+            # settings.json permissions.allow listesine kural ekler (yoksa); digerlerine dokunmaz
+            try { $ayar = Read-Ayarlar } catch { Write-Log ("settings.json okunamadi, DEGISTIRILMEDI: " + (Get-AyarYolu)) 'HATA'; return 1 }
+            if (-not $ayar.PSObject.Properties['permissions']) { $ayar | Add-Member -NotePropertyName permissions -NotePropertyValue (New-Object PSObject) }
+            $liste = @()
+            if ($ayar.permissions.PSObject.Properties['allow']) { $liste = @($ayar.permissions.allow) }
+            foreach ($kural in @($A.kurallar)) { if ($liste -notcontains $kural) { $liste += $kural } }
+            if ($ayar.permissions.PSObject.Properties['allow']) { $ayar.permissions.allow = $liste }
+            else { $ayar.permissions | Add-Member -NotePropertyName allow -NotePropertyValue $liste }
+            $yol = Get-AyarYolu
+            New-Item -ItemType Directory -Force -Path (Split-Path $yol) | Out-Null
+            $yedek = $yol + '.repokurulum.bak'
+            if ((Test-Path -LiteralPath $yol) -and -not (Test-Path -LiteralPath $yedek)) { Copy-Item -LiteralPath $yol -Destination $yedek }
+            [IO.File]::WriteAllText($yol, ($ayar | ConvertTo-Json -Depth 32), (New-Object System.Text.UTF8Encoding($false)))
+            Write-Log ("settings.json izin eklendi: " + (@($A.kurallar) -join ', '))
             return 0
         }
         'dosya-kopyala' {

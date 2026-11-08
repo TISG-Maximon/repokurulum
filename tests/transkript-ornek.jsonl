@@ -1,0 +1,5 @@
+{"type":"user","message":{"role":"user","content":"README dosyasını güncelle, api_key=abcd1234GIZLIDEGER kullan"},"sessionId":"test-oturum-1"}
+{"type":"assistant","message":{"role":"assistant","content":[{"type":"tool_use","id":"t1","name":"Read","input":{"file_path":"C:/proje/README.md"}}]}}
+{"type":"user","message":{"role":"user","content":[{"type":"tool_result","tool_use_id":"t1","content":"eski icerik"}]}}
+{"type":"assistant","message":{"role":"assistant","content":[{"type":"tool_use","id":"t2","name":"Edit","input":{"file_path":"C:/proje/README.md","old_string":"a","new_string":"b"}},{"type":"tool_use","id":"t3","name":"mcp__playwright__browser_navigate","input":{"url":"https://example.com"}}]}}
+{"type":"assistant","message":{"role":"assistant","content":[{"type":"text","text":"README güncellendi. ghp_ABCDEFGHIJKLMNOPQRSTUVWXYZ123456 token'ı kullanılmadı."}]}}

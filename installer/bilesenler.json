@@ -1,5 +1,5 @@
 {
-  "surum": "1.5.0",
+  "surum": "1.6.0",
   "aciklama": "RepoKurulum bilesen listesi. Yeni bir arac eklerken 'kurallar' alanina ne ise yaradigini ve hangi ihtiyacta kacinci sirada denenecegini yaz; uygulamadaki 'Kurallari Kopyala' dugmesi bunlardan CLAUDE.md'ye yapistirilacak metni uretir. Sira onemlidir: bagimliliklar once gelmelidir.",
   "kural_basligi": "Araç seçim kuralları",
   "genel_kurallar": [
@@ -32,6 +32,12 @@
       "baslik": "Model ve alt ajan seçimi",
       "tetik": "Her istek. Önce işi parçalara ayır; her parça için aşağıdaki sırayla karar ver.",
       "not": "Alt ajan bağlamı sıfırdan kurar (ek token). Görev + bağlam aktarımı + sonucu doğrulama toplamı işi doğrudan yapmaktan fazlaysa alt ajan KULLANMA."
+    },
+    {
+      "id": "hafiza",
+      "baslik": "Geçmiş çalışmalar ve proje hafızası (NotebookLM)",
+      "tetik": "Önceki işlere, kararlara, konuşmalara atıf; bir projeye geri dönüş; daha önce çözülmüş olabilecek sorun.",
+      "not": "Oturum özetleri her oturum kapanışında otomatik eklenir (SessionEnd/PreCompact hook). Claude oturum özetini elle göndermez."
     },
     {
       "id": "dokuman",
@@ -1522,6 +1528,114 @@
             "Başarı ölçütlerini madde madde ver"
           ],
           "dogrula": "KALDI veya DOĞRULANAMADI dönen her maddeyi düzelt ya da kullanıcıya bildir."
+        }
+      ]
+    },
+    {
+      "id": "notebooklm-hafiza",
+      "ad": "NotebookLM hafiza (otomatik oturum kaydi)",
+      "kategori": "6. Claude ayarlari",
+      "lisans": "-",
+      "repo": "",
+      "aciklama": "Her Claude oturumunun ozetini (istekler, sonuc, dosyalar, araclar) NotebookLM 'Claude Hafiza' notebook'una otomatik ekler; Claude gecmise bakmak icin sormadan sorgular. Sirlar maskelenir",
+      "varsayilan": false,
+      "gerekir": [
+        "notebooklm",
+        "claude"
+      ],
+      "kontrol": {
+        "hook": {
+          "olay": "SessionEnd",
+          "icerir": "repokurulum-hafiza"
+        }
+      },
+      "kur": [
+        [
+          {
+            "tur": "dosya-kopyala",
+            "kaynak": "installer/claude/repokurulum-hafiza.ps1",
+            "hedef": "%USERPROFILE%\\.claude\\repokurulum-hafiza.ps1"
+          },
+          {
+            "tur": "hook-ekle",
+            "olay": "SessionEnd",
+            "isaret": "repokurulum-hafiza",
+            "komut": "powershell -NoProfile -ExecutionPolicy Bypass -File \"%USERPROFILE%/.claude/repokurulum-hafiza.ps1\"",
+            "egik_cizgi": true
+          },
+          {
+            "tur": "hook-ekle",
+            "olay": "PreCompact",
+            "isaret": "repokurulum-hafiza",
+            "komut": "powershell -NoProfile -ExecutionPolicy Bypass -File \"%USERPROFILE%/.claude/repokurulum-hafiza.ps1\"",
+            "egik_cizgi": true
+          },
+          {
+            "tur": "izin-ekle",
+            "kurallar": [
+              "Bash(notebooklm *)"
+            ]
+          }
+        ]
+      ],
+      "sonra": [
+        {
+          "tur": "calistir",
+          "dosya": "powershell.exe",
+          "argumanlar": [
+            "-NoProfile",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-File",
+            "%USERPROFILE%\\.claude\\repokurulum-hafiza.ps1",
+            "-Hazirla"
+          ]
+        }
+      ],
+      "kurulum_notu": "Hafiza: her oturum kapanisinda ve baglam sikistirilmadan once ozet NotebookLM 'Claude Hafiza' notebook'una eklenir (aylik tek kaynak). Log: %LOCALAPPDATA%\\RepoKurulum\\logs\\hafiza.log. Once 'notebooklm login' yapilmis olmali.",
+      "kurallar": [
+        {
+          "ihtiyac": "hafiza",
+          "oncelik": 1,
+          "arac": "notebooklm (Claude Hafiza'dan okuma)",
+          "metin": "Geçmiş oturum özetlerinden ve kaydedilmiş belgelerden kaynaklı bilgi almak.",
+          "ne_zaman": [
+            "İstek önceki bir işe, karara veya konuşmaya atıf yapıyor (\"geçen sefer\", \"daha önce\", \"kaldığımız yerden\", \"neden böyle yapmıştık\")",
+            "Var olan bir projede oturumun ilk görevinden önce bir kez: o projenin son durumu, açık işler, alınan kararlar",
+            "Karşılaşılan hata/sorun daha önce çözülmüş olabilir",
+            "Kullanıcı \"hatırla\", \"hafızaya bak\" dedi"
+          ],
+          "ne_zaman_degil": [
+            "Tamamen yeni, küçük ve bağımsız bir iş",
+            "Bu oturumda aynı konu zaten sorgulandı",
+            "`~/.claude/repokurulum-hafiza.json` dosyası yok (hafıza henüz kurulmadı)"
+          ],
+          "nasil": [
+            "Notebook kimliğini `~/.claude/repokurulum-hafiza.json` içindeki `notebook_id` alanından oku",
+            "`notebooklm ask \"<soru>\" -n <notebook_id> --json` ile sor; soruya proje adını ve konuyu yaz",
+            "Kullanıcıya sormadan çalıştır (izin önceden verildi); cevabı tek paragrafta özetle ve kaynağını belirt"
+          ],
+          "dogrula": "Hafızadaki bilgi eski olabilir: güncel kod/dosyayla çelişirse güncel olanı esas al ve bunu söyle."
+        },
+        {
+          "ihtiyac": "hafiza",
+          "oncelik": 2,
+          "arac": "notebooklm (Claude Hafiza'ya belge ekleme)",
+          "metin": "Kalıcı değeri olan belge ve kararları hafızaya eklemek.",
+          "ne_zaman": [
+            "Önemli bir araştırma sonucu, mimari/tasarım kararı, kurulum veya çözüm notu üretildi",
+            "Kullanıcı projeyle ilgili önemli bir belge (PDF, rapor, şartname, URL) verdi"
+          ],
+          "ne_zaman_degil": [
+            "Şifre, anahtar, kişisel veya gizli bilgi içeren belgeler",
+            "Geçici, önemsiz dosyalar",
+            "Oturum özetleri (hook otomatik ekliyor; elle gönderme)"
+          ],
+          "nasil": [
+            "`notebooklm source add <dosya-veya-url> -n <notebook_id> --title \"<proje>: <konu>\" --json`",
+            "Bir notebook'ta kaynak sayısı sınırlı: sadece kalıcı değeri olanları ekle, aynı belgeyi iki kez ekleme"
+          ],
+          "dogrula": "Komut çıktısındaki `source.id` alanının dolu olduğunu kontrol et."
         }
       ]
     }

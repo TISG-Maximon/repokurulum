@@ -56,6 +56,12 @@ Komut satırından da alabilirsin:
 | Ana bağlamı kirletmeden uzun araştırma | **derin-analist (Opus, high)** |
 | Çok dosyalı veya riskli değişiklik tamamlandı | **dogrulayici (Sonnet, medium)** |
 | Kullanıcıya teslim edilecek önemli bir sonuç var | **dogrulayici (Sonnet, medium)** |
+| İstek önceki bir işe, karara veya konuşmaya atıf yapıyor ("geçen sefer", "daha önce", "kaldığımız yerden", "neden böyle yapmıştık") | **notebooklm (Claude Hafiza'dan okuma)** |
+| Var olan bir projede oturumun ilk görevinden önce bir kez: o projenin son durumu, açık işler, alınan kararlar | **notebooklm (Claude Hafiza'dan okuma)** |
+| Karşılaşılan hata/sorun daha önce çözülmüş olabilir | **notebooklm (Claude Hafiza'dan okuma)** |
+| Kullanıcı "hatırla", "hafızaya bak" dedi | **notebooklm (Claude Hafiza'dan okuma)** |
+| Önemli bir araştırma sonucu, mimari/tasarım kararı, kurulum veya çözüm notu üretildi | **notebooklm (Claude Hafiza'ya belge ekleme)** |
+| Kullanıcı projeyle ilgili önemli bir belge (PDF, rapor, şartname, URL) verdi | **notebooklm (Claude Hafiza'ya belge ekleme)** |
 | Bir dış paketin API'sini kullanan kod yazacak/düzeltecek isen (kullanıcı istemese de) | **context7** |
 | Hata bir kütüphaneden geliyorsa | **context7** |
 | Kullanıcı belirli bir sürüm söylediyse | **context7** |
@@ -126,6 +132,26 @@ Araçları bu sırayla değerlendir: ana oturum (Opus, medium) > hizli-isci (Son
 - **Doğrula:** KALDI veya DOĞRULANAMADI dönen her maddeyi düzelt ya da kullanıcıya bildir.
 
 > Not: Alt ajan bağlamı sıfırdan kurar (ek token). Görev + bağlam aktarımı + sonucu doğrulama toplamı işi doğrudan yapmaktan fazlaysa alt ajan KULLANMA.
+
+## Geçmiş çalışmalar ve proje hafızası (NotebookLM)
+**Tetikleyici:** Önceki işlere, kararlara, konuşmalara atıf; bir projeye geri dönüş; daha önce çözülmüş olabilecek sorun.
+Araçları bu sırayla değerlendir: notebooklm (Claude Hafiza'dan okuma) > notebooklm (Claude Hafiza'ya belge ekleme)
+
+### 1. **notebooklm (Claude Hafiza'dan okuma)**
+- **Amaç:** Geçmiş oturum özetlerinden ve kaydedilmiş belgelerden kaynaklı bilgi almak.
+- **Ne zaman:** İstek önceki bir işe, karara veya konuşmaya atıf yapıyor ("geçen sefer", "daha önce", "kaldığımız yerden", "neden böyle yapmıştık"); Var olan bir projede oturumun ilk görevinden önce bir kez: o projenin son durumu, açık işler, alınan kararlar; Karşılaşılan hata/sorun daha önce çözülmüş olabilir; Kullanıcı "hatırla", "hafızaya bak" dedi
+- **Ne zaman değil:** Tamamen yeni, küçük ve bağımsız bir iş; Bu oturumda aynı konu zaten sorgulandı; `~/.claude/repokurulum-hafiza.json` dosyası yok (hafıza henüz kurulmadı)
+- **Nasıl:** Notebook kimliğini `~/.claude/repokurulum-hafiza.json` içindeki `notebook_id` alanından oku; `notebooklm ask "<soru>" -n <notebook_id> --json` ile sor; soruya proje adını ve konuyu yaz; Kullanıcıya sormadan çalıştır (izin önceden verildi); cevabı tek paragrafta özetle ve kaynağını belirt
+- **Doğrula:** Hafızadaki bilgi eski olabilir: güncel kod/dosyayla çelişirse güncel olanı esas al ve bunu söyle.
+
+### 2. **notebooklm (Claude Hafiza'ya belge ekleme)**
+- **Amaç:** Kalıcı değeri olan belge ve kararları hafızaya eklemek.
+- **Ne zaman:** Önemli bir araştırma sonucu, mimari/tasarım kararı, kurulum veya çözüm notu üretildi; Kullanıcı projeyle ilgili önemli bir belge (PDF, rapor, şartname, URL) verdi
+- **Ne zaman değil:** Şifre, anahtar, kişisel veya gizli bilgi içeren belgeler; Geçici, önemsiz dosyalar; Oturum özetleri (hook otomatik ekliyor; elle gönderme)
+- **Nasıl:** `notebooklm source add <dosya-veya-url> -n <notebook_id> --title "<proje>: <konu>" --json`; Bir notebook'ta kaynak sayısı sınırlı: sadece kalıcı değeri olanları ekle, aynı belgeyi iki kez ekleme
+- **Doğrula:** Komut çıktısındaki `source.id` alanının dolu olduğunu kontrol et.
+
+> Not: Oturum özetleri her oturum kapanışında otomatik eklenir (SessionEnd/PreCompact hook). Claude oturum özetini elle göndermez.
 
 ## Kütüphane / framework / API dokümanı
 **Tetikleyici:** Kod bir dış paket, framework, SDK, CLI veya API kullanıyorsa; "nasıl kullanılır", "hangi parametre", "son sürümde ne değişti", hata mesajı bir kütüphaneden geliyorsa.

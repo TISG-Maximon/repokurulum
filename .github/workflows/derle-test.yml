@@ -111,6 +111,45 @@ jobs:
           .\installer\RepoKurulum.ps1 -Sessiz -Bilesenler "durum-satiri,model-secimi" | Out-Null
           if ($hata) { $hata | ForEach-Object { Write-Host "::error::$_" }; exit 1 }
 
+      - name: NotebookLM hafiza (hook, izin, ozet ve sir maskeleme)
+        shell: powershell
+        run: |
+          $hata = @()
+          $md = "$env:USERPROFILE\.claude"; New-Item -ItemType Directory -Force $md | Out-Null
+          $ayar = "$md\settings.json"
+          if (Test-Path $ayar) { $s0 = Get-Content $ayar -Raw | ConvertFrom-Json } else { $s0 = New-Object PSObject }
+          # Kullanicinin mevcut bir SessionEnd hook'u korunmali
+          $mevcut = [pscustomobject]@{ hooks = @([pscustomobject]@{ type = 'command'; command = 'echo kullanici-hooku' }) }
+          $s0 | Add-Member -NotePropertyName hooks -NotePropertyValue ([pscustomobject]@{ SessionEnd = @($mevcut) }) -Force
+          $s0 | ConvertTo-Json -Depth 32 | Set-Content $ayar -Encoding UTF8
+          .\installer\RepoKurulum.ps1 -Sessiz -Bilesenler "notebooklm-hafiza"
+          $s = Get-Content $ayar -Raw | ConvertFrom-Json
+          Get-Content $ayar -Raw | Write-Host
+          $se = @($s.hooks.SessionEnd | ForEach-Object { $_.hooks } | ForEach-Object { $_.command })
+          if ($se -notcontains 'echo kullanici-hooku') { $hata += 'kullanicinin hook-u silindi' }
+          if (-not ($se | Where-Object { $_ -match 'repokurulum-hafiza' })) { $hata += 'SessionEnd hook-u yok' }
+          if (-not (@($s.hooks.PreCompact | ForEach-Object { $_.hooks } | ForEach-Object { $_.command }) | Where-Object { $_ -match 'repokurulum-hafiza' })) { $hata += 'PreCompact hook-u yok' }
+          if (@($s.permissions.allow) -notcontains 'Bash(notebooklm *)') { $hata += 'notebooklm izni yok' }
+          # Ikinci kurulum hook-u cogaltmamali
+          .\installer\RepoKurulum.ps1 -Sessiz -Bilesenler "notebooklm-hafiza" -Zorla | Out-Null
+          $s2 = Get-Content $ayar -Raw | ConvertFrom-Json
+          $adet = @($s2.hooks.SessionEnd | ForEach-Object { $_.hooks } | Where-Object { $_.command -match 'repokurulum-hafiza' }).Count
+          if ($adet -ne 1) { $hata += "SessionEnd hafiza hook sayisi $adet (1 olmali)" }
+          # Hook modu hemen donmeli
+          $sure = Measure-Command { '{"session_id":"x","transcript_path":"","cwd":"C:\\","hook_event_name":"SessionEnd"}' | powershell -NoProfile -ExecutionPolicy Bypass -File "$md\repokurulum-hafiza.ps1" }
+          if ($sure.TotalSeconds -gt 15) { $hata += "hook modu yavas: $($sure.TotalSeconds) sn" }
+          # Ozet: CI'da Google girisi yok -> gonderilemez, bekleyene yazilmali; sirlar maskelenmis olmali
+          powershell -NoProfile -ExecutionPolicy Bypass -File "$md\repokurulum-hafiza.ps1" -Arkaplan -Transkript "$PWD\tests\transkript-ornek.jsonl" -Oturum test-oturum-1 -Dizin "$PWD" -Olay SessionEnd
+          $bek = Get-ChildItem "$env:LOCALAPPDATA\RepoKurulum\hafiza-bekleyen\*.md" | Select-Object -Last 1
+          if (-not $bek) { $hata += 'bekleyen ozet yazilmadi' } else {
+            $ozet = Get-Content $bek.FullName -Raw -Encoding UTF8
+            Write-Host $ozet
+            foreach ($b in 'Istekler','README dosyas','Degisen dosyalar','C:/proje/README.md','playwright','[GIZLENDI]') { if ($ozet -notmatch [regex]::Escape($b)) { $hata += "ozette yok: $b" } }
+            foreach ($g in 'abcd1234GIZLIDEGER','ghp_ABCDEFGHIJKLMNOPQRSTUVWXYZ123456') { if ($ozet -match [regex]::Escape($g)) { $hata += "sir maskelenmedi: $g" } }
+          }
+          Get-Content "$env:LOCALAPPDATA\RepoKurulum\logs\hafiza.log" -ErrorAction SilentlyContinue | Write-Host
+          if ($hata) { $hata | ForEach-Object { Write-Host "::error::$_" }; exit 1 }
+
       - name: Kural metni (-Kurallar) sadece kurulu araclari iceriyor mu, dosyaya yazmiyor mu
         shell: powershell
         run: |

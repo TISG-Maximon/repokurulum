@@ -28,6 +28,7 @@ Diğer başlatma yolları:
 - **Claude Code'u açmak**: `ClaudeAc.bat`'a çift tıkla (klasör ve "yeni / devam / eski konuşma" sorar) ya da bir klasörü üzerine sürükle-bırak. Masaüstüne kopyalayabilirsin.
 - **Durum satırı** (setup → "Durum satiri"): Claude'un altında model, efor, proje/dal, son kullanılan araç (MCP/skill/ajan), bağlam doluluğu, 5 saatlik ve haftalık limit (sıfırlanma zamanıyla), oturum token/maliyeti. Yerelde çalışır, token harcamaz. Ayrıntılı kullanım için Claude'da `/usage`.
 - **Model seçimi** (setup → "Model secimi"): ana oturum Opus (medium); rutin işler `hizli-isci` (Sonnet medium), zor işler `derin-analist` (Opus high), büyük işlerden sonra `dogrulayici` (Sonnet medium) alt ajanları. Ne zaman ajan kullanılacağı araç seçim kurallarında. `settings.json` ilk değişiklikten önce `settings.json.repokurulum.bak` olarak yedeklenir.
+- **NotebookLM hafıza** (setup → "NotebookLM hafiza"): her Claude oturumu kapanırken ve bağlam sıkıştırılmadan önce oturum özeti (istekler, son cevap, değişen/okunan dosyalar, komutlar, kullanılan araçlar) NotebookLM'deki **Claude Hafiza** notebook'una otomatik eklenir (her ay tek kaynak: "Claude Hafiza YYYY-MM"). Sırlar (API anahtarı, token, şifre) gönderilmeden maskelenir. Claude geçmişe dair sorularda bu hafızayı sana sormadan sorgular. Log: `%LOCALAPPDATA%\RepoKurulum\logs\hafiza.log`; gönderilemeyenler `hafiza-bekleyen` klasöründe bekler ve sonraki oturumda gönderilir.
 
 ### Uygulamanın hata azaltma özellikleri
 - Her bileşen önce **kontrol edilir**; kuruluysa atlanır (tekrar çalıştırmak güvenli).
