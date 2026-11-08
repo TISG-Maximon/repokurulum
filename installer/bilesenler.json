@@ -1,5 +1,5 @@
 {
-  "surum": "1.4.0",
+  "surum": "1.4.1",
   "aciklama": "RepoKurulum bilesen listesi. Yeni bir arac eklerken 'kurallar' alanina ne ise yaradigini ve hangi ihtiyacta kacinci sirada denenecegini yaz; uygulamadaki 'Kurallari Kopyala' dugmesi bunlardan CLAUDE.md'ye yapistirilacak metni uretir. Sira onemlidir: bagimliliklar once gelmelidir.",
   "kural_basligi": "Araç seçim kuralları",
   "genel_kurallar": [
@@ -215,7 +215,7 @@
       "kategori": "1. Temel araclar",
       "lisans": "LGPL/GPL",
       "repo": "https://ffmpeg.org",
-      "aciklama": "Video/ses donusturme; video skill'leri icin gerekli (kucuk 'Essentials' surumu, olmazsa tam surum)",
+      "aciklama": "Video/ses donusturme; video skill'leri icin gerekli (winget; olmazsa GitHub'daki resmi derleme kullanici klasorune)",
       "varsayilan": false,
       "kontrol": {
         "komut": "ffmpeg"
@@ -231,6 +231,12 @@
           {
             "tur": "winget",
             "id": "Gyan.FFmpeg"
+          }
+        ],
+        [
+          {
+            "tur": "ps",
+            "komut": "$ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; [Net.ServicePointManager]::SecurityProtocol=[Net.ServicePointManager]::SecurityProtocol -bor 3072; $h=Join-Path $env:LOCALAPPDATA 'Programs\\ffmpeg'; $z=Join-Path $env:TEMP 'ffmpeg-builds.zip'; $ok=$false; foreach ($u in @('https://github.com/FFmpeg-Builds/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip','https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip')) { for ($i=1; $i -le 3 -and -not $ok; $i++) { try { Write-Output ('indiriliyor: ' + $u); Invoke-WebRequest -UseBasicParsing -Uri $u -OutFile $z -TimeoutSec 600; $ok=$true } catch { Write-Output $_.Exception.Message; Start-Sleep -Seconds (5*$i) } } if ($ok) { break } }; if (-not $ok) { exit 1 }; if (Test-Path $h) { Remove-Item $h -Recurse -Force }; Expand-Archive -LiteralPath $z -DestinationPath $h -Force; Remove-Item $z -Force; $bin=(Get-ChildItem $h -Recurse -Filter ffmpeg.exe | Select-Object -First 1).DirectoryName; if (-not $bin) { exit 1 }; $p=[Environment]::GetEnvironmentVariable('Path','User'); if (-not $p) { $p='' }; if ($p -notlike ('*' + $bin + '*')) { [Environment]::SetEnvironmentVariable('Path', ($p.TrimEnd(';') + ';' + $bin).TrimStart(';'), 'User') }; Write-Output ('ffmpeg: ' + $bin)"
           }
         ]
       ]
