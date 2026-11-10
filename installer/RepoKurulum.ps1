@@ -726,6 +726,15 @@ function Test-Guncelleme($B) {
                 if (-not $t.ContainsKey($B.id)) { $t[$B.id] = $uzak; Write-JsonTablo $SurumDosyasi $t; return $null }
                 if ($t[$B.id] -ne $uzak) { return 'eklentide yeni surum' }
             }
+            'claude' {
+                # Kurulu surum (claude --version -> "2.1.319 (Claude Code)") ile npm'deki son surum
+                Invoke-Harici 'claude' @('--version') -ZamanAsimi 60 -Sessizce | Out-Null
+                $m = [regex]::Match([string]$script:SonCikti, '(\d+\.\d+\.\d+)')
+                if (-not $m.Success) { return $null }
+                $kurulu = $m.Groups[1].Value
+                $son = (Invoke-RestMethod -Uri 'https://registry.npmjs.org/@anthropic-ai/claude-code/latest' -TimeoutSec 20).version
+                if ($son -and ([version]$son -gt [version]$kurulu)) { return "$kurulu -> $son" }
+            }
             'winget' {
                 if (-not (Test-Komut 'winget')) { return $null }
                 Invoke-Harici 'winget' @('list', '--id', $g.id, '-e', '--upgrade-available', '--accept-source-agreements', '--disable-interactivity') -ZamanAsimi 90 -Sessizce | Out-Null
@@ -772,6 +781,11 @@ function Invoke-Guncelleme($B) {
             Invoke-Harici 'claude' @('plugin', 'marketplace', 'update', $g.marketplace) | Out-Null
             $kod = Invoke-Harici 'claude' @('plugin', 'update', $g.eklenti)
             if ($kod -eq 0) { $t = Read-JsonTablo $SurumDosyasi; $t[$B.id] = (Get-UzakHead $g.url); Write-JsonTablo $SurumDosyasi $t }
+        }
+        'claude' {
+            # Claude Code'un kendi guncelleyicisi; acik oturumlar bir sonraki acilista yeni surume gecer
+            $kod = Invoke-Harici 'claude' @('update') -ZamanAsimi 600
+            if ($kod -eq 0) { Write-Log "Claude Code guncellendi. Acik Claude pencerelerini kapatip yeniden acinca yeni surum calisir." 'OK' }
         }
         'winget' {
             $kod = Invoke-Harici 'winget' @('upgrade', '--id', $g.id, '-e', '--silent', '--accept-package-agreements', '--accept-source-agreements', '--disable-interactivity')

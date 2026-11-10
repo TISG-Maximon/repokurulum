@@ -1,5 +1,5 @@
 {
-  "surum": "1.8.0",
+  "surum": "1.9.0",
   "aciklama": "RepoKurulum bilesen listesi. Yeni bir arac eklerken 'kurallar' alanina ne ise yaradigini ve hangi ihtiyacta kacinci sirada denenecegini yaz; uygulamadaki 'Kurallari Kopyala' dugmesi bunlardan CLAUDE.md'ye yapistirilacak metni uretir. Sira onemlidir: bagimliliklar once gelmelidir.",
   "kural_basligi": "Araç seçim kuralları",
   "genel_kurallar": [
@@ -310,7 +310,10 @@
             ]
           }
         ]
-      ]
+      ],
+      "guncelleme": {
+        "tur": "claude"
+      }
     },
     {
       "id": "mcp-timeout",
