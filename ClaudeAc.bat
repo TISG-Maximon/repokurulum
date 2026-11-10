@@ -89,6 +89,16 @@ if "%CLAUDEAC_KURU%"=="1" (
   echo KURU CALISMA: claude %BAYRAK%
   endlocal & exit /b 0
 )
+REM Acmadan once Claude Code'u guncelle (yeni surum varsa indirilir; yoksa birkac saniye surer)
+REM Atlamak icin: set CLAUDEAC_GUNCELLEME=0
+if not "%CLAUDEAC_GUNCELLEME%"=="0" (
+  echo  Claude Code guncelleme kontrolu...
+  call claude update > "%AYAR%\claude-update.txt" 2>&1
+  findstr /i /c:"updated" /c:"guncellendi" /c:"Successfully" "%AYAR%\claude-update.txt" >nul && echo  Claude Code guncellendi.
+  findstr /i /c:"up to date" /c:"latest version" /c:"already" "%AYAR%\claude-update.txt" >nul && echo  Claude Code guncel.
+  findstr /i /c:"Error" /c:"Failed" "%AYAR%\claude-update.txt" >nul && echo  Guncelleme yapilamadi; Claude mevcut surumle aciliyor. Ayrinti: %AYAR%\claude-update.txt
+  echo.
+)
 call claude %BAYRAK%
 echo.
 echo  Claude kapandi.

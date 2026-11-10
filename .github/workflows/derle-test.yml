@@ -235,6 +235,7 @@ jobs:
         shell: cmd
         run: |
           set CLAUDEAC_KURU=1
+          set CLAUDEAC_GUNCELLEME=0
           call ClaudeAc.bat "%CD%" devam > ca.txt 2>&1
           type ca.txt
           findstr /c:"KURU CALISMA: claude --continue" ca.txt || exit /b 1
