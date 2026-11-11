@@ -260,6 +260,20 @@ jobs:
           if ($satir) { $hata += 'logda guncellenemedi hatasi var' }
           if ($hata) { $hata | ForEach-Object { Write-Host "::error::$_" }; exit 1 }
 
+      - name: uv 'Executable already exists' durumunda --force ile kurulum
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Continue'
+          uv tool uninstall notebooklm-py 2>&1 | Out-Null
+          Remove-Item "$env:USERPROFILE\.claude\skills\notebooklm" -Recurse -Force -ErrorAction SilentlyContinue
+          # Baska kaynaktan kalmis gibi sahte bir notebooklm-mcp.exe birak
+          Copy-Item (Get-Command uv).Source "$env:USERPROFILE\.local\bin\notebooklm-mcp.exe" -Force
+          .\installer\RepoKurulum.ps1 -Sessiz -Bilesenler "notebooklm"
+          $kod = $LASTEXITCODE
+          $log = Get-ChildItem "$env:LOCALAPPDATA\RepoKurulum\logs\kurulum_*.log" | Sort-Object LastWriteTime | Select-Object -Last 1
+          Get-Content $log.FullName | Select-String 'force|KURULAMADI|kuruldu' | Write-Host
+          if ($kod -ne 0) { Write-Host "::error::notebooklm --force ile kurulamadi (cikis $kod)"; exit 1 }
+
       - name: Kural metni (-Kurallar) sadece kurulu araclari iceriyor mu, dosyaya yazmiyor mu
         shell: powershell
         run: |

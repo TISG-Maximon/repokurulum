@@ -410,6 +410,11 @@ function Invoke-Adim($A) {
             if ($A.python) { $py = $A.python }
             $kod = Invoke-Harici 'uv' @('tool', 'install', '--python', $py, $A.paket)
             if ($kod -ne 0 -and $script:SonCikti -match 'already installed') { $kod = 0 }
+            if ($kod -ne 0 -and $script:SonCikti -match 'Executable already exists') {
+                # Baska bir kurulumdan kalan ayni adli exe var (orn. notebooklm-mcp.exe): uzerine yaz
+                Write-Log "Ayni adli eski calistirilabilir dosya var; --force ile yeniden kuruluyor: $($A.paket)" 'UYARI'
+                $kod = Invoke-Harici 'uv' @('tool', 'install', '--force', '--python', $py, $A.paket)
+            }
             Invoke-Harici 'uv' @('tool', 'update-shell') -Sessizce | Out-Null
             Update-EnvPath
             return $kod
