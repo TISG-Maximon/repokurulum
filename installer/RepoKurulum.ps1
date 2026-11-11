@@ -326,7 +326,21 @@ function Test-Bilesen($B) {
     return (Test-DosyalarGuncel $B)
 }
 
+function Test-EkKontrol($B) {
+    # Ek kontrol (orn. NotebookLM Google girisi). Sessiz kurulumda giris yapilamayacagi icin atlanir.
+    $e = $B.ek_kontrol
+    if (-not $e -or $Sessiz) { return $true }
+    if (-not (Test-Komut $e.dosya)) { return $false }
+    Invoke-Harici $e.dosya @($e.argumanlar) -ZamanAsimi 60 -Sessizce | Out-Null
+    return ([string]$script:SonCikti -match $e.icerir_regex)
+}
+
 function Test-BilesenTemel($B) {
+    if (-not (Test-BilesenAna $B)) { return $false }
+    return (Test-EkKontrol $B)
+}
+
+function Test-BilesenAna($B) {
     $k = $B.kontrol
     if (-not $k) { return $false }
     if ($k.komut) { return (Test-Komut $k.komut) }
@@ -516,6 +530,29 @@ function Invoke-Adim($A) {
             [IO.File]::WriteAllText($yol, ($ayar | ConvertTo-Json -Depth 32), (New-Object System.Text.UTF8Encoding($false)))
             Write-Log ("settings.json izin eklendi: " + (@($A.kurallar) -join ', '))
             return 0
+        }
+        'etkilesimli' {
+            # Kullanicinin elle yapmasi gereken adim (orn. tarayicida Google girisi): ayri pencerede calisir, bitmesi beklenir
+            $komutMetni = "$($A.dosya) " + (@($A.argumanlar) -join ' ')
+            if ($Sessiz -or -not $script:LogBox) {
+                Write-Log "$($A.baslik) sessiz kurulumda yapilamaz. Elle calistir: $komutMetni" 'UYARI'
+                return 0
+            }
+            Update-EnvPath
+            $c = Get-Command $A.dosya -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
+            if (-not $c) { Write-Log "Komut bulunamadi: $($A.dosya)" 'HATA'; return 9009 }
+            [System.Windows.Forms.MessageBox]::Show($A.mesaj, "Repo Kurulum - $($A.baslik)") | Out-Null
+            $argMetni = (@($A.argumanlar) | ForEach-Object { Format-Arguman $_ }) -join ' '
+            Write-Log "> $komutMetni (ayri pencerede, bitmesi bekleniyor)"
+            $p = Start-Process -FilePath $c.Source -ArgumentList $argMetni -PassThru
+            $sw = [System.Diagnostics.Stopwatch]::StartNew()
+            while (-not $p.HasExited) {
+                if ($script:DurumEtiketi) { $script:DurumEtiketi.Text = ('  Bekleniyor ({0:mm\:ss}): {1} - acilan pencerede islemi tamamla' -f $sw.Elapsed, $A.baslik) }
+                Invoke-UiPump
+                Start-Sleep -Milliseconds 200
+            }
+            if ($script:DurumEtiketi) { $script:DurumEtiketi.Text = '  Hazir' }
+            return $p.ExitCode
         }
         'dosya-kopyala' {
             # Repodaki bir dosyayi kopyalar. Hedef kullaniciya aitse (icinde 'repokurulum' isareti yoksa) dokunmaz.
@@ -945,6 +982,7 @@ function Set-Durum([string]$Id, [string]$Durum) {
                 'Guncelleme var' { $it.ForeColor = [System.Drawing.Color]::Blue }
                 'Guncellendi' { $it.ForeColor = [System.Drawing.Color]::Green }
                 'Yeni'    { $it.ForeColor = [System.Drawing.Color]::Purple }
+                'Giris gerekli' { $it.ForeColor = [System.Drawing.Color]::DarkOrange }
                 default   { $it.ForeColor = [System.Drawing.SystemColors]::WindowText }
             }
         }
@@ -957,7 +995,10 @@ function Update-TumDurumlar {
     Update-EnvPath
     foreach ($b in $Tum) {
         $d = 'Yok'
-        if (Test-BilesenTemel $b) {
+        if ((Test-BilesenAna $b) -and -not (Test-EkKontrol $b)) {
+            $d = 'Giris gerekli'
+            foreach ($it in $script:ListView.Items) { if ($it.Tag -eq $b.id) { $it.Checked = $true } }
+        } elseif (Test-BilesenTemel $b) {
             $d = 'Kurulu'
             # Hizli kontrol: kurulum dosyalari degistiyse hemen goster (ag gerektirmez)
             if (-not (Test-DosyalarGuncel $b)) { $script:Guncellemeler[$b.id] = 'kurulum dosyalari degisti' }
@@ -980,6 +1021,7 @@ function Update-UstGrup {
         $ustte = $false
         if ($script:Guncellemeler.ContainsKey($id) -and $it.SubItems[1].Text -eq 'Guncelleme var') { $ustte = $true; $gun += $it.Text }
         elseif ($it.SubItems[1].Text -eq 'Yeni') { $ustte = $true; $yen += $it.Text }
+        elseif ($it.SubItems[1].Text -eq 'Giris gerekli') { $ustte = $true; $gun += ($it.Text + ' (giris gerekli)') }
         if ($ustte) { $it.Group = $script:GrupUst } else { $it.Group = $script:AsilGrup[$id] }
     }
     $parcalar = @()

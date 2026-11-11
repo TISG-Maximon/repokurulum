@@ -1,5 +1,5 @@
 {
-  "surum": "1.10.0",
+  "surum": "1.11.0",
   "aciklama": "RepoKurulum bilesen listesi. Yeni bir arac eklerken 'kurallar' alanina ne ise yaradigini ve hangi ihtiyacta kacinci sirada denenecegini yaz; uygulamadaki 'Kurallari Kopyala' dugmesi bunlardan CLAUDE.md'ye yapistirilacak metni uretir. Sira onemlidir: bagimliliklar once gelmelidir.",
   "kural_basligi": "Araç seçim kuralları",
   "genel_kurallar": [
@@ -1210,10 +1210,19 @@
               "skill",
               "install"
             ]
+          },
+          {
+            "tur": "etkilesimli",
+            "baslik": "NotebookLM Google girisi",
+            "dosya": "notebooklm",
+            "argumanlar": [
+              "login"
+            ],
+            "mesaj": "NotebookLM icin Google hesabinla giris yapman gerekiyor.\r\n\r\nTamam'a basinca ayri bir pencere ve tarayici acilacak (ilk seferde ~170 MB Chromium indirir). Google'a giris yap; giris algilaninca pencere kendiliginden kapanir.\r\n\r\nKurulum bu sirada bekler (en fazla 5 dakika)."
           }
         ]
       ],
-      "kurulum_notu": "NotebookLM icin Google girisi gerekiyor: yeni bir PowerShell'de 'notebooklm login' calistir (tarayici acilir). Gayriresmi API'dir; ayri/ikincil bir Google hesabi onerilir.",
+      "kurulum_notu": "NotebookLM girisi yapildi. Gayriresmi API'dir; ayri/ikincil bir Google hesabi onerilir. Giris suresi dolarsa setup'ta satir 'Giris gerekli' olur, Secilenleri Kur ile tekrar giris yapilir.",
       "kurallar": [
         {
           "ihtiyac": "kaynak",
@@ -1239,6 +1248,15 @@
       "guncelleme": {
         "tur": "pypi",
         "paket": "notebooklm-py"
+      },
+      "ek_kontrol": {
+        "dosya": "notebooklm",
+        "argumanlar": [
+          "auth",
+          "check",
+          "--json"
+        ],
+        "icerir_regex": "\"status\"\\s*:\\s*\"ok\""
       }
     },
     {
