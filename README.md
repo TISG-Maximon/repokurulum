@@ -17,6 +17,8 @@ Kurulum penceresi açılır → **Seçilenleri Kur** → bitince **Claude'u Aç 
 | Claude'a tarayıcıdan giriş | Hesap güvenliği; bunu sadece sen yapabilirsin |
 | (Opsiyonel) API anahtarları | Tavily/Exa/Firecrawl/GitHub senin hesabına bağlı; uygulama pencerede sorar, istersen kalıcı kaydeder |
 
+**En kolayı:** [`RepoKurulumBaslat.bat`](https://raw.githubusercontent.com/TISG-Maximon/repokurulum/HEAD/RepoKurulumBaslat.bat) dosyasını indirip masaüstüne koy; her çift tıklamada setup'ın en son sürümünü indirip açar.
+
 Diğer başlatma yolları:
 - **`RepoKurulum.exe`**: GitHub → Actions → son "derle-ve-test" çalışması → *RepoKurulum-exe* artifact'ı (veya `v*` etiketi atılınca Releases). Tek dosya; USB'yle taşıyabilirsin. İmzasız olduğu için SmartScreen "Yine de çalıştır" der.
 - **`RepoKurulum.bat`**: repo indirildiyse çift tıkla.
