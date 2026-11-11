@@ -326,17 +326,6 @@ function Test-Bilesen($B) {
     return (Test-DosyalarGuncel $B)
 }
 
-function Get-VarsayilanTarayici {
-    # Windows'un https icin varsayilan tarayicisi -> notebooklm login secenegi
-    $id = ''
-    try { $id = [string](Get-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\Shell\Associations\UrlAssociations\https\UserChoice' -ErrorAction Stop).ProgId } catch { }
-    $chromeVar = (Test-Path "$env:ProgramFiles\Google\Chrome\Application\chrome.exe") -or (Test-Path "${env:ProgramFiles(x86)}\Google\Chrome\Application\chrome.exe") -or (Test-Path "$env:LOCALAPPDATA\Google\Chrome\Application\chrome.exe")
-    if ($id -match '^ChromeHTML' -and $chromeVar) { return 'chrome' }
-    if ($id -match '^Firefox') { return 'firefox' }
-    # Edge (MSEdgeHTM) ve diger tarayicilar: Edge her Windows'ta kurulu, Chromium indirilmez
-    return 'msedge'
-}
-
 function Test-EkKontrol($B) {
     # Ek kontrol (orn. NotebookLM Google girisi). Sessiz kurulumda giris yapilamayacagi icin atlanir.
     $e = $B.ek_kontrol
@@ -552,24 +541,9 @@ function Invoke-Adim($A) {
             Update-EnvPath
             $c = Get-Command $A.dosya -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
             if (-not $c) { Write-Log "Komut bulunamadi: $($A.dosya)" 'HATA'; return 9009 }
-            $argListe = @($A.argumanlar)
-            $mesaj = [string]$A.mesaj
-            if ($A.notebooklm_tarayici) {
-                $tb = Get-VarsayilanTarayici
-                Write-Log "Varsayilan tarayici: $tb (Chromium indirilmeyecek)"
-                if ($tb -eq 'firefox') {
-                    # Firefox: kullanici kendi Firefox'unda giris yapar, oturum oradan alinir
-                    Start-Process 'https://notebooklm.google.com/'
-                    [System.Windows.Forms.MessageBox]::Show("Varsayilan tarayicin Firefox.`r`n`r`nNotebookLM sayfasi Firefox'ta acildi. Google hesabinla giris yap; NotebookLM ana sayfasini gorunce bu kutuda Tamam'a bas.", "Repo Kurulum - $($A.baslik)") | Out-Null
-                    return (Invoke-Harici $A.dosya @('login', '--browser-cookies', 'firefox') -ZamanAsimi 180)
-                }
-                $argListe += @('--browser', $tb)
-                $ad = 'Microsoft Edge'; if ($tb -eq 'chrome') { $ad = 'Google Chrome' }
-                $mesaj = $mesaj.Replace('{TARAYICI}', $ad)
-            }
-            [System.Windows.Forms.MessageBox]::Show($mesaj, "Repo Kurulum - $($A.baslik)") | Out-Null
-            $argMetni = ($argListe | ForEach-Object { Format-Arguman $_ }) -join ' '
-            Write-Log "> $($A.dosya) $argMetni (ayri pencerede, bitmesi bekleniyor)"
+            [System.Windows.Forms.MessageBox]::Show($A.mesaj, "Repo Kurulum - $($A.baslik)") | Out-Null
+            $argMetni = (@($A.argumanlar) | ForEach-Object { Format-Arguman $_ }) -join ' '
+            Write-Log "> $komutMetni (ayri pencerede, bitmesi bekleniyor)"
             $p = Start-Process -FilePath $c.Source -ArgumentList $argMetni -PassThru
             $sw = [System.Diagnostics.Stopwatch]::StartNew()
             while (-not $p.HasExited) {
