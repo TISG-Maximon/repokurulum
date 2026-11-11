@@ -1,5 +1,5 @@
 {
-  "surum": "1.11.0",
+  "surum": "1.12.0",
   "aciklama": "RepoKurulum bilesen listesi. Yeni bir arac eklerken 'kurallar' alanina ne ise yaradigini ve hangi ihtiyacta kacinci sirada denenecegini yaz; uygulamadaki 'Kurallari Kopyala' dugmesi bunlardan CLAUDE.md'ye yapistirilacak metni uretir. Sira onemlidir: bagimliliklar once gelmelidir.",
   "kural_basligi": "Araç seçim kuralları",
   "genel_kurallar": [
@@ -1201,7 +1201,7 @@
         [
           {
             "tur": "uvtool",
-            "paket": "notebooklm-py[browser]"
+            "paket": "notebooklm-py[browser,cookies]"
           },
           {
             "tur": "calistir",
@@ -1218,7 +1218,8 @@
             "argumanlar": [
               "login"
             ],
-            "mesaj": "NotebookLM icin Google hesabinla giris yapman gerekiyor.\r\n\r\nTamam'a basinca ayri bir pencere ve tarayici acilacak (ilk seferde ~170 MB Chromium indirir). Google'a giris yap; giris algilaninca pencere kendiliginden kapanir.\r\n\r\nKurulum bu sirada bekler (en fazla 5 dakika)."
+            "mesaj": "NotebookLM icin Google hesabinla giris yapman gerekiyor.\r\n\r\nTamam'a basinca {TARAYICI} ayri bir pencerede acilacak (bir sey indirilmez). Google'a giris yap; giris algilaninca pencere kendiliginden kapanir.\r\n\r\nKurulum bu sirada bekler (en fazla 5 dakika).",
+            "notebooklm_tarayici": true
           }
         ]
       ],
