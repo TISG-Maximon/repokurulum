@@ -778,10 +778,16 @@ function Invoke-Guncelleme($B) {
         'pypi' { $kod = Invoke-Harici 'uv' @('tool', 'upgrade', $g.paket) }
         'git' {
             $dizin = Expand-Deger $g.dizin
+            # Sig klon (--depth 1): ileri sarma calismaz; yeni commit'e 'reset --keep' ile gecilir.
+            # --keep yerel degisiklikleri korur; cakisma varsa hicbir sey degistirmeden durur.
             $kod = Invoke-Harici 'git' @('-C', $dizin, 'fetch', '--depth', '1', 'origin', 'HEAD')
             if ($kod -eq 0) {
-                $kod = Invoke-Harici 'git' @('-C', $dizin, 'merge', '--ff-only', 'FETCH_HEAD')
-                if ($kod -ne 0) { Write-Log "Klasorde senin degisikliklerin var, otomatik guncellenmedi: $dizin (git -C ... pull ile elle guncelle)" 'UYARI' }
+                $kod = Invoke-Harici 'git' @('-C', $dizin, 'reset', '--keep', 'FETCH_HEAD')
+                if ($kod -ne 0) {
+                    Write-Log "Klasordeki degisikliklerin yeni surumle cakisiyor; dokunulmadi: $dizin" 'UYARI'
+                    Write-Log "Elle guncellemek icin once degisikliklerini yedekle, sonra: git -C `"$dizin`" fetch --depth 1 origin HEAD && git -C `"$dizin`" reset --hard FETCH_HEAD" 'UYARI'
+                    return 'Atlandi'
+                }
             }
         }
         'plugin' {

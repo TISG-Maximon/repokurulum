@@ -238,6 +238,28 @@ jobs:
           Get-Content $log.FullName | Select-Object -Last 12 | Write-Host
           if ($hata) { $hata | ForEach-Object { Write-Host "::error::$_" }; exit 1 }
 
+      - name: Sig klonlu repo guncellemesi (git reset --keep)
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Continue'
+          $hata = @()
+          $d = "$env:USERPROFILE\.claude\skills\video-shotcraft"
+          if (-not (Test-Path "$d\.git")) { Write-Host '::warning::video-shotcraft kurulu degil, test atlandi'; exit 0 }
+          git -C $d fetch --depth 2 origin HEAD 2>&1 | Out-Null
+          git -C $d reset --hard HEAD~1 2>&1 | Out-Null
+          $once = (git -C $d rev-parse HEAD).Trim()
+          $uzak = ((git ls-remote https://github.com/Vincentwei1021/video-shotcraft.git HEAD) -split '\s+')[0]
+          Write-Host "yerel(eski)=$once uzak=$uzak"
+          if ($once -eq $uzak) { Write-Host '::warning::geri alinamadi, test atlandi'; exit 0 }
+          .\installer\RepoKurulum.ps1 -Guncelle | Out-Null
+          $sonra = (git -C $d rev-parse HEAD).Trim()
+          Write-Host "guncelleme sonrasi=$sonra"
+          if ($sonra -ne $uzak) { $hata += "video-shotcraft guncellenmedi ($sonra != $uzak)" }
+          $log = Get-ChildItem "$env:LOCALAPPDATA\RepoKurulum\logs\kurulum_*.log" | Sort-Object LastWriteTime | Select-Object -Last 1
+          $satir = Select-String -Path $log.FullName -Pattern 'video-shotcraft.*guncellenemedi'
+          if ($satir) { $hata += 'logda guncellenemedi hatasi var' }
+          if ($hata) { $hata | ForEach-Object { Write-Host "::error::$_" }; exit 1 }
+
       - name: Kural metni (-Kurallar) sadece kurulu araclari iceriyor mu, dosyaya yazmiyor mu
         shell: powershell
         run: |
