@@ -56,6 +56,8 @@ Komut satırından da alabilirsin:
 | Ana bağlamı kirletmeden uzun araştırma | **derin-analist (Opus, high)** |
 | Çok dosyalı veya riskli değişiklik tamamlandı | **dogrulayici (Sonnet, medium)** |
 | Kullanıcıya teslim edilecek önemli bir sonuç var | **dogrulayici (Sonnet, medium)** |
+| Yeni fonksiyon/modül, test yazma, mekanik refactor, şablon/tekrar eden kod gibi iyi tanımlanmış kod yazma işleri | **glm-kodcu (GLM 5.3)** |
+| Birbirinden bağımsız 2+ kod işi var (her biri ayrı dosya setinde): her biri için ayrı glm-kodcu'yu TEK mesajda başlat | **glm-kodcu (GLM 5.3)** |
 | İstek önceki bir işe, karara veya konuşmaya atıf yapıyor ("geçen sefer", "daha önce", "kaldığımız yerden", "neden böyle yapmıştık") | **notebooklm (Claude Hafiza'dan okuma)** |
 | Var olan bir projede oturumun ilk görevinden önce bir kez: o projenin son durumu, açık işler, alınan kararlar | **notebooklm (Claude Hafiza'dan okuma)** |
 | Karşılaşılan hata/sorun daha önce çözülmüş olabilir | **notebooklm (Claude Hafiza'dan okuma)** |
@@ -132,6 +134,18 @@ Araçları bu sırayla değerlendir: ana oturum (Opus, medium) > hizli-isci (Son
 - **Doğrula:** KALDI veya DOĞRULANAMADI dönen her maddeyi düzelt ya da kullanıcıya bildir.
 
 > Not: Alt ajan bağlamı sıfırdan kurar (ek token). Görev + bağlam aktarımı + sonucu doğrulama toplamı işi doğrudan yapmaktan fazlaysa alt ajan KULLANMA.
+
+## Kod yazma işini GLM ajanlarına dağıtmak
+**Tetikleyici:** Kod yazma, test yazma, refactor, birden fazla bağımsız kodlama işi.
+
+### 1. **glm-kodcu (GLM 5.3)**
+- **Amaç:** İyi tanımlanmış kod yazma işlerini GLM'ye yaptırmak; birden fazla bağımsız işi paralel yürütmek.
+- **Ne zaman:** Yeni fonksiyon/modül, test yazma, mekanik refactor, şablon/tekrar eden kod gibi iyi tanımlanmış kod yazma işleri; Birbirinden bağımsız 2+ kod işi var (her biri ayrı dosya setinde): her biri için ayrı glm-kodcu'yu TEK mesajda başlat
+- **Ne zaman değil:** Mimari/tasarım kararı, güvenlik veya veri kaybı riski olan kod, gereksinimi belirsiz iş (ana oturum ya da derin-analist); Tek satırlık veya birkaç satırlık değişiklik (doğrudan yap); Aynı dosyaya dokunan işleri paralel verme (sırayla ver); GLM anahtarı/kotası hata verdiyse: işi ana oturumda yap ve kullanıcıya bildir
+- **Nasıl:** Her görev için çalışma klasörünü, dokunulacak dosyaları, kabul ölçütünü (test komutu) ve yasakları açıkça yaz; Alternatif: ajan başlatmadan `glm-kod -p "<görev>" --permission-mode acceptEdits --output-format text` komutunu Bash'te (gerekirse arka planda) çalıştır
+- **Doğrula:** GLM'nin değişikliğini körü körüne kabul etme: ana oturum `git diff`'i okur ve testleri kendisi çalıştırır; sorun varsa düzeltir veya görevi daha net tarifle tekrar verir.
+
+> Not: GLM ayrı bir hizmettir (Z.ai); ana Claude aboneliğini harcamaz ama kendi kotası vardır.
 
 ## Geçmiş çalışmalar ve proje hafızası (NotebookLM)
 **Tetikleyici:** Önceki işlere, kararlara, konuşmalara atıf; bir projeye geri dönüş; daha önce çözülmüş olabilecek sorun.

@@ -18,6 +18,8 @@ param(
     [string]$Olay = ''
 )
 $ErrorActionPreference = 'Stop'
+# GLM ajan oturumlari (glm-kod) hafizaya ayri oturum olarak yazilmasin
+if ($env:REPOKURULUM_GLM -eq '1' -and -not $Hazirla) { exit 0 }
 $NotebookAdi = 'Claude Hafiza'
 $DurumYolu = Join-Path $env:USERPROFILE '.claude\repokurulum-hafiza.json'
 $Bekleyen = Join-Path $env:LOCALAPPDATA 'RepoKurulum\hafiza-bekleyen'

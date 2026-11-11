@@ -9,6 +9,8 @@
 #   - Haftalik limit gibi uzun beklemelerde en fazla ~6 saat bekler; limit hala doluysa hook yeniden tetiklenir ve beklemeye devam eder.
 # Log: %LOCALAPPDATA%\RepoKurulum\logs\limit-devam.log
 $ErrorActionPreference = 'SilentlyContinue'
+# GLM ajan oturumlarinda (glm-kod) calisma: Claude abonelik limitiyle ilgisi yok
+if ($env:REPOKURULUM_GLM -eq '1') { exit 0 }
 $Utf8 = New-Object System.Text.UTF8Encoding($false)
 $Kok = Join-Path $env:LOCALAPPDATA 'RepoKurulum'
 $LogYolu = Join-Path $Kok 'logs\limit-devam.log'

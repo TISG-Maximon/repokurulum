@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# repokurulum: GLM ile calisan Claude Code (Git Bash icin; Claude'un Bash araci bunu kullanir).
+# Ana Claude oturumunu ve aboneligini ETKILEMEZ: ayarlar sadece bu islem icin gecerlidir.
+# Kullanim:  glm-kod -p "gorev" --permission-mode acceptEdits
+# Model:     GLM_MODEL kullanici ortam degiskeni (varsayilan glm-5.3)
+oku() { powershell.exe -NoProfile -Command "[Environment]::GetEnvironmentVariable('$1','User')" 2>/dev/null | tr -d '\r'; }
+KEY="${ZAI_API_KEY:-$(oku ZAI_API_KEY)}"
+if [ -z "$KEY" ]; then
+  echo "[HATA] ZAI_API_KEY tanimli degil. RepoKurulum ile 'GLM kod ajanlari' bilesenini kur." >&2
+  exit 1
+fi
+MODEL="${GLM_MODEL:-$(oku GLM_MODEL)}"
+MODEL="${MODEL:-glm-5.3}"
+export ANTHROPIC_BASE_URL="https://api.z.ai/api/anthropic"
+export ANTHROPIC_AUTH_TOKEN="$KEY"
+unset ANTHROPIC_API_KEY
+export ANTHROPIC_MODEL="$MODEL"
+export ANTHROPIC_DEFAULT_OPUS_MODEL="$MODEL"
+export ANTHROPIC_DEFAULT_SONNET_MODEL="$MODEL"
+export ANTHROPIC_DEFAULT_HAIKU_MODEL="$MODEL"
+export CLAUDE_CODE_SUBAGENT_MODEL="$MODEL"
+export API_TIMEOUT_MS=3000000
+export CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1
+export REPOKURULUM_GLM=1
+exec claude "$@"

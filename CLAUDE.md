@@ -17,4 +17,5 @@ Bu repo, Windows'ta Claude Code + Playwright MCP + graphify ortamını kuran bet
 - Sadece **ücretsiz** araçlar eklenir. Ücret, abonelik veya ücretli API anahtarı isteyen (ücretsiz kotası olsa bile) eklenmez.
 - `installer/bilesenler.json`'da aynı işi yapan bir bileşen zaten varsa yenisi eklenmez.
 - Mevcut bileşenler silinmez; bu kural yalnızca bundan sonra eklenecekler için geçerlidir.
+- İstisna: `glm-ajanlar` (GLM 5.3 kod ajanları) kullanıcının açık isteğiyle, kendi ücretsiz Z.ai API anahtarıyla kullanılmak üzere eklendi.
 - Her yeni bileşene `kurallar` alanında ne işe yaradığı ve hangi ihtiyaçta kaçıncı sırada kullanılacağı yazılır.

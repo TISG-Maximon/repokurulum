@@ -1,5 +1,5 @@
 {
-  "surum": "1.9.0",
+  "surum": "1.10.0",
   "aciklama": "RepoKurulum bilesen listesi. Yeni bir arac eklerken 'kurallar' alanina ne ise yaradigini ve hangi ihtiyacta kacinci sirada denenecegini yaz; uygulamadaki 'Kurallari Kopyala' dugmesi bunlardan CLAUDE.md'ye yapistirilacak metni uretir. Sira onemlidir: bagimliliklar once gelmelidir.",
   "kural_basligi": "Araç seçim kuralları",
   "genel_kurallar": [
@@ -32,6 +32,12 @@
       "baslik": "Model ve alt ajan seçimi",
       "tetik": "Her istek. Önce işi parçalara ayır; her parça için aşağıdaki sırayla karar ver.",
       "not": "Alt ajan bağlamı sıfırdan kurar (ek token). Görev + bağlam aktarımı + sonucu doğrulama toplamı işi doğrudan yapmaktan fazlaysa alt ajan KULLANMA."
+    },
+    {
+      "id": "kod-yazma",
+      "baslik": "Kod yazma işini GLM ajanlarına dağıtmak",
+      "tetik": "Kod yazma, test yazma, refactor, birden fazla bağımsız kodlama işi.",
+      "not": "GLM ayrı bir hizmettir (Z.ai); ana Claude aboneliğini harcamaz ama kendi kotası vardır."
     },
     {
       "id": "hafiza",
@@ -1756,6 +1762,87 @@
         ]
       ],
       "kurulum_notu": "Limit devam: limit dolunca Claude acik kaldigi surece sifirlanmayi bekler ve kendiliginden devam eder. Claude penceresini kapatma. Log: %LOCALAPPDATA%\\RepoKurulum\\logs\\limit-devam.log"
+    },
+    {
+      "id": "glm-ajanlar",
+      "ad": "GLM kod ajanlari (GLM 5.3, Z.ai API anahtari)",
+      "kategori": "6. Claude ayarlari",
+      "lisans": "Z.ai",
+      "repo": "https://docs.z.ai",
+      "aciklama": "Kod yazma islerini GLM 5.3'e dagitir: glm-kod komutu + glm-kodcu alt ajani (paralel calisabilir). Ana Claude oturumu ve aboneligi etkilenmez",
+      "varsayilan": false,
+      "gerekir": [
+        "claude",
+        "model-secimi"
+      ],
+      "gizli": [
+        {
+          "ad": "ZAI_API_KEY",
+          "url": "https://z.ai/manage-apikey/apikey-list"
+        }
+      ],
+      "kontrol": {
+        "dosya": [
+          "%USERPROFILE%\\.local\\bin\\glm-kod.cmd"
+        ]
+      },
+      "kur": [
+        [
+          {
+            "tur": "dosya-kopyala",
+            "kaynak": "installer/claude/glm-kod.cmd",
+            "hedef": "%USERPROFILE%\\.local\\bin\\glm-kod.cmd"
+          },
+          {
+            "tur": "dosya-kopyala",
+            "kaynak": "installer/claude/glm-kod",
+            "hedef": "%USERPROFILE%\\.local\\bin\\glm-kod"
+          },
+          {
+            "tur": "dosya-kopyala",
+            "kaynak": "installer/claude/agents/glm-kodcu.md",
+            "hedef": "%USERPROFILE%\\.claude\\agents\\glm-kodcu.md"
+          }
+        ]
+      ],
+      "sonra": [
+        {
+          "tur": "calistir",
+          "dosya": "glm-kod.cmd",
+          "argumanlar": [
+            "-p",
+            "Sadece OK yaz.",
+            "--output-format",
+            "text"
+          ],
+          "zaman_asimi": 120,
+          "ciktiyi_goster": true
+        }
+      ],
+      "kurulum_notu": "GLM: baglanti testinin ciktisi yukarida (OK gorunmeliydi). Model varsayilan glm-5.3; ucretsiz anahtarin baska modele izin veriyorsa: setx GLM_MODEL glm-5.3-flash. Elle deneme: glm-kod -p \"merhaba\"",
+      "kurallar": [
+        {
+          "ihtiyac": "kod-yazma",
+          "oncelik": 1,
+          "arac": "glm-kodcu (GLM 5.3)",
+          "metin": "İyi tanımlanmış kod yazma işlerini GLM'ye yaptırmak; birden fazla bağımsız işi paralel yürütmek.",
+          "ne_zaman": [
+            "Yeni fonksiyon/modül, test yazma, mekanik refactor, şablon/tekrar eden kod gibi iyi tanımlanmış kod yazma işleri",
+            "Birbirinden bağımsız 2+ kod işi var (her biri ayrı dosya setinde): her biri için ayrı glm-kodcu'yu TEK mesajda başlat"
+          ],
+          "ne_zaman_degil": [
+            "Mimari/tasarım kararı, güvenlik veya veri kaybı riski olan kod, gereksinimi belirsiz iş (ana oturum ya da derin-analist)",
+            "Tek satırlık veya birkaç satırlık değişiklik (doğrudan yap)",
+            "Aynı dosyaya dokunan işleri paralel verme (sırayla ver)",
+            "GLM anahtarı/kotası hata verdiyse: işi ana oturumda yap ve kullanıcıya bildir"
+          ],
+          "nasil": [
+            "Her görev için çalışma klasörünü, dokunulacak dosyaları, kabul ölçütünü (test komutu) ve yasakları açıkça yaz",
+            "Alternatif: ajan başlatmadan `glm-kod -p \"<görev>\" --permission-mode acceptEdits --output-format text` komutunu Bash'te (gerekirse arka planda) çalıştır"
+          ],
+          "dogrula": "GLM'nin değişikliğini körü körüne kabul etme: ana oturum `git diff`'i okur ve testleri kendisi çalıştırır; sorun varsa düzeltir veya görevi daha net tarifle tekrar verir."
+        }
+      ]
     }
   ]
 }

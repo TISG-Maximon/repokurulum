@@ -214,6 +214,30 @@ jobs:
           if ($LASTEXITCODE -ne 0 -or $c3 -match 'HEDEF=') { $hata += 'limit disi hatada devreye girdi' }
           if ($hata) { $hata | ForEach-Object { Write-Host "::error::$_" }; exit 1 }
 
+      - name: GLM kod ajanlari (calistiricilar, ajan dosyasi, ortam izolasyonu)
+        shell: powershell
+        timeout-minutes: 10
+        run: |
+          $ErrorActionPreference = 'Continue'
+          $hata = @()
+          $env:ZAI_API_KEY = 'test-sahte-anahtar'
+          .\installer\RepoKurulum.ps1 -Sessiz -Bilesenler "glm-ajanlar"
+          if ($LASTEXITCODE -ne 0) { $hata += "kurulum cikis kodu $LASTEXITCODE" }
+          $bin = "$env:USERPROFILE\.local\bin"
+          foreach ($f in "$bin\glm-kod.cmd","$bin\glm-kod","$env:USERPROFILE\.claude\agents\glm-kodcu.md") { if (-not (Test-Path $f)) { $hata += "dosya yok: $f" } }
+          if ((Get-Content "$bin\glm-kod" -Raw) -match "`r") { $hata += 'bash calistiricisinda CRLF var (LF olmali)' }
+          $v1 = & "$bin\glm-kod.cmd" --version 2>&1 | Out-String
+          Write-Host "cmd: $v1"
+          if ($v1 -notmatch 'Claude Code') { $hata += 'glm-kod.cmd calismadi' }
+          $bash = "$env:ProgramFiles\Git\bin\bash.exe"
+          $v2 = & $bash -c "'$($bin -replace '\\','/')/glm-kod' --version" 2>&1 | Out-String
+          Write-Host "bash: $v2"
+          if ($v2 -notmatch 'Claude Code') { $hata += 'bash glm-kod calismadi' }
+          if ($env:ANTHROPIC_BASE_URL -or $env:ANTHROPIC_AUTH_TOKEN) { $hata += 'ana ortam degisti (izolasyon bozuk)' }
+          $log = Get-ChildItem "$env:LOCALAPPDATA\RepoKurulum\logs\kurulum_*.log" | Sort-Object LastWriteTime | Select-Object -Last 1
+          Get-Content $log.FullName | Select-Object -Last 12 | Write-Host
+          if ($hata) { $hata | ForEach-Object { Write-Host "::error::$_" }; exit 1 }
+
       - name: Kural metni (-Kurallar) sadece kurulu araclari iceriyor mu, dosyaya yazmiyor mu
         shell: powershell
         run: |

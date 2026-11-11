@@ -395,7 +395,14 @@ function Invoke-Adim($A) {
         'calistir' {
             Update-EnvPath
             $argumanlar = @($A.argumanlar | ForEach-Object { Expand-Deger $_ })
-            return (Invoke-Harici $A.dosya $argumanlar)
+            $za = 900
+            if ($A.zaman_asimi) { $za = [int]$A.zaman_asimi }
+            $kod = Invoke-Harici $A.dosya $argumanlar -ZamanAsimi $za
+            if ($A.ciktiyi_goster -and $script:SonCikti) {
+                $ozet = (([string]$script:SonCikti -split "`n") | Where-Object { $_.Trim() } | Select-Object -Last 3) -join ' / '
+                Write-Log ("Cikti: " + $ozet)
+            }
+            return $kod
         }
         'uvtool' {
             Update-EnvPath
