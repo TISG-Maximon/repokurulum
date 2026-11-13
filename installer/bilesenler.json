@@ -1543,7 +1543,9 @@
       ],
       "kontrol": {
         "dosya": [
-          "%LOCALAPPDATA%\\piper-sesler\\tr_TR-fahrettin-medium.onnx"
+          "%LOCALAPPDATA%\\piper-sesler\\tr_TR-fahrettin-medium.onnx",
+          "%LOCALAPPDATA%\\piper-sesler\\tr_TR-dfki-medium.onnx",
+          "%LOCALAPPDATA%\\piper-sesler\\tr_TR-fettah-medium.onnx"
         ]
       },
       "kur": [
@@ -1554,7 +1556,7 @@
           },
           {
             "tur": "ps",
-            "komut": "$ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; [Net.ServicePointManager]::SecurityProtocol=[Net.ServicePointManager]::SecurityProtocol -bor 3072; $h=Join-Path $env:LOCALAPPDATA 'piper-sesler'; New-Item -ItemType Directory -Force $h | Out-Null; foreach ($s in @('dfki','fahrettin','fettah')) { foreach ($u in @('.onnx.json','.onnx')) { $ad='tr_TR-' + $s + '-medium' + $u; $f=Join-Path $h $ad; if ((Test-Path $f) -and ((Get-Item $f).Length -gt 1000)) { continue }; $url='https://huggingface.co/rhasspy/piper-voices/resolve/main/tr/tr_TR/' + $s + '/medium/' + $ad; $ok=$false; for ($i=1; $i -le 3 -and -not $ok; $i++) { try { Write-Output ('indiriliyor: ' + $ad); Invoke-WebRequest -UseBasicParsing -Uri $url -OutFile ($f + '.part') -TimeoutSec 600; Move-Item -Force ($f + '.part') $f; $ok=$true } catch { Write-Output $_.Exception.Message; Start-Sleep -Seconds (5*$i) } }; if (-not $ok) { exit 1 } } }; [Environment]::SetEnvironmentVariable('PIPER_SESLER', $h, 'User'); Write-Output ('Piper sesleri: ' + $h)"
+            "komut": "$ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; [Net.ServicePointManager]::SecurityProtocol=[Net.ServicePointManager]::SecurityProtocol -bor 3072; $h=Join-Path $env:LOCALAPPDATA 'piper-sesler'; New-Item -ItemType Directory -Force $h | Out-Null; $tamam=0; foreach ($s in @('fahrettin','dfki','fettah')) { $sesOk=$true; foreach ($u in @('.onnx.json','.onnx')) { $ad='tr_TR-' + $s + '-medium' + $u; $f=Join-Path $h $ad; if ((Test-Path $f) -and ((Get-Item $f).Length -gt 1000)) { continue }; $url='https://huggingface.co/rhasspy/piper-voices/resolve/main/tr/tr_TR/' + $s + '/medium/' + $ad + '?download=true'; $ok=$false; for ($i=1; $i -le 3 -and -not $ok; $i++) { Write-Output ('indiriliyor (' + $i + '): ' + $ad); try { Invoke-WebRequest -UseBasicParsing -Uri $url -OutFile ($f + '.part') -TimeoutSec 600 } catch { Write-Output ('Invoke-WebRequest: ' + $_.Exception.Message); if (Get-Command curl.exe -ErrorAction SilentlyContinue) { & curl.exe -fsSL --retry 2 -o ($f + '.part') $url 2>&1 | ForEach-Object { Write-Output ('curl: ' + $_) } } }; if ((Test-Path ($f + '.part')) -and ((Get-Item ($f + '.part')).Length -gt 1000)) { Move-Item -Force ($f + '.part') $f; $ok=$true } else { Start-Sleep -Seconds (5*$i) } }; if (-not $ok) { Write-Output ('INDIRILEMEDI: ' + $url); Remove-Item ($f + '.part') -ErrorAction SilentlyContinue; $sesOk=$false; break } }; if ($sesOk) { $tamam++ } }; if ($tamam -eq 0) { Write-Output 'Hicbir Turkce ses indirilemedi'; exit 1 }; [Environment]::SetEnvironmentVariable('PIPER_SESLER', $h, 'User'); Write-Output ('Piper sesleri (' + $tamam + '/3): ' + $h)"
           }
         ]
       ],

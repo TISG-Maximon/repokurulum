@@ -166,7 +166,7 @@ jobs:
           $kod = $LASTEXITCODE
           $log = Get-ChildItem "$env:LOCALAPPDATA\RepoKurulum\logs\*.log" | Sort-Object LastWriteTime | Select-Object -Last 1
           $hatalar = Select-String -Path $log.FullName -Pattern '\[HATA\]'
-          if ($hatalar) { $hatalar | ForEach-Object { Write-Host "::error::$($_.Line)" }; exit 1 }
+          if ($hatalar) { Get-Content $log.FullName -Tail 60 | Write-Host; $hatalar | ForEach-Object { Write-Host "::error::$($_.Line)" }; exit 1 }
           if ($kod -ne 0) { exit $kod }
           foreach ($y in @("$env:USERPROFILE\.local\bin", "$env:APPDATA\npm")) { $env:Path += ";$y" }
           $env:PIPER_SESLER = [Environment]::GetEnvironmentVariable('PIPER_SESLER', 'User')
