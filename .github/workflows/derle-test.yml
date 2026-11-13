@@ -173,7 +173,9 @@ jobs:
           $t = Join-Path $env:RUNNER_TEMP 'ses'; New-Item -ItemType Directory -Force $t | Out-Null
           $ErrorActionPreference = 'Continue'
           Set-Content -Path "$t\metin.txt" -Value 'Merhaba, bu bir seslendirme testidir.' -Encoding UTF8
-          & piper -m "$env:PIPER_SESLER\tr_TR-fahrettin-medium.onnx" -i "$t\metin.txt" -f "$t\piper.wav" 2>&1 | Out-Null
+          [IO.File]::WriteAllText("$t\metin.txt", 'Merhaba, bu bir seslendirme testidir.', (New-Object System.Text.UTF8Encoding($false)))
+          Write-Host "piper: $((Get-Command piper -ErrorAction SilentlyContinue).Source)"
+          & piper -m "$env:PIPER_SESLER\tr_TR-fahrettin-medium.onnx" -i "$t\metin.txt" -f "$t\piper.wav" 2>&1 | Select-Object -Last 15 | Write-Host
           if (-not (Test-Path "$t\piper.wav") -or (Get-Item "$t\piper.wav").Length -lt 10000) { Write-Host '::error::Piper ses uretmedi'; exit 1 }
           & edge-tts --voice tr-TR-EmelNeural --file "$t\metin.txt" --write-media "$t\edge.mp3" --write-subtitles "$t\edge.srt" 2>&1 | Out-Null
           if (-not (Test-Path "$t\edge.mp3") -or (Get-Item "$t\edge.mp3").Length -lt 5000) { Write-Host '::warning::edge-tts ses uretmedi (Microsoft servisi CI''dan erisilemiyor olabilir)' }

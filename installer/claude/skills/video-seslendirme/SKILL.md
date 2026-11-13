@@ -31,13 +31,13 @@ Komutlar (kısaltma: `VS="uv run --script $HOME/.claude/skills/video-seslendirme
    - Başlık kısa (2–5 kelime); `aciklama` tek satır; `**vurgu**` sarı yazar, `\n` satır böler.
    - Aynı adımın alt aşamaları aynı `adim` etiketini kullanır (ilerleme çubuğu adım numarasına göre dolar).
    - Kısaltmalar `telaffuz` sözlüğüne: `İSG→İ Se Ge`, `T.C.→Te Ce`, `SGK→Se Ge Ka`. Sayıyı yanlış okuyabilecekse yazıyla yaz ("%5" → "yüzde beş").
-   - Toplam hedef: 45–75 sn (bir sahne ≈ konuşma + 0,8 sn).
+   - **Süre: WhatsApp durum / Instagram hikaye için en fazla 60 sn; hedef 45–58 sn** (bir sahne ≈ konuşma + 0,7 sn). 12–15 sahne, toplam konuşma ~50 sn ≈ 110–125 kelime. Uzunsa önce metni kısalt, sahne birleştir; araç da otomatik olarak boşlukları kısaltır, hızı en fazla +%10 artırır, yine sığmazsa sahne sınırından `-bolum1/-bolum2` diye böler (son çare).
 4. **Ekran görseli:**
    - Kullanıcı gerçek ekran görüntüsü verdiyse `ekran_gorsel` kullan. Önce ilgili bölümü kırp (`ffmpeg -i ss.png -vf crop=G:Y:X:Y kirpik.png`); kişisel veriyi (TC no, ad, telefon) mutlaka karart veya temsili veriye çevir.
    - Yoksa `ekran_html` ile temsili ekran çiz ve köşeye "Temsili ekran" yaz. Hazır sınıflar: `pencere`, `pbas` (üst çubuk, `marka` kırmızı yazı), `pgovde` + `yan` (sol menü, seçili öğe `sec`) + `sag`, `alan` (giriş kutusu), `dugme` (`mavi`/`kirmizi`/`sari`), `hedef` (tıklanacak yeri sarı çerçeveyle işaretler, her ekranda bir tane), `table.t` (satır `yesil`/`mavi`/`kirmizi`), `not`.
 5. **Önizle:** `$VS gorsel senaryo.json` çalıştır ve `gorseller.png`'yi (gerekirse tek tek `gorseller/sahne_XX.png`) Read ile AÇ. Kontrol et: taşan metin, boş alan, yanlış vurgu, hedef işaretinin yeri, Türkçe karakterler. Sorun varsa düzelt ve tekrarla.
 6. **Üret:** `$VS olustur senaryo.json`. Çıktıdaki sahne sürelerine bak.
-7. **Doğrula:** `kontrol.png`'yi aç: altyazı sabit yerde mi, içeriğin üstüne biniyor mu (binerse `altyazi.y_orani` değerini değiştir, 0,78–0,84), siyah ara 0 mı. Gerekirse `ffmpeg -ss <sn> -i <ad>-altyazili.mp4 -frames:v 1 kare.png` ile tek kare al.
+7. **Doğrula:** `kontrol.png`'yi aç: altyazı sabit yerde mi, içeriğin üstüne biniyor mu (binerse `altyazi.y_orani` değerini değiştir, hikayede 0,74–0,79), siyah ara 0 mı. Gerekirse `ffmpeg -ss <sn> -i <ad>-altyazili.mp4 -frames:v 1 kare.png` ile tek kare al.
 8. **Teslim:** Dosya yollarını ver. Sesi dinleyemediğini, telaffuzu (özellikle kısaltmalar ve özel adlar) kullanıcının kontrol etmesi gerektiğini söyle. Düzeltme isterse sadece ilgili `metin`/`telaffuz` alanını değiştirip `olustur`'u tekrar çalıştır.
 
 ## İş akışı B — Hazır videoya seslendirme ve altyazı
@@ -48,11 +48,17 @@ Komutlar (kısaltma: `VS="uv run --script $HOME/.claude/skills/video-seslendirme
 4. `$VS uret <klasor>/sahneler.json`. Siyah geçişler atılır, sahneler 0,3 sn yumuşak geçişle birleşir, her sahne kendi anlatımı kadar sürer.
 5. Doğrula ve teslim et (A.7–A.8).
 
+## Paylaşım biçimi: hikaye / durum (varsayılan)
+
+- `platform: "hikaye"` (varsayılan): 1080x1920, 30 fps, H.264 + AAC, en fazla 60 sn (`hedef_sure_sn`: 58). Çıktı satırında `Hikaye/durum: UYGUN` görünmeli.
+- Güvenli alan: üstteki ~250 px (profil, ilerleme çubuğu) ve alttaki ~340 px (yanıt kutusu) boş bırakılır; şablon logo, içerik ve altyazıyı buna göre yerleştirir. Hazır videoda (iş akışı B) üst ve alt bölge orijinal tasarıma bağlıdır; önemli yazı orada kalıyorsa kullanıcıya söyle.
+- Yatay/normal video için `platform: "normal"` ve `hedef_sure_sn: 0` (sınır yok).
+
 ## Ayarlar (`senaryo.json` / `sahneler.json`)
 
 - `ses`: `tr-TR-EmelNeural` (kadın, varsayılan) veya `tr-TR-AhmetNeural` (erkek). `hiz`: `+4%` (doğal); en fazla `+12%`, daha hızlı yapma, metni kısalt.
 - `motor`: `edge` (internet, en doğal). Metin gizli/kurum içiyse `piper` (çevrimdışı, `piper_ses`: `tr_TR-fahrettin-medium` / `tr_TR-dfki-medium` / `tr_TR-fettah-medium`).
-- `altyazi`: `yazi_tipi` (Arial), `boyut_orani` (0,026 = 50 px / 1920), `y_orani` (0,80), `max_karakter` (40).
+- `altyazi`: `yazi_tipi` (Arial), `boyut_orani` (0,026 = 50 px / 1920), `y_orani` (hikayede 0,765, hazır videoda 0,78), `max_karakter` (40).
 - `marka`: `ad`, `logo` (png yolu), `site`, `eposta`, `renk_arka1`, `renk_arka2`, `renk_vurgu`, `renk_kirmizi`. Boşsa Teknik İSG.
 - `boyut`: `[1080, 1920]` dikey; yatay için `[1920, 1080]` (o zaman `y_orani` ~0,86).
 

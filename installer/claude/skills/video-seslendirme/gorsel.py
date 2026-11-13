@@ -95,12 +95,16 @@ table.t tr.yesil td{background:#cfeec6}table.t tr.kirmizi td{background:#f6c9cc}
 """
 
 
-def sahne_html(s, marka, w, h, adim_no, adim_top):
+def sahne_html(s, marka, w, h, adim_no, adim_top, hikaye=True):
     o = w / 1080.0
+    if hikaye and h > w:
+        # WhatsApp durum / Instagram hikaye guvenli alani: ustte ~250 px (profil, ilerleme), altta ~340 px (yanit kutusu) bos
+        yer = dict(u=int(h * 0.136), it=int(h * 0.229), ib=int(h * 0.302), pb=int(h * 0.284), fb=int(h * 0.18))
+    else:
+        yer = dict(u=int(70 * o), it=int(300 * o), ib=int(h * 0.255), pb=int(h * 0.115), fb=int(h * 0.05))
     deg = dict(W=w, H=h, font=marka["yazi_tipi"], a1=marka["renk_arka1"], a2=marka["renk_arka2"], vurgu=marka["renk_vurgu"],
-               kirmizi=marka["renk_kirmizi"], u=int(70 * o), lh=int(78 * o), k=int(60 * o), it=int(300 * o), ib=int(h * 0.255),
-               s0=int(84 * o), s1=int(62 * o), s2=int(38 * o), s3=int(30 * o), s4=int(28 * o), sk=int(34 * o),
-               pb=int(h * 0.115), pw=int(70 * o), fb=int(h * 0.05))
+               kirmizi=marka["renk_kirmizi"], lh=int(78 * o), k=int(60 * o),
+               s0=int(84 * o), s1=int(62 * o), s2=int(38 * o), s3=int(30 * o), s4=int(28 * o), sk=int(34 * o), pw=int(70 * o), **yer)
     logo = marka.get("logo")
     logo_html = f'<img src="{resim_veri(logo)}">' if logo and Path(logo).exists() else f'<span class="yazi">{html.escape(marka["ad"])}</span>'
     tur = s.get("tur", "adim")
@@ -182,7 +186,7 @@ def gorselleri_uret(cfg, klasor):
                 continue
             sira = (etiketler.index(s["_adim_etiket"]) + 1) if s.get("_adim_etiket") else 0
             sayfa = hedef / f"sahne_{n:02d}.html"
-            sayfa.write_text(sahne_html(s, marka, w, h, sira, len(etiketler)), encoding="utf-8")
+            sayfa.write_text(sahne_html(s, marka, w, h, sira, len(etiketler), cfg.get("platform", "hikaye") == "hikaye"), encoding="utf-8")
             png = hedef / f"sahne_{n:02d}.png"
             if png.exists():
                 png.unlink()

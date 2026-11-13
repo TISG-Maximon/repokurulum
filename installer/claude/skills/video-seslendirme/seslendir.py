@@ -267,22 +267,50 @@ def uret_cfg(cfg, klasor):
     is_d = klasor / "_is"; is_d.mkdir(exist_ok=True)
 
     # 1) Ses ve kelime zamanlari
-    for i, s in enumerate(sahneler):
-        s["_parcalar"] = parcala(s.get("metin", ""), azami)
-        s["_ses"] = None
-        if s["_parcalar"]:
-            konusma = " ".join(seslendirilecek(p, tel) for p in s["_parcalar"])
-            wav = is_d / f"s{i:02d}.wav"
-            s["_sure"], s["_kelimeler"] = ses_uret(konusma, cfg, wav, is_d / f"s{i:02d}")
-            s["_ses"] = wav
-            print(f"sahne {s.get('no', i + 1):>2}: ses {s['_sure']:.2f} sn  | {konusma}")
-        if s["_ses"]:
-            s["_uzunluk"] = ON + s["_sure"] + SON
-        elif s.get("goruntu"):
-            s["_uzunluk"] = float(s.get("sure", 2.5))
-        else:
-            s["_uzunluk"] = float(s["son"]) - float(s["bas"])
-    sahneler[-1]["_uzunluk"] += 0.6
+    hikaye = cfg.get("platform", "hikaye") == "hikaye"
+    hedef_sn = float(cfg.get("hedef_sure_sn", 58 if hikaye else 0))   # WhatsApp durum / Instagram hikaye: en fazla 60 sn
+
+    def sesleri_uret():
+        for i, s in enumerate(sahneler):
+            s["_parcalar"] = parcala(s.get("metin", ""), azami)
+            s["_ses"] = None
+            if s["_parcalar"]:
+                konusma = " ".join(seslendirilecek(p, tel) for p in s["_parcalar"])
+                wav = is_d / f"s{i:02d}.wav"
+                s["_sure"], s["_kelimeler"] = ses_uret(konusma, cfg, wav, is_d / f"s{i:02d}")
+                s["_ses"] = wav
+                print(f"sahne {s.get('no', i + 1):>2}: ses {s['_sure']:.2f} sn  | {konusma}")
+
+    def uzunluklar():
+        for s in sahneler:
+            if s["_ses"]:
+                s["_uzunluk"] = ON + s["_sure"] + SON
+            elif s.get("goruntu"):
+                s["_uzunluk"] = float(s.get("sure", 2.5))
+            else:
+                s["_uzunluk"] = float(s["son"]) - float(s["bas"])
+        sahneler[-1]["_uzunluk"] += 0.6
+        return sum(s["_uzunluk"] for s in sahneler) - X * (len(sahneler) - 1)
+
+    sesleri_uret()
+    tahmin = uzunluklar()
+    if hedef_sn and tahmin > hedef_sn:
+        ON, SON = min(ON, 0.2), min(SON, 0.3)
+        tahmin = uzunluklar()
+        print(f"Sure {hedef_sn:.0f} sn hedefini asiyor; bosluklar kisaltildi -> {tahmin:.1f} sn")
+    if hedef_sn and tahmin > hedef_sn and cfg.get("motor", "edge") == "edge":
+        konusma_top = sum(s["_sure"] for s in sahneler if s["_ses"])
+        gerek = konusma_top / max(1.0, konusma_top - (tahmin - hedef_sn))   # gereken hizlanma orani
+        mevcut = int(re.sub(r"[^\d-]", "", str(cfg.get("hiz", "+0%"))) or 0)
+        yeni = min(10, int((1 + mevcut / 100) * gerek * 100 - 100 + 0.999))
+        if yeni > mevcut:
+            cfg["hiz"] = f"+{yeni}%"
+            print(f"Konusma hizi {mevcut:+d}% -> {yeni:+d}% (en fazla +10%) ile yeniden uretiliyor")
+            sesleri_uret()
+            tahmin = uzunluklar()
+    if hedef_sn and tahmin > hedef_sn:
+        print(f"UYARI: video {tahmin:.1f} sn, {hedef_sn:.0f} sn hedefini asiyor. Metinleri kisaltmak en iyisi; "
+              f"simdilik video sahne sinirindan parcalara bolunecek.")
 
     # 2) Goruntu: temiz araliklar + kendi anlatimi kadar sure + yumusak gecis (siyah yok)
     fl, ofset = [], [0.0]
@@ -334,15 +362,16 @@ def uret_cfg(cfg, klasor):
         if k and sum(sayilar) == len(k):
             i = 0
             for p, c in zip(parcalar, sayilar):
-                ipuclari.append([s["_bas"] + k[i][0], p]); i += c
+                ipuclari.append([s["_bas"] + k[i][0], p.rstrip(",;")]); i += c
         else:   # kelime zamani yok/uyusmuyor: karakter oranina gore
             uz = sum(len(p) for p in parcalar); acc = 0
             for p in parcalar:
-                ipuclari.append([s["_bas"] + s["_sure"] * acc / uz, p]); acc += len(p)
+                ipuclari.append([s["_bas"] + s["_sure"] * acc / uz, p.rstrip(",;")]); acc += len(p)
     if ipuclari:
         ipuclari[0][0] = 0.0
     boyut = int(round(h * float(alt.get("boyut_orani", 0.026))))
-    y = int(round(h * float(alt.get("y_orani", 0.80))))
+    y_vars = (0.765 if not video else 0.78) if hikaye and h > w else 0.80
+    y = int(round(h * float(alt.get("y_orani", y_vars))))
     font = alt.get("yazi_tipi", "Arial")
     ass = [
         "[Script Info]", "ScriptType: v4.00+", f"PlayResX: {w}", f"PlayResY: {h}", "WrapStyle: 0", "",
@@ -361,7 +390,26 @@ def uret_cfg(cfg, klasor):
     calistir(["ffmpeg", "-v", "error", "-y", "-i", sesli.name, "-vf", "ass=altyazi.ass", "-c:v", "libx264", "-crf", "19",
               "-preset", "medium", "-c:a", "copy", "-movflags", "+faststart", altyazili.name], cwd=str(klasor))
 
-    # 4) Kontrol
+    # 4) Hikaye siniri asildiysa sahne sinirlarindan bol
+    bolumler = []
+    if hedef_sn and toplam > hedef_sn + 1.5:
+        kesimler, bas = [], 0.0
+        sinirlar = [ofset[i] + X / 2 for i in range(1, len(sahneler))] + [toplam]
+        onceki_sinir = 0.0
+        for sn in sinirlar:
+            if sn - bas > hedef_sn and onceki_sinir > bas:
+                kesimler.append((bas, onceki_sinir)); bas = onceki_sinir
+            onceki_sinir = sn
+        kesimler.append((bas, toplam))
+        for k, (a, b) in enumerate(kesimler, 1):
+            for kaynak, ek in ((altyazili, "-altyazili"), (sesli, "")):
+                hedef_d = klasor / f"{ad}{ek}-bolum{k}.mp4"
+                calistir(["ffmpeg", "-v", "error", "-y", "-ss", f"{a:.3f}", "-to", f"{b:.3f}", "-i", str(kaynak),
+                          "-c:v", "libx264", "-crf", "19", "-preset", "medium", "-c:a", "aac", "-b:a", "160k",
+                          "-movflags", "+faststart", str(hedef_d)])
+            bolumler.append((k, b - a))
+
+    # 5) Kontrol
     kare = max(0.5, toplam / 30)
     calistir(["ffmpeg", "-v", "error", "-y", "-i", str(altyazili), "-vf", f"fps=1/{kare:.3f},scale=200:-2,tile=6x5",
               "-frames:v", "1", str(klasor / "kontrol.png")])
@@ -370,6 +418,10 @@ def uret_cfg(cfg, klasor):
     siyah = len(re.findall(r"black_start", r.stderr))
     print(f"\nTAMAM. Sure {toplam:.1f} sn, {len(ipuclari)} altyazi parcasi, siyah ara: {siyah}")
     print(f"  Seslendirmeli : {sesli}\n  Altyazili     : {altyazili}\n  Altyazi (SRT) : {klasor / (ad + '.srt')}\n  Kontrol karesi: {klasor / 'kontrol.png'}")
+    if hedef_sn:
+        print(f"  Hikaye/durum  : {'UYGUN' if toplam <= 60 else 'UZUN'} ({toplam:.1f} sn; WhatsApp durum ve Instagram hikaye en fazla 60 sn)")
+    for k, u in bolumler:
+        print(f"  Bolum {k}       : {klasor / f'{ad}-altyazili-bolum{k}.mp4'} ({u:.1f} sn)")
 
 
 def olustur(json_yolu, sadece_gorsel=False):

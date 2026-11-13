@@ -1,15 +1,29 @@
 {
-  "_aciklama": "repokurulum ornek senaryo: ISG-KATIP sozlesme onayi musteri rehberi. Yeni video icin bu dosyayi proje klasorune 'senaryo.json' olarak kopyala ve sahneleri degistir.",
+  "_aciklama": "repokurulum ornek senaryo: ISG-KATIP sozlesme onayi musteri rehberi (WhatsApp durum / Instagram hikaye, en fazla 60 sn). Yeni video icin bu dosyayi proje klasorune 'senaryo.json' olarak kopyala ve sahneleri degistir.",
   "cikti_adi": "isg-katip-sozlesme-onayi",
-  "boyut": [1080, 1920],
+  "platform": "hikaye",
+  "hedef_sure_sn": 58,
+  "boyut": [
+    1080,
+    1920
+  ],
   "motor": "edge",
   "ses": "tr-TR-EmelNeural",
   "hiz": "+4%",
   "gecis_sn": 0.3,
-  "on_bosluk_sn": 0.35,
-  "son_bosluk_sn": 0.45,
-  "altyazi": {"yazi_tipi": "Arial", "boyut_orani": 0.026, "y_orani": 0.80, "max_karakter": 40},
-  "telaffuz": {"İSG": "İ Se Ge", "KATİP": "Katip", "T.C.": "Te Ce", "SGK": "Se Ge Ka"},
+  "on_bosluk_sn": 0.3,
+  "son_bosluk_sn": 0.4,
+  "altyazi": {
+    "yazi_tipi": "Arial",
+    "boyut_orani": 0.026,
+    "max_karakter": 40
+  },
+  "telaffuz": {
+    "İSG": "İ Se Ge",
+    "KATİP": "Katip",
+    "T.C.": "Te Ce",
+    "SGK": "Se Ge Ka"
+  },
   "marka": {},
   "sahneler": [
     {
@@ -17,21 +31,25 @@
       "etiket": "MÜŞTERİ REHBERİ",
       "baslik": "İSG-KATİP'te\nsözleşme onayı\n**1 dakikada**",
       "bant": "Sadece akredite muayene kuruluşları için",
-      "metin": "İSG-KATİP'te sözleşme onayını nasıl vereceğinizi bir dakikada anlatıyoruz."
+      "metin": "İSG-KATİP'te sözleşme onayını bir dakikada anlatıyoruz."
     },
     {
       "tur": "liste",
       "baslik": "Kim ne yapar?",
-      "maddeler": ["1. Teknik İSG başlatır", "2. Mühendisimiz onaylar", "3. Siz onaylarsınız"],
+      "maddeler": [
+        "1. Teknik İSG başlatır",
+        "2. Mühendisimiz onaylar",
+        "3. Siz onaylarsınız"
+      ],
       "aciklama": "Bu sıra **sadece akredite muayene kuruluşlarında** böyledir.",
-      "metin": "Süreç şöyle işliyor: sözleşmeyi Teknik İSG başlatır, mühendisimiz onaylar, son onayı da siz verirsiniz."
+      "metin": "Sözleşmeyi biz başlatırız, mühendisimiz onaylar, son onay sizde."
     },
     {
       "tur": "uyari",
       "etiket": "ÖNCE BUNU YAPIN",
       "baslik": "e-Devlet'te\n**iki aşamalı doğrulama**\naçık olmalı",
       "kutu": "Açık değilse **İSG-KATİP'e giremezsiniz.**",
-      "metin": "Başlamadan önce e-Devlet'te iki aşamalı doğrulama açık olmalı. Açık değilse sisteme giremezsiniz."
+      "metin": "Önce e-Devlet'te iki aşamalı doğrulamayı açın; açık değilse giriş yapamazsınız."
     },
     {
       "tur": "adim",
@@ -39,7 +57,7 @@
       "baslik": "Siteye girin",
       "aciklama": "**isgkatip.csgb.gov.tr** → **\"E-Devlet Giriş\"**",
       "ekran_html": "<div class='pencere'><div class='pbas'><span>T.C. Çalışma ve Sosyal Güvenlik Bakanlığı<br><small>İSG-KATİP</small></span><span class='dugme kirmizi hedef'>E-Devlet Giriş</span></div><div class='sag'><div class='alan'>İSG-KATİP için e-Devlet Kapısı üzerinden giriş yapmanız gerekir.</div><div class='alan' style='background:#fff6dc;color:#5a4400'>Girişten önce e-Devlet iki aşamalı doğrulama özelliğini aktif etmeniz zorunludur.</div></div><div class='not'>Temsili ekran</div></div>",
-      "metin": "İSG-KATİP sitesine girin ve \"E-Devlet Giriş\" düğmesine tıklayın."
+      "metin": "İSG-KATİP sitesinde \"E-Devlet Giriş\"e tıklayın."
     },
     {
       "tur": "adim",
@@ -47,7 +65,7 @@
       "baslik": "Kimlik no ve şifre",
       "aciklama": "e-Devlet bilgilerinizi yazın → **\"Giriş Yap\"**",
       "ekran_html": "<div class='pencere'><div class='pbas'><span>e-Devlet Kapısı</span><small>İSG-KATİP</small></div><div class='sag'><div class='alan'>T.C. Kimlik No: •••••••••••</div><div class='alan'>e-Devlet Şifresi: ••••••••</div><div style='text-align:center'><span class='dugme'>İptal</span><span class='dugme mavi hedef'>Giriş Yap</span></div></div><div class='not'>Temsili ekran</div></div>",
-      "metin": "T.C. kimlik numaranızı ve e-Devlet şifrenizi yazıp \"Giriş Yap\"a basın."
+      "metin": "Kimlik numaranızı ve şifrenizi yazıp \"Giriş Yap\"a basın."
     },
     {
       "tur": "adim",
@@ -55,7 +73,7 @@
       "baslik": "Telefondan onaylayın",
       "aciklama": "Telefonunuza gelen **bildirime** dokunun.",
       "ekran_html": "<div class='pencere'><div class='pbas'><span>İki Aşamalı Giriş Onay</span></div><div class='sag' style='text-align:center'><span class='dugme mavi'>Kalan Süre 00:55</span><div class='alan hedef' style='color:#1d2733'>Kayıtlı cihazınıza gelen bildirime tıklayarak girişi onaylayın.</div></div><div class='not'>Temsili ekran</div></div>",
-      "metin": "Ardından telefonunuza gelen bildirimi onaylayın."
+      "metin": "Telefonunuza gelen bildirimi onaylayın."
     },
     {
       "tur": "adim",
@@ -63,7 +81,7 @@
       "baslik": "**Kurumsal**'a tıklayın",
       "aciklama": "Üst ortadaki düğme.",
       "ekran_html": "<div class='pencere'><div class='pbas'><span class='marka'>İSG KATİP</span><span><span class='dugme'>Bireysel</span><span class='dugme kirmizi hedef'>Kurumsal</span></span></div><div class='pgovde'><div class='yan'><div>Anasayfa</div><div>Bildirim Yönetimi</div><div>Duyuru Yönetimi</div><div>Süreç Yönetimi</div></div><div class='sag'><div class='alan'>Onayımda Bekleyen Hizmet Sözleşmesi: <b>1</b></div></div></div><div class='not'>Temsili ekran</div></div>",
-      "metin": "Sayfa açılınca üst ortadaki \"Kurumsal\" düğmesine tıklayın."
+      "metin": "Üstteki \"Kurumsal\" düğmesine tıklayın."
     },
     {
       "tur": "adim",
@@ -79,7 +97,7 @@
       "baslik": "Sözleşmeler menüsü",
       "aciklama": "Sol menü: **Süreç Yönetimi** → **İSG Hizmet Sözleşmeleri**",
       "ekran_html": "<div class='pencere'><div class='pbas'><span class='marka'>İSG KATİP</span><span class='dugme kirmizi'>Kurumsal</span></div><div class='pgovde'><div class='yan'><div>Anasayfa</div><div>Bildirim Yönetimi</div><div>Süreç Yönetimi ▾</div><div>› İSG Personel Sözleşmeleri</div><div class='sec'>› İSG Hizmet Sözleşmeleri</div></div><div class='sag'><div class='alan hedef' style='color:#1d2733'>Akredite Muayene Kuruluşu ile SGK İşyeri Arasında Hizmet Sözleşmesi — <b style='color:#2e8b3a'>Sizi bekliyor</b></div></div></div><div class='not'>Temsili ekran</div></div>",
-      "metin": "Sol menüden \"Süreç Yönetimi\"ne, ardından \"İSG Hizmet Sözleşmeleri\"ne girin."
+      "metin": "Sol menüden \"Süreç Yönetimi\", ardından \"İSG Hizmet Sözleşmeleri\"."
     },
     {
       "tur": "adim",
@@ -87,7 +105,7 @@
       "baslik": "① Tik ② Sürece Git",
       "aciklama": "**Yeşil** satır sizi bekleyen sözleşmedir.",
       "ekran_html": "<div class='pencere'><div class='pbas'><span class='marka'>İSG KATİP</span><span class='dugme sari hedef'>② Sürece Git</span></div><div class='sag'><table class='t'><tr><th></th><th>Görevlendirilen</th><th>İşyeri</th><th>Başlangıç</th></tr><tr class='yesil'><td><span class='hedef'>☑</span></td><td>MÜHENDİS ADI</td><td>ÖRNEK SANAYİ A.Ş.</td><td>12.11.2026</td></tr><tr class='mavi'><td>☐</td><td>MÜHENDİS ADI</td><td>ÖRNEK SANAYİ A.Ş.</td><td>10.11.2026</td></tr><tr class='kirmizi'><td>☐</td><td>MÜHENDİS ADI</td><td>ÖRNEK SANAYİ A.Ş.</td><td>20.11.2026</td></tr></table></div><div class='not'>Temsili ekran · örnek veriler</div></div>",
-      "metin": "Yeşil satır sizi bekleyen sözleşmedir. Başındaki kutuyu işaretleyip \"Sürece Git\"e basın."
+      "metin": "Yeşil satırı işaretleyin ve \"Sürece Git\"e basın."
     },
     {
       "tur": "adim",
@@ -100,21 +118,25 @@
     {
       "tur": "liste",
       "baslik": "Birden fazla\nsözleşme var mı?",
-      "maddeler": ["① Tik", "② Sürece Git", "③ Onay"],
+      "maddeler": [
+        "① Tik",
+        "② Sürece Git",
+        "③ Onay"
+      ],
       "aciklama": "Her biri için tekrarlayın.",
-      "metin": "Birden fazla sözleşmeniz varsa her biri için aynı adımları tekrarlayın."
+      "metin": "Birden fazla sözleşme varsa her biri için tekrarlayın."
     },
     {
       "tur": "uyari",
       "baslik": "⚠ Onaysız rapor\n**GEÇERSİZDİR**",
       "kutu": "**Bugün** onayı verdiniz → **Yarın** en erken kontrol ve rapor",
       "aciklama": "Onay için **5 gününüz** var.",
-      "metin": "Unutmayın: onaylanmayan rapor geçersizdir. Kontrol, onaydan en erken bir gün sonra yapılır. Onay için beş gününüz var."
+      "metin": "Unutmayın: onaysız rapor geçersizdir. Kontrol en erken ertesi gün yapılır; onay için beş gününüz var."
     },
     {
       "tur": "kapanis",
       "baslik": "Takılırsanız\nbizi arayın.",
-      "metin": "Takıldığınız bir yer olursa bizi arayın."
+      "metin": "Takılırsanız bizi arayın."
     }
   ]
 }
