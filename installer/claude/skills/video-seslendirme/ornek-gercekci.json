@@ -3,15 +3,29 @@
   "cikti_adi": "elektrik-panosu-kontrolu",
   "platform": "hikaye",
   "hedef_sure_sn": 58,
-  "boyut": [1080, 1920],
-  "motor": "edge",
+  "boyut": [
+    1080,
+    1920
+  ],
+  "motor": "otomatik",
+  "gemini_ses": "Kore",
   "ses": "tr-TR-EmelNeural",
   "hiz": "+4%",
   "gecis_sn": 0.3,
   "on_bosluk_sn": 0.3,
   "son_bosluk_sn": 0.4,
-  "altyazi": {"yazi_tipi": "Arial", "boyut_orani": 0.026, "max_karakter": 40},
-  "telaffuz": {"İSG": "İ Se Ge", "KKD": "Ka Ka De", "RCD": "Ar Si Di", "mA": "miliamper", "MΩ": "megaohm"},
+  "altyazi": {
+    "yazi_tipi": "Arial",
+    "boyut_orani": 0.026,
+    "max_karakter": 40
+  },
+  "telaffuz": {
+    "İSG": "İ Se Ge",
+    "KKD": "Ka Ka De",
+    "RCD": "Ar Si Di",
+    "mA": "miliamper",
+    "MΩ": "megaohm"
+  },
   "marka": {},
   "sahneler": [
     {

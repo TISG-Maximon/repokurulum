@@ -124,7 +124,7 @@ def analiz(video, klasor):
                      "'atla': true sahneyi cikarir. bas/son: sahnenin kararma/gecis icermeyen temiz araligi (saniye). "
                      "'telaffuz': ses motoruna giden metinde yapilacak degisiklikler (kisaltmalar).",
         "video": str(video), "cikti_adi": video.stem + "-seslendirmeli",
-        "motor": "edge", "ses": "tr-TR-EmelNeural", "hiz": "+4%", "piper_ses": "tr_TR-dfki-medium",
+        "motor": "otomatik", "gemini_ses": "Kore", "ses": "tr-TR-EmelNeural", "hiz": "+4%", "piper_ses": "tr_TR-dfki-medium",
         "gecis_sn": 0.3, "on_bosluk_sn": 0.35, "son_bosluk_sn": 0.45,
         "altyazi": {"yazi_tipi": "Arial", "boyut_orani": 0.026, "y_orani": 0.80, "max_karakter": 40},
         "telaffuz": VARSAYILAN_TELAFFUZ,
@@ -214,6 +214,110 @@ def piper_model(ad):
     return None
 
 
+GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/"
+
+
+def gemini_anahtar():
+    k = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+    if not k and os.name == "nt":
+        try:
+            import winreg
+            with winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Environment") as a:
+                k = winreg.QueryValueEx(a, "GEMINI_API_KEY")[0]
+        except Exception:
+            k = None
+    return k
+
+
+def gemini_istek(yol, govde=None):
+    import urllib.request, urllib.error
+    bas = {"Content-Type": "application/json"}
+    k = gemini_anahtar()
+    if k:
+        bas["x-goog-api-key"] = k
+    istek = urllib.request.Request(GEMINI_URL + yol, data=json.dumps(govde).encode() if govde is not None else None, headers=bas)
+    for deneme in range(4):
+        try:
+            with urllib.request.urlopen(istek, timeout=300) as r:
+                return json.loads(r.read())
+        except urllib.error.HTTPError as e:
+            ayrinti = e.read().decode("utf-8", "replace")[:600]
+            if e.code == 429 and deneme < 3:
+                print(f"Gemini kota/hiz siniri (429), {20 * (deneme + 1)} sn bekleniyor..."); import time; time.sleep(20 * (deneme + 1)); continue
+            if e.code in (401, 403):
+                sys.exit("HATA: Gemini API anahtari yok ya da gecersiz. Repo Kurulum'da 'Gemini seslendirme' anahtarini gir "
+                         "(aistudio.google.com/apikey, ucretsiz) ya da GEMINI_API_KEY ortam degiskenini ayarla.\n" + ayrinti)
+            if e.code == 429:
+                sys.exit("HATA: Gemini ucretsiz kotasi doldu (gunluk/dakikalik). Daha sonra tekrar dene ya da 'motor': 'edge' kullan.\n" + ayrinti)
+            sys.exit(f"HATA: Gemini API {e.code}: {ayrinti}")
+        except urllib.error.URLError as e:
+            if deneme == 3:
+                sys.exit(f"HATA: Gemini API'ye ulasilamadi: {e}")
+
+
+def gemini_model(cfg):
+    if cfg.get("gemini_model"):
+        return cfg["gemini_model"]
+    try:
+        modeller = [m["name"].split("/")[-1] for m in gemini_istek("models?pageSize=200").get("models", []) if "tts" in m["name"]]
+    except SystemExit:
+        raise
+    except Exception:
+        modeller = []
+    for tercih in ("flash", "pro", ""):
+        aday = sorted([m for m in modeller if tercih in m], reverse=True)
+        if aday:
+            return aday[0]
+    return "gemini-2.5-flash-preview-tts"
+
+
+def gemini_toplu(metinler, cfg, is_d):
+    """Tum sahne metinlerini TEK istekte seslendirir (kota dostu), sesi sahne aralarindaki duraklamalardan boler.
+    Donus: [(wav, sure), ...] metinler sirasiyla."""
+    import base64, hashlib
+    ses = cfg.get("gemini_ses", "Kore")
+    uslup = cfg.get("gemini_uslup", "Doğal, akıcı, sıcak ve güven veren bir Türkçe tanıtım spikeri gibi oku. "
+                                    "Her paragraftan sonra yaklaşık bir saniye dur.")
+    metin = "\n\n".join(metinler)
+    anahtar = hashlib.sha1(f"{ses}|{uslup}|{metin}|{cfg.get('gemini_model', '')}".encode()).hexdigest()[:16]
+    ham = is_d / f"gemini_{anahtar}.wav"
+    if not ham.exists():
+        model = gemini_model(cfg)
+        print(f"Gemini TTS: model {model}, ses {ses} (tek istek)")
+        govde = {"contents": [{"parts": [{"text": f"{uslup}\n\n{metin}"}]}],
+                 "generationConfig": {"responseModalities": ["AUDIO"],
+                                      "speechConfig": {"voiceConfig": {"prebuiltVoiceConfig": {"voiceName": ses}}}}}
+        y = gemini_istek(f"models/{model}:generateContent", govde)
+        try:
+            veri = next(p["inlineData"] for p in y["candidates"][0]["content"]["parts"] if "inlineData" in p)
+        except Exception:
+            sys.exit("HATA: Gemini ses dondurmedi: " + json.dumps(y)[:500])
+        pcm = is_d / f"gemini_{anahtar}.pcm"
+        pcm.write_bytes(base64.b64decode(veri["data"]))
+        oran = re.search(r"rate=(\d+)", veri.get("mimeType", "")); oran = oran.group(1) if oran else "24000"
+        calistir(["ffmpeg", "-v", "error", "-y", "-f", "s16le", "-ar", oran, "-ac", "1", "-i", str(pcm), "-ar", "44100", str(ham)])
+    toplam = sure(ham)
+    n = len(metinler)
+    # Sessizlikleri bul; en uzun n-1 tanesinden bol (paragraf aralari)
+    r = subprocess.run(["ffmpeg", "-hide_banner", "-i", str(ham), "-af", "silencedetect=n=-38dB:d=0.18", "-f", "null", "-"],
+                       capture_output=True, text=True, encoding="utf-8", errors="replace")
+    bas_l = [float(x) for x in re.findall(r"silence_start: ([\d.]+)", r.stderr)]
+    son_l = [float(x) for x in re.findall(r"silence_end: ([\d.]+)", r.stderr)]
+    araliklar = [(a, b) for a, b in zip(bas_l, son_l) if a > 0.05 and b < toplam - 0.05]
+    if len(araliklar) < n - 1:
+        sys.exit(f"HATA: Gemini sesi {n} sahneye bolunemedi ({len(araliklar)} duraklama bulundu). Tekrar dene ya da metinleri sadelestir.")
+    secilen = sorted(sorted(araliklar, key=lambda ab: ab[1] - ab[0], reverse=True)[:n - 1])
+    kes = [0.0] + [(a + b) / 2 for a, b in secilen] + [toplam]
+    cikti = []
+    for i in range(n):
+        wav = is_d / f"g{i:02d}.wav"
+        calistir(["ffmpeg", "-v", "error", "-y", "-ss", f"{kes[i]:.3f}", "-to", f"{kes[i + 1]:.3f}", "-i", str(ham), "-af",
+                  "silenceremove=start_periods=1:start_threshold=-45dB,areverse,silenceremove=start_periods=1:start_threshold=-45dB,areverse",
+                  "-ar", "44100", "-ac", "1", str(wav)])
+        cikti.append((wav, sure(wav)))
+    return cikti
+
+
 def ses_uret(metin, cfg, hedef_wav, gecici):
     """Sesi uretir, bas/son sessizligi kirpar. Donus: (sure, [(bas, son, kelime)...] kirpilmis zamana gore veya None)."""
     motor = cfg.get("motor", "edge")
@@ -292,7 +396,26 @@ def uret_cfg(cfg, klasor):
     hikaye = cfg.get("platform", "hikaye") == "hikaye"
     hedef_sn = float(cfg.get("hedef_sure_sn", 58 if hikaye else 0))   # WhatsApp durum / Instagram hikaye: en fazla 60 sn
 
+    if cfg.get("motor", "otomatik") == "otomatik":
+        cfg["motor"] = "gemini" if gemini_anahtar() else "edge"
+        print(f"Ses motoru: {cfg['motor']}")
+
+    def gemini_sesleri():
+        for s in sahneler:
+            s["_parcalar"] = parcala(s.get("metin", ""), azami); s["_ses"] = None
+        konusanlar = [s for s in sahneler if s["_parcalar"]]
+        sesler = gemini_toplu([" ".join(seslendirilecek(p, tel) for p in s["_parcalar"]) for s in konusanlar], cfg, is_d)
+        for s, (wav, sr) in zip(konusanlar, sesler):
+            s["_ses"], s["_sure"], s["_kelimeler"] = wav, sr, None
+            print(f"sahne: ses {sr:.2f} sn  | {s.get('metin', '')}")
+
     def sesleri_uret():
+        if cfg.get("motor") == "gemini":
+            try:
+                return gemini_sesleri()
+            except SystemExit as e:
+                print(f"UYARI: Gemini seslendirme olmadi, Microsoft Emel ile devam ediliyor.\n  {e}")
+                cfg["motor"] = "edge"; cfg["ses"] = cfg.get("yedek_ses", "tr-TR-EmelNeural")
         for i, s in enumerate(sahneler):
             s["_parcalar"] = parcala(s.get("metin", ""), azami)
             s["_ses"] = None

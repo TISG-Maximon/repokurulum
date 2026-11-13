@@ -1,331 +1,332 @@
 {
- "_aciklama": "repokurulum ornek tanitim (3B katmanli cizim sahneleri, hikaye). katmanlar: ikon (Fluent Emoji 3D adi), parca (parcalar.py), zemin, etiket (oklu), yazi. Koordinatlar 600x520 sahnede merkez noktasi.",
- "cikti_adi": "site-tesisat-muayenesi",
- "platform": "hikaye",
- "hedef_sure_sn": 58,
- "boyut": [
-  1080,
-  1920
- ],
- "motor": "edge",
- "ses": "tr-TR-EmelNeural",
- "hiz": "+6%",
- "gecis_sn": 0.25,
- "on_bosluk_sn": 0.25,
- "son_bosluk_sn": 0.35,
- "hareket": "yakinlas",
- "altyazi": {
-  "yazi_tipi": "Arial",
-  "boyut_orani": 0.026,
-  "max_karakter": 38
- },
- "telaffuz": {
-  "İSG": "İ Se Ge"
- },
- "marka": {
-  "site": "teknikisg.com.tr",
-  "eposta": "",
-  "renk_vurgu": "#22c55e"
- },
- "sahneler": [
-  {
-   "tur": "cizim",
-   "baslik": "Kapı **çaldı.**",
-   "aciklama": "Periyodik muayene ekibi geldi.",
-   "metin": "Kapı çaldı. Periyodik muayene ekibi geldi.",
-   "katmanlar": [
-    {
-     "zemin": true,
-     "x": 300,
-     "y": 460,
-     "g": 380
-    },
-    {
-     "ikon": "door",
-     "x": 240,
-     "y": 260,
-     "boyut": 300
-    },
-    {
-     "ikon": "man_construction_worker",
-     "x": 440,
-     "y": 300,
-     "boyut": 230
-    },
-    {
-     "yazi": "TAK!",
-     "x": 90,
-     "y": 150,
-     "boyut": 52,
-     "renk": "v",
-     "don": -12
-    },
-    {
-     "yazi": "TAK!",
-     "x": 120,
-     "y": 240,
-     "boyut": 40,
-     "renk": "v",
-     "don": -8
-    }
-   ]
+  "_aciklama": "repokurulum ornek tanitim (3B katmanli cizim sahneleri, hikaye). katmanlar: ikon (Fluent Emoji 3D adi), parca (parcalar.py), zemin, etiket (oklu), yazi. Koordinatlar 600x520 sahnede merkez noktasi.",
+  "cikti_adi": "site-tesisat-muayenesi",
+  "platform": "hikaye",
+  "hedef_sure_sn": 58,
+  "boyut": [
+    1080,
+    1920
+  ],
+  "motor": "otomatik",
+  "gemini_ses": "Kore",
+  "ses": "tr-TR-EmelNeural",
+  "hiz": "+6%",
+  "gecis_sn": 0.25,
+  "on_bosluk_sn": 0.25,
+  "son_bosluk_sn": 0.35,
+  "hareket": "yakinlas",
+  "altyazi": {
+    "yazi_tipi": "Arial",
+    "boyut_orani": 0.026,
+    "max_karakter": 38
   },
-  {
-   "tur": "cizim",
-   "baslik": "Site yönetimi:\n**panik!**",
-   "metin": "Site yönetiminde panik başladı.",
-   "katmanlar": [
-    {
-     "zemin": true,
-     "x": 300,
-     "y": 470,
-     "g": 480
-    },
-    {
-     "ikon": "office_building",
-     "x": 300,
-     "y": 270,
-     "boyut": 300,
-     "saydam": 0.9
-    },
-    {
-     "ikon": "face_screaming_in_fear",
-     "x": 130,
-     "y": 170,
-     "boyut": 150
-    },
-    {
-     "ikon": "anxious_face_with_sweat",
-     "x": 470,
-     "y": 170,
-     "boyut": 150
-    },
-    {
-     "ikon": "exploding_head",
-     "x": 300,
-     "y": 420,
-     "boyut": 140
-    }
-   ]
+  "telaffuz": {
+    "İSG": "İ Se Ge"
   },
-  {
-   "tur": "cizim",
-   "baslik": "\"Alt tarafı\n**iki vana...**\"",
-   "metin": "Alt tarafı iki vana, dediniz.",
-   "katmanlar": [
-    {
-     "zemin": true,
-     "x": 300,
-     "y": 450,
-     "g": 520
-    },
-    {
-     "parca": "vana",
-     "x": 170,
-     "y": 300,
-     "boyut": 250
-    },
-    {
-     "parca": "vana",
-     "x": 430,
-     "y": 300,
-     "boyut": 250
-    },
-    {
-     "ikon": "person_shrugging",
-     "x": 300,
-     "y": 150,
-     "boyut": 150
-    }
-   ]
+  "marka": {
+    "site": "teknikisg.com.tr",
+    "eposta": "",
+    "renk_vurgu": "#22c55e"
   },
-  {
-   "tur": "cizim",
-   "baslik": "Boru mu?\n**Bantla** tamir edilmiş.",
-   "metin": "Oysa boru bantla tamir edilmiş.",
-   "katmanlar": [
+  "sahneler": [
     {
-     "zemin": true,
-     "x": 300,
-     "y": 440,
-     "g": 560
+      "tur": "cizim",
+      "baslik": "Kapı **çaldı.**",
+      "aciklama": "Periyodik muayene ekibi geldi.",
+      "metin": "Kapı çaldı. Periyodik muayene ekibi geldi.",
+      "katmanlar": [
+        {
+          "zemin": true,
+          "x": 300,
+          "y": 460,
+          "g": 380
+        },
+        {
+          "ikon": "door",
+          "x": 240,
+          "y": 260,
+          "boyut": 300
+        },
+        {
+          "ikon": "man_construction_worker",
+          "x": 440,
+          "y": 300,
+          "boyut": 230
+        },
+        {
+          "yazi": "TAK!",
+          "x": 90,
+          "y": 150,
+          "boyut": 52,
+          "renk": "v",
+          "don": -12
+        },
+        {
+          "yazi": "TAK!",
+          "x": 120,
+          "y": 240,
+          "boyut": 40,
+          "renk": "v",
+          "don": -8
+        }
+      ]
     },
     {
-     "parca": "boru",
-     "x": 300,
-     "y": 250,
-     "boyut": 580,
-     "secenek": {
-      "bant": true,
-      "sizinti": true
-     }
+      "tur": "cizim",
+      "baslik": "Site yönetimi:\n**panik!**",
+      "metin": "Site yönetiminde panik başladı.",
+      "katmanlar": [
+        {
+          "zemin": true,
+          "x": 300,
+          "y": 470,
+          "g": 480
+        },
+        {
+          "ikon": "office_building",
+          "x": 300,
+          "y": 270,
+          "boyut": 300,
+          "saydam": 0.9
+        },
+        {
+          "ikon": "face_screaming_in_fear",
+          "x": 130,
+          "y": 170,
+          "boyut": 150
+        },
+        {
+          "ikon": "anxious_face_with_sweat",
+          "x": 470,
+          "y": 170,
+          "boyut": 150
+        },
+        {
+          "ikon": "exploding_head",
+          "x": 300,
+          "y": 420,
+          "boyut": 140
+        }
+      ]
     },
     {
-     "etiket": "Bant",
-     "x": 150,
-     "y": 90,
-     "ok": [
-      285,
-      205
-     ],
-     "renk": "k"
+      "tur": "cizim",
+      "baslik": "\"Alt tarafı\n**iki vana...**\"",
+      "metin": "Alt tarafı iki vana, dediniz.",
+      "katmanlar": [
+        {
+          "zemin": true,
+          "x": 300,
+          "y": 450,
+          "g": 520
+        },
+        {
+          "parca": "vana",
+          "x": 170,
+          "y": 300,
+          "boyut": 250
+        },
+        {
+          "parca": "vana",
+          "x": 430,
+          "y": 300,
+          "boyut": 250
+        },
+        {
+          "ikon": "person_shrugging",
+          "x": 300,
+          "y": 150,
+          "boyut": 150
+        }
+      ]
     },
     {
-     "etiket": "Sızıntı",
-     "x": 470,
-     "y": 430,
-     "ok": [
-      310,
-      385
-     ],
-     "renk": "v"
+      "tur": "cizim",
+      "baslik": "Boru mu?\n**Bantla** tamir edilmiş.",
+      "metin": "Oysa boru bantla tamir edilmiş.",
+      "katmanlar": [
+        {
+          "zemin": true,
+          "x": 300,
+          "y": 440,
+          "g": 560
+        },
+        {
+          "parca": "boru",
+          "x": 300,
+          "y": 250,
+          "boyut": 580,
+          "secenek": {
+            "bant": true,
+            "sizinti": true
+          }
+        },
+        {
+          "etiket": "Bant",
+          "x": 150,
+          "y": 90,
+          "ok": [
+            285,
+            205
+          ],
+          "renk": "k"
+        },
+        {
+          "etiket": "Sızıntı",
+          "x": 470,
+          "y": 430,
+          "ok": [
+            310,
+            385
+          ],
+          "renk": "v"
+        }
+      ]
+    },
+    {
+      "tur": "cizim",
+      "baslik": "Basınç testi?\n**Hiç yapılmamış.**",
+      "metin": "Basınç testi ise hiç yapılmamış.",
+      "katmanlar": [
+        {
+          "zemin": true,
+          "x": 300,
+          "y": 470,
+          "g": 380
+        },
+        {
+          "parca": "manometre",
+          "x": 300,
+          "y": 270,
+          "boyut": 330,
+          "secenek": {
+            "deger": 0.08
+          }
+        },
+        {
+          "ikon": "cross_mark",
+          "x": 470,
+          "y": 110,
+          "boyut": 130
+        },
+        {
+          "etiket": "Test yok",
+          "x": 140,
+          "y": 430,
+          "ok": [
+            230,
+            330
+          ],
+          "renk": "k"
+        }
+      ]
+    },
+    {
+      "tur": "cizim",
+      "baslik": "Ve bir gün\n**kaza** olursa...",
+      "metin": "Ve bir gün kaza olursa...",
+      "katmanlar": [
+        {
+          "zemin": true,
+          "x": 300,
+          "y": 470,
+          "g": 420
+        },
+        {
+          "ikon": "warning",
+          "x": 300,
+          "y": 260,
+          "boyut": 320
+        },
+        {
+          "ikon": "collision",
+          "x": 470,
+          "y": 140,
+          "boyut": 140
+        },
+        {
+          "ikon": "ambulance",
+          "x": 130,
+          "y": 410,
+          "boyut": 150
+        }
+      ]
+    },
+    {
+      "tur": "cizim",
+      "baslik": "İmza sizin.\n**Sorumluluk da.**",
+      "metin": "İmza sizin, sorumluluk da sizin.",
+      "katmanlar": [
+        {
+          "zemin": true,
+          "x": 300,
+          "y": 470,
+          "g": 420
+        },
+        {
+          "ikon": "page_facing_up",
+          "x": 270,
+          "y": 260,
+          "boyut": 300
+        },
+        {
+          "ikon": "fountain_pen",
+          "x": 420,
+          "y": 330,
+          "boyut": 170,
+          "don": -10
+        },
+        {
+          "etiket": "Yönetici imzası",
+          "x": 300,
+          "y": 450,
+          "ok": [
+            330,
+            380
+          ],
+          "renk": "v"
+        }
+      ]
+    },
+    {
+      "tur": "cizim",
+      "baslik": "Uzmana bırakın,\n**rahat edin.**",
+      "metin": "Tesisat muayenesini uzmana bırakın, rahat edin.",
+      "katmanlar": [
+        {
+          "zemin": true,
+          "x": 300,
+          "y": 470,
+          "g": 460
+        },
+        {
+          "ikon": "man_construction_worker",
+          "x": 210,
+          "y": 270,
+          "boyut": 280
+        },
+        {
+          "ikon": "shield",
+          "x": 420,
+          "y": 250,
+          "boyut": 220
+        },
+        {
+          "ikon": "check_mark_button",
+          "x": 480,
+          "y": 140,
+          "boyut": 120
+        }
+      ]
+    },
+    {
+      "tur": "kapanis",
+      "baslik": "Kafanız rahat,\nyönetiminiz güvende.",
+      "satirlar": [
+        "teknikisg.com.tr",
+        "☎ 0537 918 48 21"
+      ],
+      "metin": "Kafanız rahat, yönetiminiz güvende. Teknik İSG'yi arayın."
     }
-   ]
-  },
-  {
-   "tur": "cizim",
-   "baslik": "Basınç testi?\n**Hiç yapılmamış.**",
-   "metin": "Basınç testi ise hiç yapılmamış.",
-   "katmanlar": [
-    {
-     "zemin": true,
-     "x": 300,
-     "y": 470,
-     "g": 380
-    },
-    {
-     "parca": "manometre",
-     "x": 300,
-     "y": 270,
-     "boyut": 330,
-     "secenek": {
-      "deger": 0.08
-     }
-    },
-    {
-     "ikon": "cross_mark",
-     "x": 470,
-     "y": 110,
-     "boyut": 130
-    },
-    {
-     "etiket": "Test yok",
-     "x": 140,
-     "y": 430,
-     "ok": [
-      230,
-      330
-     ],
-     "renk": "k"
-    }
-   ]
-  },
-  {
-   "tur": "cizim",
-   "baslik": "Ve bir gün\n**kaza** olursa...",
-   "metin": "Ve bir gün kaza olursa...",
-   "katmanlar": [
-    {
-     "zemin": true,
-     "x": 300,
-     "y": 470,
-     "g": 420
-    },
-    {
-     "ikon": "warning",
-     "x": 300,
-     "y": 260,
-     "boyut": 320
-    },
-    {
-     "ikon": "collision",
-     "x": 470,
-     "y": 140,
-     "boyut": 140
-    },
-    {
-     "ikon": "ambulance",
-     "x": 130,
-     "y": 410,
-     "boyut": 150
-    }
-   ]
-  },
-  {
-   "tur": "cizim",
-   "baslik": "İmza sizin.\n**Sorumluluk da.**",
-   "metin": "İmza sizin, sorumluluk da sizin.",
-   "katmanlar": [
-    {
-     "zemin": true,
-     "x": 300,
-     "y": 470,
-     "g": 420
-    },
-    {
-     "ikon": "page_facing_up",
-     "x": 270,
-     "y": 260,
-     "boyut": 300
-    },
-    {
-     "ikon": "fountain_pen",
-     "x": 420,
-     "y": 330,
-     "boyut": 170,
-     "don": -10
-    },
-    {
-     "etiket": "Yönetici imzası",
-     "x": 300,
-     "y": 450,
-     "ok": [
-      330,
-      380
-     ],
-     "renk": "v"
-    }
-   ]
-  },
-  {
-   "tur": "cizim",
-   "baslik": "Uzmana bırakın,\n**rahat edin.**",
-   "metin": "Tesisat muayenesini uzmana bırakın, rahat edin.",
-   "katmanlar": [
-    {
-     "zemin": true,
-     "x": 300,
-     "y": 470,
-     "g": 460
-    },
-    {
-     "ikon": "man_construction_worker",
-     "x": 210,
-     "y": 270,
-     "boyut": 280
-    },
-    {
-     "ikon": "shield",
-     "x": 420,
-     "y": 250,
-     "boyut": 220
-    },
-    {
-     "ikon": "check_mark_button",
-     "x": 480,
-     "y": 140,
-     "boyut": 120
-    }
-   ]
-  },
-  {
-   "tur": "kapanis",
-   "baslik": "Kafanız rahat,\nyönetiminiz güvende.",
-   "satirlar": [
-    "teknikisg.com.tr",
-    "☎ 0537 918 48 21"
-   ],
-   "metin": "Kafanız rahat, yönetiminiz güvende. Teknik İSG'yi arayın."
-  }
- ]
+  ]
 }

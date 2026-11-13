@@ -1,5 +1,5 @@
 {
-  "surum": "1.13.0",
+  "surum": "1.14.0",
   "aciklama": "RepoKurulum bilesen listesi. Yeni bir arac eklerken 'kurallar' alanina ne ise yaradigini ve hangi ihtiyacta kacinci sirada denenecegini yaz; uygulamadaki 'Kurallari Kopyala' dugmesi bunlardan CLAUDE.md'ye yapistirilacak metni uretir. Sira onemlidir: bagimliliklar once gelmelidir.",
   "kural_basligi": "Araç seçim kuralları",
   "genel_kurallar": [
@@ -1828,6 +1828,57 @@
             "Kişisel veriyi ekrana ve seslendirmeye koyma; gizli metinde `motor: piper`"
           ],
           "dogrula": "`kontrol.png` ve 'siyah ara: 0' / 'Hikaye/durum: UYGUN' satırlarına bak; Veo kliplerinin kontrol karelerinde KKD ve uygulama doğruluğunu incele; telaffuzu kullanıcıya dinlet."
+        }
+      ]
+    },
+    {
+      "id": "gemini-ses",
+      "ad": "Gemini seslendirme (Google AI Studio API anahtari)",
+      "kategori": "7. Video ve animasyon",
+      "lisans": "Google (ucretsiz kotali)",
+      "repo": "https://aistudio.google.com/apikey",
+      "aciklama": "Video seslendirmesinde en akici Turkce ses (Gemini TTS). Ucretsiz kotali anahtar; kota dolarsa sistem otomatik Microsoft Emel'e gecer",
+      "varsayilan": false,
+      "gerekir": [
+        "video-rehber"
+      ],
+      "gizli": [
+        {
+          "ad": "GEMINI_API_KEY",
+          "url": "https://aistudio.google.com/apikey"
+        }
+      ],
+      "kontrol": {
+        "ortam": "GEMINI_API_KEY"
+      },
+      "kur": [
+        [
+          {
+            "tur": "ps",
+            "komut": "$k=[Environment]::GetEnvironmentVariable('GEMINI_API_KEY','User'); if (-not $k) { exit 1 }; try { $r = Invoke-RestMethod -Uri 'https://generativelanguage.googleapis.com/v1beta/models?pageSize=200' -Headers @{ 'x-goog-api-key' = $k } -TimeoutSec 30; $t = @($r.models | Where-Object { $_.name -like '*tts*' }).Count; Write-Output ('Gemini anahtari gecerli; TTS modeli: ' + $t) } catch { Write-Output ('Gemini anahtari dogrulanamadi: ' + $_.Exception.Message); exit 1 }"
+          }
+        ]
+      ],
+      "kurulum_notu": "Gemini seslendirme acik: video-seslendirme skill'i 'motor: otomatik' ile Gemini'yi kullanir (ses: Kore). Kota dolarsa Microsoft Emel ile devam eder.",
+      "kurallar": [
+        {
+          "ihtiyac": "seslendirme",
+          "oncelik": 0,
+          "arac": "Gemini TTS (video-seslendirme skill'i)",
+          "metin": "En akıcı Türkçe seslendirme (Google Gemini TTS, ücretsiz kotalı).",
+          "ne_zaman": [
+            "GEMINI_API_KEY tanımlıysa video seslendirmesinde varsayılan (senaryoda `motor: otomatik` veya `gemini`)"
+          ],
+          "ne_zaman_degil": [
+            "Gizli/kurum içi metin (Google'a gider) → Piper",
+            "Kelime kelime senkron altyazı kritikse (Gemini kelime zamanı vermez; altyazı cümle süresine oranlanır) → edge"
+          ],
+          "nasil": [
+            "Senaryoda `\"motor\": \"gemini\"` (veya `otomatik`), `\"gemini_ses\": \"Kore\"` (kadın, net). Diğer sesler: Aoede, Leda, Sulafat (sıcak), Puck, Charon (erkek)",
+            "Üslup `gemini_uslup` ile verilir (örn. 'Sakin ve güven veren bir eğitmen gibi oku')",
+            "Tüm metin tek istekte gider (kota dostu); kota dolarsa araç otomatik Emel'e geçer"
+          ],
+          "dogrula": "Çıktıdaki 'Ses motoru' satırına ve UYARI'lara bak; Gemini'nin cümle atlamadığını sahne süreleriyle kontrol et."
         }
       ]
     },

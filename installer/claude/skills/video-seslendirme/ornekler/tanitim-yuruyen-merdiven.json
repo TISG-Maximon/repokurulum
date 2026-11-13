@@ -1,333 +1,334 @@
 {
- "_aciklama": "repokurulum ornek tanitim (3B katmanli cizim sahneleri, hikaye). katmanlar: ikon (Fluent Emoji 3D adi), parca (parcalar.py), zemin, etiket (oklu), yazi. Koordinatlar 600x520 sahnede merkez noktasi.",
- "cikti_adi": "yuruyen-merdiven-muayenesi",
- "platform": "hikaye",
- "hedef_sure_sn": 58,
- "boyut": [
-  1080,
-  1920
- ],
- "motor": "edge",
- "ses": "tr-TR-EmelNeural",
- "hiz": "+6%",
- "gecis_sn": 0.25,
- "on_bosluk_sn": 0.25,
- "son_bosluk_sn": 0.35,
- "hareket": "yakinlas",
- "altyazi": {
-  "yazi_tipi": "Arial",
-  "boyut_orani": 0.026,
-  "max_karakter": 38
- },
- "telaffuz": {
-  "İSG": "İ Se Ge"
- },
- "marka": {
-  "site": "teknikisg.com.tr",
-  "eposta": "",
-  "renk_vurgu": "#f6b420"
- },
- "sahneler": [
-  {
-   "tur": "cizim",
-   "baslik": "Her gün\n**biniyorsunuz.**",
-   "metin": "Yürüyen merdivene her gün biniyorsunuz.",
-   "katmanlar": [
-    {
-     "parca": "yuruyen_merdiven",
-     "x": 300,
-     "y": 280,
-     "boyut": 580
-    },
-    {
-     "ikon": "person_walking",
-     "x": 230,
-     "y": 250,
-     "boyut": 110
-    },
-    {
-     "ikon": "man_office_worker",
-     "x": 380,
-     "y": 130,
-     "boyut": 110
-    }
-   ]
+  "_aciklama": "repokurulum ornek tanitim (3B katmanli cizim sahneleri, hikaye). katmanlar: ikon (Fluent Emoji 3D adi), parca (parcalar.py), zemin, etiket (oklu), yazi. Koordinatlar 600x520 sahnede merkez noktasi.",
+  "cikti_adi": "yuruyen-merdiven-muayenesi",
+  "platform": "hikaye",
+  "hedef_sure_sn": 58,
+  "boyut": [
+    1080,
+    1920
+  ],
+  "motor": "otomatik",
+  "gemini_ses": "Kore",
+  "ses": "tr-TR-EmelNeural",
+  "hiz": "+6%",
+  "gecis_sn": 0.25,
+  "on_bosluk_sn": 0.25,
+  "son_bosluk_sn": 0.35,
+  "hareket": "yakinlas",
+  "altyazi": {
+    "yazi_tipi": "Arial",
+    "boyut_orani": 0.026,
+    "max_karakter": 38
   },
-  {
-   "tur": "cizim",
-   "baslik": "Hiç **aşağı**\nbaktınız mı?",
-   "metin": "Peki hiç aşağı baktınız mı?",
-   "katmanlar": [
-    {
-     "ikon": "eyes",
-     "x": 300,
-     "y": 110,
-     "boyut": 200
-    },
-    {
-     "ikon": "down_arrow",
-     "x": 300,
-     "y": 250,
-     "boyut": 100,
-     "golge": false
-    },
-    {
-     "parca": "tarak",
-     "x": 300,
-     "y": 420,
-     "boyut": 520
-    }
-   ]
+  "telaffuz": {
+    "İSG": "İ Se Ge"
   },
-  {
-   "tur": "cizim",
-   "baslik": "Bu dişlerden biri\n**kırık.**",
-   "metin": "Tarak plakasındaki dişlerden biri kırık.",
-   "katmanlar": [
-    {
-     "parca": "tarak",
-     "x": 300,
-     "y": 280,
-     "boyut": 580,
-     "secenek": {
-      "kirik": 11
-     }
-    },
-    {
-     "ikon": "magnifying_glass_tilted_left",
-     "x": 330,
-     "y": 250,
-     "boyut": 150
-    },
-    {
-     "etiket": "Kırık diş",
-     "x": 470,
-     "y": 450,
-     "ok": [
-      320,
-      340
-     ],
-     "renk": "k"
-    }
-   ]
+  "marka": {
+    "site": "teknikisg.com.tr",
+    "eposta": "",
+    "renk_vurgu": "#f6b420"
   },
-  {
-   "tur": "cizim",
-   "baslik": "Bir ayakkabı ucu\n**sıkışırsa...**",
-   "metin": "Bir ayakkabı ucu sıkışırsa...",
-   "katmanlar": [
+  "sahneler": [
     {
-     "parca": "tarak",
-     "x": 300,
-     "y": 330,
-     "boyut": 580,
-     "secenek": {
-      "kirik": 11
-     }
+      "tur": "cizim",
+      "baslik": "Her gün\n**biniyorsunuz.**",
+      "metin": "Yürüyen merdivene her gün biniyorsunuz.",
+      "katmanlar": [
+        {
+          "parca": "yuruyen_merdiven",
+          "x": 300,
+          "y": 280,
+          "boyut": 580
+        },
+        {
+          "ikon": "person_walking",
+          "x": 230,
+          "y": 250,
+          "boyut": 110
+        },
+        {
+          "ikon": "man_office_worker",
+          "x": 380,
+          "y": 130,
+          "boyut": 110
+        }
+      ]
     },
     {
-     "ikon": "mans_shoe",
-     "x": 300,
-     "y": 200,
-     "boyut": 230,
-     "don": 12
+      "tur": "cizim",
+      "baslik": "Hiç **aşağı**\nbaktınız mı?",
+      "metin": "Peki hiç aşağı baktınız mı?",
+      "katmanlar": [
+        {
+          "ikon": "eyes",
+          "x": 300,
+          "y": 110,
+          "boyut": 200
+        },
+        {
+          "ikon": "down_arrow",
+          "x": 300,
+          "y": 250,
+          "boyut": 100,
+          "golge": false
+        },
+        {
+          "parca": "tarak",
+          "x": 300,
+          "y": 420,
+          "boyut": 520
+        }
+      ]
     },
     {
-     "ikon": "warning",
-     "x": 490,
-     "y": 110,
-     "boyut": 120
+      "tur": "cizim",
+      "baslik": "Bu dişlerden biri\n**kırık.**",
+      "metin": "Tarak plakasındaki dişlerden biri kırık.",
+      "katmanlar": [
+        {
+          "parca": "tarak",
+          "x": 300,
+          "y": 280,
+          "boyut": 580,
+          "secenek": {
+            "kirik": 11
+          }
+        },
+        {
+          "ikon": "magnifying_glass_tilted_left",
+          "x": 330,
+          "y": 250,
+          "boyut": 150
+        },
+        {
+          "etiket": "Kırık diş",
+          "x": 470,
+          "y": 450,
+          "ok": [
+            320,
+            340
+          ],
+          "renk": "k"
+        }
+      ]
     },
     {
-     "etiket": "Sıkışma",
-     "x": 120,
-     "y": 120,
-     "ok": [
-      260,
-      250
-     ],
-     "renk": "k"
+      "tur": "cizim",
+      "baslik": "Bir ayakkabı ucu\n**sıkışırsa...**",
+      "metin": "Bir ayakkabı ucu sıkışırsa...",
+      "katmanlar": [
+        {
+          "parca": "tarak",
+          "x": 300,
+          "y": 330,
+          "boyut": 580,
+          "secenek": {
+            "kirik": 11
+          }
+        },
+        {
+          "ikon": "mans_shoe",
+          "x": 300,
+          "y": 200,
+          "boyut": 230,
+          "don": 12
+        },
+        {
+          "ikon": "warning",
+          "x": 490,
+          "y": 110,
+          "boyut": 120
+        },
+        {
+          "etiket": "Sıkışma",
+          "x": 120,
+          "y": 120,
+          "ok": [
+            260,
+            250
+          ],
+          "renk": "k"
+        }
+      ]
+    },
+    {
+      "tur": "cizim",
+      "baslik": "Durduracak tek şey:\nbir **sensör.**",
+      "metin": "Merdiveni durduracak tek şey bir sensördür.",
+      "katmanlar": [
+        {
+          "zemin": true,
+          "x": 300,
+          "y": 470,
+          "g": 360
+        },
+        {
+          "parca": "sensor",
+          "x": 300,
+          "y": 270,
+          "boyut": 280
+        },
+        {
+          "etiket": "Emniyet kontağı",
+          "x": 300,
+          "y": 470,
+          "ok": [
+            300,
+            350
+          ],
+          "renk": "v"
+        }
+      ]
+    },
+    {
+      "tur": "cizim",
+      "baslik": "Peki o sensör\n**çalışıyor mu?**",
+      "metin": "Peki o sensör çalışıyor mu?",
+      "katmanlar": [
+        {
+          "zemin": true,
+          "x": 300,
+          "y": 470,
+          "g": 360
+        },
+        {
+          "parca": "sensor",
+          "x": 260,
+          "y": 270,
+          "boyut": 260,
+          "secenek": {
+            "isik": "#8a96a6"
+          }
+        },
+        {
+          "ikon": "thinking_face",
+          "x": 450,
+          "y": 150,
+          "boyut": 170
+        },
+        {
+          "yazi": "?",
+          "x": 470,
+          "y": 330,
+          "boyut": 90,
+          "renk": "v",
+          "don": 0
+        }
+      ]
+    },
+    {
+      "tur": "cizim",
+      "baslik": "Acil stop. Fren.\n**Emniyet kontakları.**",
+      "metin": "Acil stop, fren mesafesi, emniyet kontakları...",
+      "katmanlar": [
+        {
+          "parca": "acil_stop",
+          "x": 120,
+          "y": 230,
+          "boyut": 200
+        },
+        {
+          "ikon": "stopwatch",
+          "x": 300,
+          "y": 230,
+          "boyut": 170
+        },
+        {
+          "ikon": "electric_plug",
+          "x": 480,
+          "y": 230,
+          "boyut": 170
+        },
+        {
+          "etiket": "Acil stop",
+          "x": 120,
+          "y": 390,
+          "renk": "k"
+        },
+        {
+          "etiket": "Fren",
+          "x": 300,
+          "y": 390,
+          "renk": "v"
+        },
+        {
+          "etiket": "Kontaklar",
+          "x": 480,
+          "y": 390,
+          "renk": "beyaz"
+        }
+      ]
+    },
+    {
+      "tur": "cizim",
+      "baslik": "Bunu ancak\n**periyodik muayene**\ngösterir.",
+      "metin": "Bunu ancak periyodik muayene gösterir.",
+      "katmanlar": [
+        {
+          "zemin": true,
+          "x": 300,
+          "y": 470,
+          "g": 420
+        },
+        {
+          "ikon": "clipboard",
+          "x": 230,
+          "y": 270,
+          "boyut": 300
+        },
+        {
+          "ikon": "man_construction_worker",
+          "x": 440,
+          "y": 290,
+          "boyut": 240
+        },
+        {
+          "ikon": "check_mark_button",
+          "x": 330,
+          "y": 120,
+          "boyut": 110
+        }
+      ]
+    },
+    {
+      "tur": "cizim",
+      "baslik": "Ceza için değil.\n**Can güvenliği** için.",
+      "metin": "Ceza için değil, can güvenliği için.",
+      "katmanlar": [
+        {
+          "zemin": true,
+          "x": 300,
+          "y": 470,
+          "g": 480
+        },
+        {
+          "ikon": "shield",
+          "x": 300,
+          "y": 240,
+          "boyut": 250
+        },
+        {
+          "ikon": "people_hugging",
+          "x": 120,
+          "y": 370,
+          "boyut": 170
+        },
+        {
+          "ikon": "older_person",
+          "x": 480,
+          "y": 370,
+          "boyut": 150
+        }
+      ]
+    },
+    {
+      "tur": "kapanis",
+      "baslik": "Riskleri şansa\nbırakmayın.",
+      "satirlar": [
+        "teknikisg.com.tr",
+        "☎ 0537 918 48 21"
+      ],
+      "metin": "Riskleri şansa bırakmayın. Teknik İSG'yi arayın."
     }
-   ]
-  },
-  {
-   "tur": "cizim",
-   "baslik": "Durduracak tek şey:\nbir **sensör.**",
-   "metin": "Merdiveni durduracak tek şey bir sensördür.",
-   "katmanlar": [
-    {
-     "zemin": true,
-     "x": 300,
-     "y": 470,
-     "g": 360
-    },
-    {
-     "parca": "sensor",
-     "x": 300,
-     "y": 270,
-     "boyut": 280
-    },
-    {
-     "etiket": "Emniyet kontağı",
-     "x": 300,
-     "y": 470,
-     "ok": [
-      300,
-      350
-     ],
-     "renk": "v"
-    }
-   ]
-  },
-  {
-   "tur": "cizim",
-   "baslik": "Peki o sensör\n**çalışıyor mu?**",
-   "metin": "Peki o sensör çalışıyor mu?",
-   "katmanlar": [
-    {
-     "zemin": true,
-     "x": 300,
-     "y": 470,
-     "g": 360
-    },
-    {
-     "parca": "sensor",
-     "x": 260,
-     "y": 270,
-     "boyut": 260,
-     "secenek": {
-      "isik": "#8a96a6"
-     }
-    },
-    {
-     "ikon": "thinking_face",
-     "x": 450,
-     "y": 150,
-     "boyut": 170
-    },
-    {
-     "yazi": "?",
-     "x": 470,
-     "y": 330,
-     "boyut": 90,
-     "renk": "v",
-     "don": 0
-    }
-   ]
-  },
-  {
-   "tur": "cizim",
-   "baslik": "Acil stop. Fren.\n**Emniyet kontakları.**",
-   "metin": "Acil stop, fren mesafesi, emniyet kontakları...",
-   "katmanlar": [
-    {
-     "parca": "acil_stop",
-     "x": 120,
-     "y": 230,
-     "boyut": 200
-    },
-    {
-     "ikon": "stopwatch",
-     "x": 300,
-     "y": 230,
-     "boyut": 170
-    },
-    {
-     "ikon": "electric_plug",
-     "x": 480,
-     "y": 230,
-     "boyut": 170
-    },
-    {
-     "etiket": "Acil stop",
-     "x": 120,
-     "y": 390,
-     "renk": "k"
-    },
-    {
-     "etiket": "Fren",
-     "x": 300,
-     "y": 390,
-     "renk": "v"
-    },
-    {
-     "etiket": "Kontaklar",
-     "x": 480,
-     "y": 390,
-     "renk": "beyaz"
-    }
-   ]
-  },
-  {
-   "tur": "cizim",
-   "baslik": "Bunu ancak\n**periyodik muayene**\ngösterir.",
-   "metin": "Bunu ancak periyodik muayene gösterir.",
-   "katmanlar": [
-    {
-     "zemin": true,
-     "x": 300,
-     "y": 470,
-     "g": 420
-    },
-    {
-     "ikon": "clipboard",
-     "x": 230,
-     "y": 270,
-     "boyut": 300
-    },
-    {
-     "ikon": "man_construction_worker",
-     "x": 440,
-     "y": 290,
-     "boyut": 240
-    },
-    {
-     "ikon": "check_mark_button",
-     "x": 330,
-     "y": 120,
-     "boyut": 110
-    }
-   ]
-  },
-  {
-   "tur": "cizim",
-   "baslik": "Ceza için değil.\n**Can güvenliği** için.",
-   "metin": "Ceza için değil, can güvenliği için.",
-   "katmanlar": [
-    {
-     "zemin": true,
-     "x": 300,
-     "y": 470,
-     "g": 480
-    },
-    {
-     "ikon": "shield",
-     "x": 300,
-     "y": 240,
-     "boyut": 250
-    },
-    {
-     "ikon": "people_hugging",
-     "x": 120,
-     "y": 370,
-     "boyut": 170
-    },
-    {
-     "ikon": "older_person",
-     "x": 480,
-     "y": 370,
-     "boyut": 150
-    }
-   ]
-  },
-  {
-   "tur": "kapanis",
-   "baslik": "Riskleri şansa\nbırakmayın.",
-   "satirlar": [
-    "teknikisg.com.tr",
-    "☎ 0537 918 48 21"
-   ],
-   "metin": "Riskleri şansa bırakmayın. Teknik İSG'yi arayın."
-  }
- ]
+  ]
 }

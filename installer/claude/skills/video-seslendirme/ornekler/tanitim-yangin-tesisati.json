@@ -1,335 +1,336 @@
 {
- "_aciklama": "repokurulum ornek tanitim (3B katmanli cizim sahneleri, hikaye). katmanlar: ikon (Fluent Emoji 3D adi), parca (parcalar.py), zemin, etiket (oklu), yazi. Koordinatlar 600x520 sahnede merkez noktasi.",
- "cikti_adi": "yangin-tesisati-kontrolu",
- "platform": "hikaye",
- "hedef_sure_sn": 58,
- "boyut": [
-  1080,
-  1920
- ],
- "motor": "edge",
- "ses": "tr-TR-EmelNeural",
- "hiz": "+6%",
- "gecis_sn": 0.25,
- "on_bosluk_sn": 0.25,
- "son_bosluk_sn": 0.35,
- "hareket": "yakinlas",
- "altyazi": {
-  "yazi_tipi": "Arial",
-  "boyut_orani": 0.026,
-  "max_karakter": 38
- },
- "telaffuz": {
-  "İSG": "İ Se Ge"
- },
- "marka": {
-  "site": "teknikisg.com.tr",
-  "eposta": "",
-  "renk_vurgu": "#ef4444"
- },
- "sahneler": [
-  {
-   "tur": "cizim",
-   "baslik": "Yangın **çıktı.**",
-   "metin": "Yangın çıktı.",
-   "katmanlar": [
-    {
-     "zemin": true,
-     "x": 300,
-     "y": 470,
-     "g": 460
-    },
-    {
-     "ikon": "office_building",
-     "x": 300,
-     "y": 240,
-     "boyut": 280,
-     "saydam": 0.85
-    },
-    {
-     "ikon": "fire",
-     "x": 230,
-     "y": 330,
-     "boyut": 220
-    },
-    {
-     "ikon": "fire",
-     "x": 400,
-     "y": 350,
-     "boyut": 170
-    },
-    {
-     "ikon": "police_car_light",
-     "x": 480,
-     "y": 120,
-     "boyut": 110
-    }
-   ]
+  "_aciklama": "repokurulum ornek tanitim (3B katmanli cizim sahneleri, hikaye). katmanlar: ikon (Fluent Emoji 3D adi), parca (parcalar.py), zemin, etiket (oklu), yazi. Koordinatlar 600x520 sahnede merkez noktasi.",
+  "cikti_adi": "yangin-tesisati-kontrolu",
+  "platform": "hikaye",
+  "hedef_sure_sn": 58,
+  "boyut": [
+    1080,
+    1920
+  ],
+  "motor": "otomatik",
+  "gemini_ses": "Kore",
+  "ses": "tr-TR-EmelNeural",
+  "hiz": "+6%",
+  "gecis_sn": 0.25,
+  "on_bosluk_sn": 0.25,
+  "son_bosluk_sn": 0.35,
+  "hareket": "yakinlas",
+  "altyazi": {
+    "yazi_tipi": "Arial",
+    "boyut_orani": 0.026,
+    "max_karakter": 38
   },
-  {
-   "tur": "cizim",
-   "baslik": "Dolabı **açtınız.**",
-   "metin": "Yangın dolabını açtınız.",
-   "katmanlar": [
-    {
-     "zemin": true,
-     "x": 300,
-     "y": 480,
-     "g": 380
-    },
-    {
-     "parca": "yangin_dolabi",
-     "x": 290,
-     "y": 260,
-     "boyut": 300
-    },
-    {
-     "ikon": "backhand_index_pointing_right",
-     "x": 110,
-     "y": 300,
-     "boyut": 140
-    }
-   ]
+  "telaffuz": {
+    "İSG": "İ Se Ge"
   },
-  {
-   "tur": "cizim",
-   "baslik": "Vanayı\n**çevirdiniz...**",
-   "metin": "Vanayı çevirdiniz...",
-   "katmanlar": [
-    {
-     "zemin": true,
-     "x": 300,
-     "y": 460,
-     "g": 420
-    },
-    {
-     "parca": "vana",
-     "x": 300,
-     "y": 280,
-     "boyut": 340
-    },
-    {
-     "ikon": "counterclockwise_arrows_button",
-     "x": 480,
-     "y": 130,
-     "boyut": 120
-    }
-   ]
+  "marka": {
+    "site": "teknikisg.com.tr",
+    "eposta": "",
+    "renk_vurgu": "#ef4444"
   },
-  {
-   "tur": "cizim",
-   "baslik": "Su **yok.**",
-   "metin": "Ama su yok.",
-   "katmanlar": [
+  "sahneler": [
     {
-     "zemin": true,
-     "x": 300,
-     "y": 470,
-     "g": 400
+      "tur": "cizim",
+      "baslik": "Yangın **çıktı.**",
+      "metin": "Yangın çıktı.",
+      "katmanlar": [
+        {
+          "zemin": true,
+          "x": 300,
+          "y": 470,
+          "g": 460
+        },
+        {
+          "ikon": "office_building",
+          "x": 300,
+          "y": 240,
+          "boyut": 280,
+          "saydam": 0.85
+        },
+        {
+          "ikon": "fire",
+          "x": 230,
+          "y": 330,
+          "boyut": 220
+        },
+        {
+          "ikon": "fire",
+          "x": 400,
+          "y": 350,
+          "boyut": 170
+        },
+        {
+          "ikon": "police_car_light",
+          "x": 480,
+          "y": 120,
+          "boyut": 110
+        }
+      ]
     },
     {
-     "ikon": "droplet",
-     "x": 300,
-     "y": 250,
-     "boyut": 230,
-     "saydam": 0.4
+      "tur": "cizim",
+      "baslik": "Dolabı **açtınız.**",
+      "metin": "Yangın dolabını açtınız.",
+      "katmanlar": [
+        {
+          "zemin": true,
+          "x": 300,
+          "y": 480,
+          "g": 380
+        },
+        {
+          "parca": "yangin_dolabi",
+          "x": 290,
+          "y": 260,
+          "boyut": 300
+        },
+        {
+          "ikon": "backhand_index_pointing_right",
+          "x": 110,
+          "y": 300,
+          "boyut": 140
+        }
+      ]
     },
     {
-     "ikon": "cross_mark",
-     "x": 300,
-     "y": 250,
-     "boyut": 300,
-     "golge": false
+      "tur": "cizim",
+      "baslik": "Vanayı\n**çevirdiniz...**",
+      "metin": "Vanayı çevirdiniz...",
+      "katmanlar": [
+        {
+          "zemin": true,
+          "x": 300,
+          "y": 460,
+          "g": 420
+        },
+        {
+          "parca": "vana",
+          "x": 300,
+          "y": 280,
+          "boyut": 340
+        },
+        {
+          "ikon": "counterclockwise_arrows_button",
+          "x": 480,
+          "y": 130,
+          "boyut": 120
+        }
+      ]
     },
     {
-     "etiket": "Basınç: 0",
-     "x": 300,
-     "y": 450,
-     "renk": "k"
+      "tur": "cizim",
+      "baslik": "Su **yok.**",
+      "metin": "Ama su yok.",
+      "katmanlar": [
+        {
+          "zemin": true,
+          "x": 300,
+          "y": 470,
+          "g": 400
+        },
+        {
+          "ikon": "droplet",
+          "x": 300,
+          "y": 250,
+          "boyut": 230,
+          "saydam": 0.4
+        },
+        {
+          "ikon": "cross_mark",
+          "x": 300,
+          "y": 250,
+          "boyut": 300,
+          "golge": false
+        },
+        {
+          "etiket": "Basınç: 0",
+          "x": 300,
+          "y": 450,
+          "renk": "k"
+        }
+      ]
+    },
+    {
+      "tur": "cizim",
+      "baslik": "Vana **kireçten**\nkilitlenmiş.",
+      "metin": "Çünkü vana kireçten kilitlenmiş.",
+      "katmanlar": [
+        {
+          "zemin": true,
+          "x": 300,
+          "y": 480,
+          "g": 380
+        },
+        {
+          "parca": "boru_kesiti",
+          "x": 300,
+          "y": 260,
+          "boyut": 340,
+          "secenek": {
+            "kirec": 0.75
+          }
+        },
+        {
+          "etiket": "Kireç",
+          "x": 500,
+          "y": 120,
+          "ok": [
+            400,
+            190
+          ],
+          "renk": "k"
+        },
+        {
+          "etiket": "Daralmış akış",
+          "x": 130,
+          "y": 450,
+          "ok": [
+            275,
+            290
+          ],
+          "renk": "v"
+        }
+      ]
+    },
+    {
+      "tur": "cizim",
+      "baslik": "Basınç yıllardır\n**düşüyor.**",
+      "metin": "Basınç yıllardır düşüyor.",
+      "katmanlar": [
+        {
+          "zemin": true,
+          "x": 300,
+          "y": 470,
+          "g": 480
+        },
+        {
+          "ikon": "chart_decreasing",
+          "x": 200,
+          "y": 260,
+          "boyut": 280
+        },
+        {
+          "parca": "manometre",
+          "x": 440,
+          "y": 290,
+          "boyut": 220,
+          "secenek": {
+            "deger": 0.1
+          }
+        }
+      ]
+    },
+    {
+      "tur": "cizim",
+      "baslik": "Ve kimse\n**fark etmemiş.**",
+      "metin": "Ve kimse fark etmemiş.",
+      "katmanlar": [
+        {
+          "zemin": true,
+          "x": 300,
+          "y": 470,
+          "g": 420
+        },
+        {
+          "ikon": "clipboard",
+          "x": 280,
+          "y": 270,
+          "boyut": 290
+        },
+        {
+          "ikon": "spider_web",
+          "x": 420,
+          "y": 140,
+          "boyut": 190,
+          "saydam": 0.9
+        },
+        {
+          "ikon": "sleeping_face",
+          "x": 140,
+          "y": 140,
+          "boyut": 130
+        }
+      ]
+    },
+    {
+      "tur": "cizim",
+      "baslik": "Periyodik kontrol\nbunu yangından\n**önce** yakalar.",
+      "metin": "Periyodik kontrol, bunu yangından önce yakalar.",
+      "katmanlar": [
+        {
+          "zemin": true,
+          "x": 300,
+          "y": 470,
+          "g": 480
+        },
+        {
+          "ikon": "firefighter",
+          "x": 180,
+          "y": 280,
+          "boyut": 260
+        },
+        {
+          "parca": "manometre",
+          "x": 400,
+          "y": 290,
+          "boyut": 210,
+          "secenek": {
+            "deger": 0.6
+          }
+        },
+        {
+          "ikon": "magnifying_glass_tilted_left",
+          "x": 420,
+          "y": 180,
+          "boyut": 150
+        },
+        {
+          "ikon": "check_mark_button",
+          "x": 520,
+          "y": 120,
+          "boyut": 100
+        }
+      ]
+    },
+    {
+      "tur": "cizim",
+      "baslik": "Bu bir prosedür değil.\n**Hayat sigortası.**",
+      "metin": "Bu bir prosedür değil, hayat sigortası.",
+      "katmanlar": [
+        {
+          "zemin": true,
+          "x": 300,
+          "y": 470,
+          "g": 480
+        },
+        {
+          "ikon": "shield",
+          "x": 300,
+          "y": 240,
+          "boyut": 250
+        },
+        {
+          "ikon": "house_with_garden",
+          "x": 120,
+          "y": 380,
+          "boyut": 160
+        },
+        {
+          "ikon": "people_hugging",
+          "x": 480,
+          "y": 380,
+          "boyut": 160
+        }
+      ]
+    },
+    {
+      "tur": "kapanis",
+      "baslik": "Binanızın kontrolünü\nertelemeyin.",
+      "satirlar": [
+        "teknikisg.com.tr",
+        "☎ 0537 918 48 21"
+      ],
+      "metin": "Binanızın kontrolünü ertelemeyin. Teknik İSG'yi arayın."
     }
-   ]
-  },
-  {
-   "tur": "cizim",
-   "baslik": "Vana **kireçten**\nkilitlenmiş.",
-   "metin": "Çünkü vana kireçten kilitlenmiş.",
-   "katmanlar": [
-    {
-     "zemin": true,
-     "x": 300,
-     "y": 480,
-     "g": 380
-    },
-    {
-     "parca": "boru_kesiti",
-     "x": 300,
-     "y": 260,
-     "boyut": 340,
-     "secenek": {
-      "kirec": 0.75
-     }
-    },
-    {
-     "etiket": "Kireç",
-     "x": 500,
-     "y": 120,
-     "ok": [
-      400,
-      190
-     ],
-     "renk": "k"
-    },
-    {
-     "etiket": "Daralmış akış",
-     "x": 130,
-     "y": 450,
-     "ok": [
-      275,
-      290
-     ],
-     "renk": "v"
-    }
-   ]
-  },
-  {
-   "tur": "cizim",
-   "baslik": "Basınç yıllardır\n**düşüyor.**",
-   "metin": "Basınç yıllardır düşüyor.",
-   "katmanlar": [
-    {
-     "zemin": true,
-     "x": 300,
-     "y": 470,
-     "g": 480
-    },
-    {
-     "ikon": "chart_decreasing",
-     "x": 200,
-     "y": 260,
-     "boyut": 280
-    },
-    {
-     "parca": "manometre",
-     "x": 440,
-     "y": 290,
-     "boyut": 220,
-     "secenek": {
-      "deger": 0.1
-     }
-    }
-   ]
-  },
-  {
-   "tur": "cizim",
-   "baslik": "Ve kimse\n**fark etmemiş.**",
-   "metin": "Ve kimse fark etmemiş.",
-   "katmanlar": [
-    {
-     "zemin": true,
-     "x": 300,
-     "y": 470,
-     "g": 420
-    },
-    {
-     "ikon": "clipboard",
-     "x": 280,
-     "y": 270,
-     "boyut": 290
-    },
-    {
-     "ikon": "spider_web",
-     "x": 420,
-     "y": 140,
-     "boyut": 190,
-     "saydam": 0.9
-    },
-    {
-     "ikon": "sleeping_face",
-     "x": 140,
-     "y": 140,
-     "boyut": 130
-    }
-   ]
-  },
-  {
-   "tur": "cizim",
-   "baslik": "Periyodik kontrol\nbunu yangından\n**önce** yakalar.",
-   "metin": "Periyodik kontrol, bunu yangından önce yakalar.",
-   "katmanlar": [
-    {
-     "zemin": true,
-     "x": 300,
-     "y": 470,
-     "g": 480
-    },
-    {
-     "ikon": "firefighter",
-     "x": 180,
-     "y": 280,
-     "boyut": 260
-    },
-    {
-     "parca": "manometre",
-     "x": 400,
-     "y": 290,
-     "boyut": 210,
-     "secenek": {
-      "deger": 0.6
-     }
-    },
-    {
-     "ikon": "magnifying_glass_tilted_left",
-     "x": 420,
-     "y": 180,
-     "boyut": 150
-    },
-    {
-     "ikon": "check_mark_button",
-     "x": 520,
-     "y": 120,
-     "boyut": 100
-    }
-   ]
-  },
-  {
-   "tur": "cizim",
-   "baslik": "Bu bir prosedür değil.\n**Hayat sigortası.**",
-   "metin": "Bu bir prosedür değil, hayat sigortası.",
-   "katmanlar": [
-    {
-     "zemin": true,
-     "x": 300,
-     "y": 470,
-     "g": 480
-    },
-    {
-     "ikon": "shield",
-     "x": 300,
-     "y": 240,
-     "boyut": 250
-    },
-    {
-     "ikon": "house_with_garden",
-     "x": 120,
-     "y": 380,
-     "boyut": 160
-    },
-    {
-     "ikon": "people_hugging",
-     "x": 480,
-     "y": 380,
-     "boyut": 160
-    }
-   ]
-  },
-  {
-   "tur": "kapanis",
-   "baslik": "Binanızın kontrolünü\nertelemeyin.",
-   "satirlar": [
-    "teknikisg.com.tr",
-    "☎ 0537 918 48 21"
-   ],
-   "metin": "Binanızın kontrolünü ertelemeyin. Teknik İSG'yi arayın."
-  }
- ]
+  ]
 }

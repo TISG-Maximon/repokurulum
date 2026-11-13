@@ -105,6 +105,7 @@ Komut satırından da alabilirsin:
 | Gerçek ekran görüntülerinden hareketli video | **video-shotcraft** |
 | Seslendirme/anlatım, müzik veya AI görsel gereken açıklayıcı video, kısa dikey video, reklam | **claude-code-video-toolkit** |
 | Karakterli animasyon, çizgi film, hikâye anlatan kısa animasyon | **ClaudeAnimationBase** |
+| GEMINI_API_KEY tanımlıysa video seslendirmesinde varsayılan (senaryoda `motor: otomatik` veya `gemini`) | **Gemini TTS (video-seslendirme skill'i)** |
 | Video anlatımı, dış ses, eğitim/konu anlatımı, sesli özet — internet varsa her Türkçe seslendirmede ilk seçim | **edge-tts** |
 | Altyazı da gerekiyorsa (SRT'yi aynı komut verir) | **edge-tts** |
 | İnternet yok, edge-tts hata verdi/limit | **Piper** |
@@ -396,16 +397,23 @@ Araçları bu sırayla değerlendir: video-seslendirme skill'i > HyperFrames > v
 
 ## Metni seslendirmek (Türkçe TTS)
 **Tetikleyici:** "seslendir", "sesli anlatım", "voiceover", "dış ses", "metni oku", "TTS", "podcast", videoya anlatıcı sesi.
-Araçları bu sırayla değerlendir: edge-tts > Piper
+Araçları bu sırayla değerlendir: Gemini TTS (video-seslendirme skill'i) > edge-tts > Piper
 
-### 1. **edge-tts**
+### 1. **Gemini TTS (video-seslendirme skill'i)**
+- **Amaç:** En akıcı Türkçe seslendirme (Google Gemini TTS, ücretsiz kotalı).
+- **Ne zaman:** GEMINI_API_KEY tanımlıysa video seslendirmesinde varsayılan (senaryoda `motor: otomatik` veya `gemini`)
+- **Ne zaman değil:** Gizli/kurum içi metin (Google'a gider) → Piper; Kelime kelime senkron altyazı kritikse (Gemini kelime zamanı vermez; altyazı cümle süresine oranlanır) → edge
+- **Nasıl:** Senaryoda `"motor": "gemini"` (veya `otomatik`), `"gemini_ses": "Kore"` (kadın, net). Diğer sesler: Aoede, Leda, Sulafat (sıcak), Puck, Charon (erkek); Üslup `gemini_uslup` ile verilir (örn. 'Sakin ve güven veren bir eğitmen gibi oku'); Tüm metin tek istekte gider (kota dostu); kota dolarsa araç otomatik Emel'e geçer
+- **Doğrula:** Çıktıdaki 'Ses motoru' satırına ve UYARI'lara bak; Gemini'nin cümle atlamadığını sahne süreleriyle kontrol et.
+
+### 2. **edge-tts**
 - **Amaç:** Metinden doğal Türkçe ses (MP3) ve kelime zamanlı altyazı (SRT) üretmek.
 - **Ne zaman:** Video anlatımı, dış ses, eğitim/konu anlatımı, sesli özet — internet varsa her Türkçe seslendirmede ilk seçim; Altyazı da gerekiyorsa (SRT'yi aynı komut verir)
 - **Ne zaman değil:** İnternet yok ya da metin gizli/kurum içi (Microsoft sunucusuna gider) → Piper; Tek kelimelik kısa test için uzun metin gönderme
 - **Nasıl:** Ses: `edge-tts --voice tr-TR-EmelNeural --file metin.txt --write-media ses.mp3 --write-subtitles ses.srt` (erkek ses: tr-TR-AhmetNeural); Kısa metin: `--text "..."`; uzun metinde her zaman `--file` kullan (tırnak/satır sorunu olmaz); Hız/ton: `--rate=-5%` (eğitimde biraz yavaş), `--pitch=+0Hz`; seslerin listesi: `edge-tts --list-voices` çıktısında `tr-TR`; Videoda sahne başına ayrı dosya üret; sahne süresini ses süresine göre ayarla; metin.txt dosyasını UTF-8 kaydet (Türkçe karakterler bozulmasın)
 - **Doğrula:** `ffprobe -v error -show_entries format=duration -of csv=p=0 ses.mp3` ile süreyi kontrol et (0 veya çok kısa ise hata); SRT'nin son zamanı ses süresiyle uyumlu olmalı; Türkçe karakterler (ç, ğ, ı, ö, ş, ü) metinde doğru mu bak.
 
-### 2. **Piper**
+### 3. **Piper**
 - **Amaç:** İnternetsiz, yerel Türkçe seslendirme (WAV).
 - **Ne zaman:** İnternet yok, edge-tts hata verdi/limit; Metin gizli veya kurum içi (dışarı gönderilmemeli); Çok sayıda kısa ses dosyası (hızlı, yerel)
 - **Ne zaman değil:** İnternet varsa ve en doğal ses isteniyorsa (edge-tts daha doğal); Kelime zamanlı altyazı gerekiyorsa tek başına yetmez (SRT üretmez; cümle sürelerinden hesapla)
