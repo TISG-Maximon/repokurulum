@@ -9,6 +9,7 @@ VARSAYILAN_MARKA = {
     "logo": str(BURASI / "marka" / "logo.png"),
     "site": "teknikisg.com.tr",
     "eposta": "teknik@teknikisg.com.tr",
+    "telefon": "0537 918 48 21",
     "renk_arka1": "#0b2340",
     "renk_arka2": "#164a7c",
     "renk_vurgu": "#f6b420",
@@ -238,7 +239,7 @@ def sahne_html(s, marka, w, h, adim_no, adim_top, hikaye=True):
     elif tur == "kapanis":
         g.append('<div class="icerik orta">')
         g.append(f'<div class="buyuk">{vurgula(s.get("baslik", "Takılırsanız bizi arayın."))}</div>')
-        satirlar = s.get("satirlar") or [marka.get("site", ""), marka.get("eposta", "")]
+        satirlar = s.get("satirlar") or [marka.get("site", ""), ("☎ " + marka["telefon"]) if marka.get("telefon") else marka.get("eposta", "")]
         g.append('<div class="iletisim">' + "<br>".join(f"<b>{vurgula(x)}</b>" if i == 0 else vurgula(x) for i, x in enumerate(satirlar) if x) + '</div>')
         g.append('</div>')
     else:   # adim

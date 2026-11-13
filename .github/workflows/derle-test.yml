@@ -213,6 +213,7 @@ jobs:
           if ($boy -ne '1080x1920') { Write-Host "::error::gorsel boyutu $boy (1080x1920 olmali)"; exit 1 }
           $cikti = & uv run --script "$sk\seslendir.py" olustur "$p\senaryo.json" 2>&1 | Out-String
           Write-Host $cikti
+          if ($cikti -match 'KALITE: KALDI') { Write-Host '::error::kalite kontrolu KALDI'; exit 1 }
           if ($cikti -match 'TAMAM\. Sure ([\d.]+) sn, (\d+) altyazi parcasi, siyah ara: (\d+)') {
             if ([int]$Matches[3] -ne 0) { Write-Host "::error::videoda siyah ara var"; exit 1 }
             foreach ($f in 'isg-katip-sozlesme-onayi.mp4','isg-katip-sozlesme-onayi-altyazili.mp4','isg-katip-sozlesme-onayi.srt') { if (-not (Test-Path "$p\$f")) { Write-Host "::error::cikti yok: $f"; exit 1 } }

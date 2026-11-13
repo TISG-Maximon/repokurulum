@@ -13,6 +13,8 @@ Komutlar (kısaltma: `VS="uv run --script $HOME/.claude/skills/video-seslendirme
 
 | Komut | Ne yapar |
 |---|---|
+| `$VS yeni "<konu>" --tur tanitim` | Ortak ayarlarla yeni video projesi açar (tür: tanitim, rehber, gercekci). |
+| `$VS kalite <video.mp4>` | Kalite raporu (her üretimde otomatik de çalışır). |
 | `$VS gorsel <klasor>/senaryo.json` | Sahne görsellerini üretir (`gorseller/`, toplu bakış `gorseller.png`). Ses yok, hızlı önizleme. |
 | `$VS olustur <klasor>/senaryo.json` | Görseller + seslendirme + altyazı → video. |
 | `$VS analiz <video.mp4>` | Hazır video: sahneleri ve siyah geçişleri bulur, `sahneler.json` taslağı ve sahne kareleri üretir. |
@@ -22,6 +24,15 @@ Komutlar (kısaltma: `VS="uv run --script $HOME/.claude/skills/video-seslendirme
 | `$VS dene "metin"` | Tek cümlenin telaffuzunu dener (`deneme.mp3`). |
 
 Çıktılar (proje klasöründe): `<ad>.mp4` (seslendirmeli), `<ad>-altyazili.mp4`, `<ad>.srt`, `kontrol.png`.
+
+## Temel (her videoda otomatik)
+
+Bunları senaryoya tekrar yazma; araç her videoda uygular:
+- **Ortak ayarlar:** `~/ClaudeProjeler/videolar/ayarlar.json`. Marka (ad, site, telefon, renkler), ses (`motor: otomatik`: Gemini anahtarı varsa Gemini "Kore", yoksa Emel), format (`platform: hikaye`, 1080x1920, en fazla 60 sn) ve telaffuz sözlüğü burada tanımlı. İlk `yeni` komutu bu dosyayı oluşturur. Kullanıcı marka, ses ya da telefonu değiştirmek isterse BU dosyayı düzenle, senaryoları değil.
+- **Yeni proje:** `$VS yeni "<konu>" --tur tanitim|rehber|gercekci` → `~/ClaudeProjeler/videolar/<konu>/senaryo.json` (örnek sahnelerle). Senaryoda sadece `sahneler` (ve farklıysa `cikti_adi`, `marka.renk_vurgu`) olur.
+- **Ses temizliği:** Her ses parçasına 25/40 ms açılış/kapanış geçişi, 60 Hz altı filtre, sınırlayıcı; tüm sese -16 LUFS normalleştirme ve baş/son geçişi uygulanır. Bunlar "pat" sesini, tavana vurmayı ve seviye farkını önler.
+- **Kalite kontrolü:** Her üretimin sonunda `KALITE: GECTI/KALDI` raporu yazılır ve `kalite.txt`'ye kaydedilir. Kontrol edilenler: çözünürlük, süre ≤ 60, siyah ara, LUFS, tepe seviye, baş/son patlaması, clipping. **KALDI ise teslim etme:** nedeni düzelt ve yeniden üret. Elle kontrol: `$VS kalite <video.mp4>`.
+- **Teslim:** Kullanıcı aksini söylemedikçe hem `<ad>.mp4` (altyazısız) hem `<ad>-altyazili.mp4` üretilir. Hangisini istediğini sor ya da ikisini birden ver.
 
 ## İş akışı A — Sıfırdan video (konu, adımlar, ekran görüntüleri)
 

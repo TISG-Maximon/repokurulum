@@ -180,6 +180,15 @@ def seslendirilecek(metin, telaffuz):
     return s
 
 
+def yumusat(wav):
+    """Ses parcasinin basina/sonuna cok kisa gecis ekler (kesim noktasindaki 'pat/tik' sesini onler) ve tepe seviyeyi sinirlar."""
+    gecici = Path(str(wav) + ".y.wav")
+    calistir(["ffmpeg", "-v", "error", "-y", "-i", str(wav), "-af",
+              "highpass=f=60,volume=-2dB,afade=t=in:st=0:d=0.025,areverse,afade=t=in:st=0:d=0.04,areverse,alimiter=limit=0.89:attack=1:release=50",
+              "-ar", "44100", "-ac", "1", str(gecici)])
+    os.replace(gecici, wav)
+
+
 def kelime_say(s):
     return len([t for t in s.split() if re.search(r"\w", t)])
 
@@ -356,6 +365,7 @@ def gemini_toplu(metinler, cfg, is_d):
         calistir(["ffmpeg", "-v", "error", "-y", "-ss", f"{kes[i]:.3f}", "-to", f"{kes[i + 1]:.3f}", "-i", str(ham), "-af",
                   "silenceremove=start_periods=1:start_threshold=-45dB,areverse,silenceremove=start_periods=1:start_threshold=-45dB,areverse",
                   "-ar", "44100", "-ac", "1", str(wav)])
+        yumusat(wav)
         cikti.append((wav, sure(wav)))
     return cikti
 
@@ -372,6 +382,7 @@ def ses_uret(metin, cfg, hedef_wav, gecici):
             a = max(0.0, k[0][0] - 0.02); b = k[-1][1] + 0.15
             calistir(["ffmpeg", "-v", "error", "-y", "-ss", f"{a:.3f}", "-to", f"{b:.3f}", "-i", str(ham),
                       "-ar", "44100", "-ac", "1", str(hedef_wav)])
+            yumusat(hedef_wav)
             return sure(hedef_wav), [(x - a, y - a, t) for x, y, t in k]
         except Exception as e:
             if not piper_model(cfg.get("piper_ses", "tr_TR-dfki-medium")):
@@ -387,6 +398,7 @@ def ses_uret(metin, cfg, hedef_wav, gecici):
     calistir(["ffmpeg", "-v", "error", "-y", "-i", str(ham), "-af",
               "silenceremove=start_periods=1:start_threshold=-45dB,areverse,silenceremove=start_periods=1:start_threshold=-45dB,areverse",
               "-ar", "44100", "-ac", "1", str(hedef_wav)])
+    yumusat(hedef_wav)
     return sure(hedef_wav), None
 
 
@@ -409,6 +421,109 @@ def zaman_srt(x):
     return f"{ms // 3600000:02}:{ms // 60000 % 60:02}:{ms // 1000 % 60:02},{ms % 1000:03}"
 
 
+# ---------------------------------------------------------------- ortak ayarlar (her videonun temeli)
+VARSAYILAN_AYAR = {
+    "platform": "hikaye", "hedef_sure_sn": 58, "boyut": [1080, 1920], "fps": 30,
+    "motor": "otomatik", "gemini_ses": "Kore", "gemini_uslup": "", "ses": "tr-TR-EmelNeural", "hiz": "+4%",
+    "piper_ses": "tr_TR-dfki-medium", "gecis_sn": 0.3, "on_bosluk_sn": 0.3, "son_bosluk_sn": 0.4, "hareket": "yakinlas",
+    "altyazi": {"yazi_tipi": "Arial", "boyut_orani": 0.026, "max_karakter": 40},
+    "telaffuz": {"İSG": "İ Se Ge", "KATİP": "Katip", "T.C.": "Te Ce", "SGK": "Se Ge Ka", "KKD": "Ka Ka De", "OSGB": "O Se Ge Be"},
+    "marka": {},
+}
+
+
+def kullanici_ayar_yolu():
+    return Path.home() / "ClaudeProjeler" / "videolar" / "ayarlar.json"
+
+
+def _birlestir(a, b):
+    c = dict(a)
+    for k, v in (b or {}).items():
+        c[k] = _birlestir(c[k], v) if isinstance(v, dict) and isinstance(c.get(k), dict) else v
+    return c
+
+
+def ayar_birlestir(cfg):
+    """Sira: arac varsayilanlari < kullanicinin ortak ayarlari (ClaudeProjeler/videolar/ayarlar.json) < senaryo."""
+    temel = VARSAYILAN_AYAR
+    ka = kullanici_ayar_yolu()
+    if ka.exists():
+        try:
+            temel = _birlestir(temel, {k: v for k, v in json.loads(ka.read_text(encoding="utf-8")).items() if not k.startswith("_")})
+        except Exception as e:
+            print(f"UYARI: {ka} okunamadi ({e}); varsayilanlar kullaniliyor")
+    return _birlestir(temel, cfg)
+
+
+def yeni_proje(ad, tur):
+    """Video turune gore hazir proje klasoru acar; ortak ayarlar dosyasi yoksa olusturur."""
+    burasi = Path(__file__).resolve().parent
+    kaynak = {"tanitim": "ornekler/tanitim-yangin-tesisati.json", "rehber": "ornek-senaryo.json", "gercekci": "ornek-gercekci.json"}.get(tur)
+    if not kaynak:
+        sys.exit("HATA: tur tanitim, rehber ya da gercekci olmali")
+    kok = kullanici_ayar_yolu().parent
+    duz = ad.translate(str.maketrans("çğıöşüÇĞİÖŞÜ", "cgiosuCGIOSU")).lower()
+    klasor = kok / re.sub(r"[^a-z0-9]+", "-", duz).strip("-")
+    if (klasor / "senaryo.json").exists():
+        sys.exit(f"HATA: {klasor} zaten var")
+    (klasor / "klipler").mkdir(parents=True, exist_ok=True)
+    ornek = json.loads((burasi / kaynak).read_text(encoding="utf-8"))
+    senaryo = {"_aciklama": f"repokurulum {tur} videosu. Ortak ayarlar (marka, ses, format) {kullanici_ayar_yolu()} dosyasindan gelir; burada sadece farkli olanlari yaz.",
+               "cikti_adi": klasor.name, "sahneler": ornek["sahneler"]}
+    for k in ("marka",):
+        if ornek.get(k, {}).get("renk_vurgu"):
+            senaryo["marka"] = {"renk_vurgu": ornek[k]["renk_vurgu"]}
+    (klasor / "senaryo.json").write_text(json.dumps(senaryo, ensure_ascii=False, indent=1), encoding="utf-8")
+    ka = kullanici_ayar_yolu()
+    if not ka.exists():
+        sys.path.insert(0, str(burasi)); sys.dont_write_bytecode = True
+        import gorsel
+        ortak = {"_aciklama": "Tum videolarin ortak ayarlari. Burayi degistirince sonraki her video buna gore uretilir.",
+                 "marka": {k: v for k, v in gorsel.VARSAYILAN_MARKA.items() if k not in ("yazi_tipi", "logo")},
+                 "motor": VARSAYILAN_AYAR["motor"], "gemini_ses": VARSAYILAN_AYAR["gemini_ses"], "ses": VARSAYILAN_AYAR["ses"],
+                 "platform": "hikaye", "telaffuz": VARSAYILAN_AYAR["telaffuz"]}
+        ka.write_text(json.dumps(ortak, ensure_ascii=False, indent=1), encoding="utf-8")
+        print(f"Ortak ayarlar olusturuldu: {ka}")
+    print(f"Yeni proje: {klasor}\n  Senaryo: {klasor / 'senaryo.json'} (ornek sahneler; konuya gore degistir)")
+
+
+# ---------------------------------------------------------------- kalite kontrolu
+def kalite(video, hikaye=True):
+    """Uretilen videoyu olcer: ses patlamasi, tavana vurma, ses seviyesi, sure, cozunurluk, siyah kare. GECTI/KALDI raporu."""
+    import wave, struct
+    video = Path(video)
+    sonuc = []
+    w, h, fps = video_bilgi(video)
+    toplam = sure(video)
+    sonuc.append(("Cozunurluk", f"{w}x{h}", (w, h) == (1080, 1920) or not hikaye))
+    sonuc.append(("Sure", f"{toplam:.1f} sn", toplam <= 60 or not hikaye))
+    r = subprocess.run(["ffmpeg", "-hide_banner", "-i", str(video), "-vf", "blackdetect=d=0.1:pic_th=0.90:pix_th=0.12", "-an", "-f", "null", "-"],
+                       capture_output=True, text=True, encoding="utf-8", errors="replace")
+    sonuc.append(("Siyah ara", str(len(re.findall("black_start", r.stderr))), "black_start" not in r.stderr))
+    r = subprocess.run(["ffmpeg", "-hide_banner", "-i", str(video), "-af", "ebur128=peak=true", "-vn", "-f", "null", "-"],
+                       capture_output=True, text=True, encoding="utf-8", errors="replace")
+    ozet = r.stderr[r.stderr.rfind("Summary:"):]
+    lufs = re.search(r"I:\s+(-?[\d.]+) LUFS", ozet); tp = re.search(r"Peak:\s+(-?[\d.]+) dBFS", ozet)
+    if lufs:
+        sonuc.append(("Ses seviyesi", f"{float(lufs.group(1)):.1f} LUFS (hedef -16)", -19 <= float(lufs.group(1)) <= -13))
+    if tp:
+        sonuc.append(("Tepe seviye", f"{float(tp.group(1)):.1f} dBTP", float(tp.group(1)) <= -0.5))
+    gecici = video.with_suffix(".kalite.wav")
+    calistir(["ffmpeg", "-v", "error", "-y", "-i", str(video), "-vn", "-ac", "1", "-ar", "44100", str(gecici)])
+    with wave.open(str(gecici)) as f:
+        n = f.getnframes(); ornek = struct.unpack("<%dh" % n, f.readframes(n))
+    gecici.unlink()
+    bas, son = max(map(abs, ornek[:441])) if n else 0, max(map(abs, ornek[-441:])) if n else 0
+    sonuc.append(("Baslangic/bitis patlamasi", f"ilk/son 10 ms tepe {bas}/{son}", bas < 1500 and son < 1500))
+    tavan = sum(1 for x in ornek if abs(x) >= 32700)
+    sonuc.append(("Tavana vurma (clipping)", f"{tavan} ornek", tavan == 0))
+    gecti = all(ok for _, _, ok in sonuc)
+    rapor = [f"KALITE: {'GECTI' if gecti else 'KALDI'}  ({video.name})"] + [f"  [{'OK ' if ok else 'XX '}] {ad}: {deger}" for ad, deger, ok in sonuc]
+    (video.parent / "kalite.txt").write_text("\n".join(rapor) + "\n", encoding="utf-8")
+    print("\n".join(rapor))
+    return gecti
+
+
 def uret(json_yolu):
     jy = Path(json_yolu).resolve()
     cfg = json.loads(jy.read_text(encoding="utf-8"))
@@ -416,6 +531,7 @@ def uret(json_yolu):
 
 
 def uret_cfg(cfg, klasor):
+    cfg.update(ayar_birlestir(cfg))
     klasor = Path(klasor)
     video = None
     if cfg.get("video"):
@@ -567,7 +683,7 @@ def uret_cfg(cfg, klasor):
                       f"apad,atrim=0:{s['_uzunluk']:.3f},adelay={int(ofset[i] * 1000)}:all=1[ka{i}x]")
             ses_etiket.append(f"[ka{i}x]")
     if ses_etiket:
-        fl.append("".join(ses_etiket) + f"amix=inputs={len(ses_etiket)}:normalize=0,loudnorm=I=-16:TP=-1.5:LRA=11,apad,atrim=0:{toplam:.3f}[ses]")
+        fl.append("".join(ses_etiket) + f"amix=inputs={len(ses_etiket)}:normalize=0,loudnorm=I=-16:TP=-1.5:LRA=11,apad,atrim=0:{toplam:.3f},afade=t=in:st=0:d=0.05,afade=t=out:st={max(0, toplam - 0.4):.3f}:d=0.4[ses]")
     else:
         fl.append(f"anullsrc=r=44100:cl=mono,atrim=0:{toplam:.3f}[ses]")
     betik = is_d / "filtre.txt"; betik.write_text(";\n".join(fl), encoding="utf-8")
@@ -645,6 +761,7 @@ def uret_cfg(cfg, klasor):
     print(f"  Seslendirmeli : {sesli}\n  Altyazili     : {altyazili}\n  Altyazi (SRT) : {klasor / (ad + '.srt')}\n  Kontrol karesi: {klasor / 'kontrol.png'}")
     if hedef_sn:
         print(f"  Hikaye/durum  : {'UYGUN' if toplam <= 60 else 'UZUN'} ({toplam:.1f} sn; WhatsApp durum ve Instagram hikaye en fazla 60 sn)")
+    kalite(altyazili, hedef_sn > 0)
     for k, u in bolumler:
         print(f"  Bolum {k}       : {klasor / f'{ad}-altyazili-bolum{k}.mp4'} ({u:.1f} sn)")
 
@@ -711,6 +828,7 @@ def olustur(json_yolu, sadece_gorsel=False):
     jy = Path(json_yolu).resolve()
     cfg = json.loads(jy.read_text(encoding="utf-8"))
     cfg.pop("video", None)
+    cfg.update(ayar_birlestir(cfg))
     gorsel.gorselleri_uret(cfg, jy.parent)
     liste = jy.parent / "_is" / "gorseller.txt"; liste.parent.mkdir(exist_ok=True)
     liste.write_text("".join(f"file '{(jy.parent / x['goruntu']).as_posix()}'\n" for x in cfg["sahneler"] if x.get("goruntu")), encoding="utf-8")
@@ -734,6 +852,8 @@ def main():
     u = alt.add_parser("uret"); u.add_argument("sahneler_json")
     o = alt.add_parser("olustur"); o.add_argument("senaryo_json")
     g = alt.add_parser("gorsel"); g.add_argument("senaryo_json")
+    yp = alt.add_parser("yeni"); yp.add_argument("ad"); yp.add_argument("--tur", default="tanitim", choices=["tanitim", "rehber", "gercekci"])
+    kp = alt.add_parser("kalite"); kp.add_argument("video")
     ia = alt.add_parser("ikonlar"); ia.add_argument("kelime", nargs="?", default="")
     i_ = alt.add_parser("istemler"); i_.add_argument("senaryo_json")
     kk = alt.add_parser("klipler"); kk.add_argument("senaryo_json")
@@ -749,6 +869,10 @@ def main():
         uret(x.sahneler_json)
     elif x.komut == "olustur":
         olustur(x.senaryo_json)
+    elif x.komut == "yeni":
+        yeni_proje(x.ad, x.tur)
+    elif x.komut == "kalite":
+        sys.exit(0 if kalite(x.video) else 1)
     elif x.komut == "ikonlar":
         ikon_ara(x.kelime)
     elif x.komut == "istemler":
