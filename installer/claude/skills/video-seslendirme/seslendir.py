@@ -368,7 +368,13 @@ def uret_cfg(cfg, klasor):
             fl.append(f"[{son_etiket}]tpad=stop_mode=clone:stop_duration={L + 0.5:.3f},trim=0:{L:.3f},setpts=PTS-STARTPTS,format=yuv420p,settb=AVTB[v{i}]")
         elif s.get("goruntu"):
             girdiler += ["-loop", "1", "-framerate", str(fps), "-t", f"{L + 0.5:.3f}", "-i", str(Path(klasor, s["goruntu"]))]
-            fl.append(f"[{n}:v]scale={w}:{h}:force_original_aspect_ratio=decrease,pad={w}:{h}:(ow-iw)/2:(oh-ih)/2,setsar=1,"
+            hareket = s.get("hareket", cfg.get("hareket", "yakinlas"))
+            zoom = ""
+            if hareket == "yakinlas":   # hafif ve puruzsuz yakinlasma (2x olcekte hesaplanir, titremez)
+                kare = int(round((L + 0.5) * fps))
+                zoom = (f",scale={2 * w}:{2 * h},zoompan=z='1+0.045*on/{kare}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)'"
+                        f":d=1:s={w}x{h}:fps={fps}")
+            fl.append(f"[{n}:v]scale={w}:{h}:force_original_aspect_ratio=decrease,pad={w}:{h}:(ow-iw)/2:(oh-ih)/2,setsar=1{zoom},"
                       f"trim=0:{L:.3f},setpts=PTS-STARTPTS,fps={fps},format=yuv420p,settb=AVTB[v{i}]")
             n += 1
         else:

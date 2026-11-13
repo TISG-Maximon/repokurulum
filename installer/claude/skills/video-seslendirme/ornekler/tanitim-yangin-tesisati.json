@@ -1,0 +1,96 @@
+{
+ "_aciklama": "repokurulum ornek tanitim (cizim sahneli, hikaye). SVG cizimler var(--v) vurgu ve var(--k) kirmizi renklerini kullanir.",
+ "cikti_adi": "yangin-tesisati-kontrolu",
+ "platform": "hikaye",
+ "hedef_sure_sn": 58,
+ "boyut": [
+  1080,
+  1920
+ ],
+ "motor": "edge",
+ "ses": "tr-TR-EmelNeural",
+ "hiz": "+6%",
+ "gecis_sn": 0.25,
+ "on_bosluk_sn": 0.25,
+ "son_bosluk_sn": 0.3,
+ "hareket": "yakinlas",
+ "altyazi": {
+  "yazi_tipi": "Arial",
+  "boyut_orani": 0.026,
+  "max_karakter": 38
+ },
+ "telaffuz": {
+  "İSG": "İ Se Ge"
+ },
+ "marka": {
+  "site": "teknikisg.com.tr",
+  "eposta": "",
+  "telefon": "0537 918 48 21",
+  "renk_vurgu": "#ef4444"
+ },
+ "sahneler": [
+  {
+   "tur": "cizim",
+   "baslik": "Yangın **çıktı.**",
+   "cizim": "<svg viewBox=\"0 0 600 520\" xmlns=\"http://www.w3.org/2000/svg\"><ellipse cx=\"300\" cy=\"440\" rx=\"230\" ry=\"30\" fill=\"var(--k)\" opacity=\".35\"/><path d=\"M200 440 C140 360 180 300 200 250 C220 300 260 360 200 440 Z\" fill=\"var(--k)\"/><path d=\"M300 440 C240 360 280 300 300 170 C320 300 360 360 300 440 Z\" fill=\"var(--k)\"/><path d=\"M400 440 C340 360 380 300 400 240 C420 300 460 360 400 440 Z\" fill=\"var(--k)\"/><path d=\"M250 440 C190 360 230 300 250 300 C270 300 310 360 250 440 Z\" fill=\"#f6b420\"/><path d=\"M350 440 C290 360 330 300 350 290 C370 300 410 360 350 440 Z\" fill=\"#f6b420\"/><path d=\"M300 440 C240 360 280 300 300 250 C320 300 360 360 300 440 Z\" fill=\"#f6b420\"/><path d=\"M300 440 C240 360 280 300 300 340 C320 300 360 360 300 440 Z\" fill=\"#ffe08a\"/><circle cx=\"150\" cy=\"180\" r=\"5\" fill=\"#f6b420\" opacity=\".8\"/><circle cx=\"450\" cy=\"160\" r=\"5\" fill=\"#f6b420\" opacity=\".8\"/><circle cx=\"200\" cy=\"120\" r=\"5\" fill=\"#f6b420\" opacity=\".8\"/><circle cx=\"400\" cy=\"100\" r=\"5\" fill=\"#f6b420\" opacity=\".8\"/><circle cx=\"320\" cy=\"80\" r=\"5\" fill=\"#f6b420\" opacity=\".8\"/></svg>",
+   "metin": "Yangın çıktı."
+  },
+  {
+   "tur": "cizim",
+   "baslik": "Dolabı **açtınız.**",
+   "cizim": "<svg viewBox=\"0 0 600 520\" xmlns=\"http://www.w3.org/2000/svg\"><rect x=\"150\" y=\"40\" width=\"300\" height=\"420\" rx=\"12\" fill=\"var(--k)\"/><rect x=\"175\" y=\"65\" width=\"250\" height=\"370\" rx=\"8\" fill=\"#7a1d1d\"/><circle cx=\"300\" cy=\"220\" r=\"105\" fill=\"none\" stroke=\"#e8eef6\" stroke-width=\"22\"/><circle cx=\"300\" cy=\"220\" r=\"70\" fill=\"none\" stroke=\"#e8eef6\" stroke-width=\"22\"/><circle cx=\"300\" cy=\"220\" r=\"24\" fill=\"#e8eef6\"/><path d=\"M300 325 v60 l40 30\" fill=\"none\" stroke=\"#e8eef6\" stroke-width=\"18\" stroke-linecap=\"round\"/><text x=\"300\" y=\"425\" font-size=\"30\" font-weight=\"900\" text-anchor=\"middle\" fill=\"#fff\">YANGIN DOLABI</text></svg>",
+   "metin": "Yangın dolabını açtınız."
+  },
+  {
+   "tur": "cizim",
+   "baslik": "Vanayı\n**çevirdiniz...**",
+   "cizim": "<svg viewBox=\"0 0 600 520\" xmlns=\"http://www.w3.org/2000/svg\"><circle cx=\"300\" cy=\"230\" r=\"150\" fill=\"none\" stroke=\"var(--k)\" stroke-width=\"16\"/><line x1=\"300\" y1=\"230\" x2=\"450\" y2=\"230\" stroke=\"var(--k)\" stroke-width=\"12\"/><line x1=\"300\" y1=\"230\" x2=\"150\" y2=\"230\" stroke=\"var(--k)\" stroke-width=\"12\"/><line x1=\"300\" y1=\"230\" x2=\"300\" y2=\"380\" stroke=\"var(--k)\" stroke-width=\"12\"/><line x1=\"300\" y1=\"230\" x2=\"300\" y2=\"80\" stroke=\"var(--k)\" stroke-width=\"12\"/><line x1=\"300\" y1=\"230\" x2=\"406.05\" y2=\"336.05\" stroke=\"var(--k)\" stroke-width=\"12\"/><line x1=\"300\" y1=\"230\" x2=\"193.95\" y2=\"123.95\" stroke=\"var(--k)\" stroke-width=\"12\"/><line x1=\"300\" y1=\"230\" x2=\"406.05\" y2=\"123.95\" stroke=\"var(--k)\" stroke-width=\"12\"/><line x1=\"300\" y1=\"230\" x2=\"193.95\" y2=\"336.05\" stroke=\"var(--k)\" stroke-width=\"12\"/><circle cx=\"300\" cy=\"230\" r=\"30.0\" fill=\"#3b4b5e\"/><path d=\"M110 150 q-30 80 0 160\" fill=\"none\" stroke=\"#e8eef6\" stroke-width=\"10\" stroke-linecap=\"round\"/><path d=\"M490 310 q30 -80 0 -160\" fill=\"none\" stroke=\"#e8eef6\" stroke-width=\"10\" stroke-linecap=\"round\"/><path d=\"M100 320 l10 -14 l14 12\" fill=\"none\" stroke=\"#e8eef6\" stroke-width=\"10\"/><path d=\"M500 140 l-10 14 l-14 -12\" fill=\"none\" stroke=\"#e8eef6\" stroke-width=\"10\"/></svg>",
+   "metin": "Vanayı çevirdiniz..."
+  },
+  {
+   "tur": "cizim",
+   "baslik": "Su **yok.**",
+   "cizim": "<svg viewBox=\"0 0 600 520\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M80 120 h180 q40 0 40 40 v60\" fill=\"none\" stroke=\"#8a96a6\" stroke-width=\"44\"/><rect x=\"270\" y=\"215\" width=\"60\" height=\"40\" fill=\"#5b6b7e\"/><path d=\"M300 300 C260 360 250 390 300 440 C350 390 340 360 300 300 Z\" fill=\"none\" stroke=\"#4aa3ff\" stroke-width=\"8\" stroke-dasharray=\"14 10\"/><circle cx=\"430\" cy=\"350\" r=\"62\" fill=\"var(--k)\"/><path d=\"M405 325 l50 50 M455 325 l-50 50\" stroke=\"#fff\" stroke-width=\"13\" stroke-linecap=\"round\"/></svg>",
+   "metin": "Ama su yok."
+  },
+  {
+   "tur": "cizim",
+   "baslik": "Vana **kireçten**\nkilitlenmiş.",
+   "cizim": "<svg viewBox=\"0 0 600 490\" xmlns=\"http://www.w3.org/2000/svg\"><circle cx=\"300\" cy=\"230\" r=\"190\" fill=\"#8a96a6\"/><circle cx=\"300\" cy=\"230\" r=\"160\" fill=\"#efe6cf\"/><circle cx=\"450.0\" cy=\"230.0\" r=\"26\" fill=\"#d9c9a0\"/><circle cx=\"431.6373842835559\" cy=\"301.91383079063047\" r=\"34\" fill=\"#d9c9a0\"/><circle cx=\"381.04534588022096\" cy=\"356.2206477211845\" r=\"42\" fill=\"#d9c9a0\"/><circle cx=\"310.6105802501554\" cy=\"379.6242479906082\" r=\"26\" fill=\"#d9c9a0\"/><circle cx=\"237.57797451792862\" cy=\"366.3946140238522\" r=\"34\" fill=\"#d9c9a0\"/><circle cx=\"179.82845766795995\" cy=\"319.7708216155935\" r=\"42\" fill=\"#d9c9a0\"/><circle cx=\"151.5011255099332\" cy=\"251.1680012089801\" r=\"26\" fill=\"#d9c9a0\"/><circle cx=\"159.53149690638054\" cy=\"177.38251584655703\" r=\"34\" fill=\"#d9c9a0\"/><circle cx=\"201.9534568704582\" cy=\"116.47962570381077\" r=\"42\" fill=\"#d9c9a0\"/><circle cx=\"268.380630085383\" cy=\"83.37048235023545\" r=\"26\" fill=\"#d9c9a0\"/><circle cx=\"342.54932781948395\" cy=\"86.16135880052923\" r=\"34\" fill=\"#d9c9a0\"/><circle cx=\"406.300466143689\" cy=\"124.16895116444121\" r=\"42\" fill=\"#d9c9a0\"/><circle cx=\"444.0255429975549\" cy=\"188.08767527016113\" r=\"26\" fill=\"#d9c9a0\"/><circle cx=\"300\" cy=\"230\" r=\"70\" fill=\"#0b2340\"/><text x=\"300\" y=\"470\" font-size=\"32\" font-weight=\"800\" text-anchor=\"middle\" fill=\"var(--k)\">Akış kesiti %30</text></svg>",
+   "metin": "Çünkü vana kireçten kilitlenmiş."
+  },
+  {
+   "tur": "cizim",
+   "baslik": "Basınç yıllardır\n**düşüyor.**",
+   "cizim": "<svg viewBox=\"0 0 600 470\" xmlns=\"http://www.w3.org/2000/svg\"><rect x=\"90\" y=\"120\" width=\"60\" height=\"300\" rx=\"6\" fill=\"#cfd8e3\"/><text x=\"120\" y=\"455\" font-size=\"22\" text-anchor=\"middle\" fill=\"#cfd8e3\">1. yıl</text><rect x=\"180\" y=\"200\" width=\"60\" height=\"220\" rx=\"6\" fill=\"#cfd8e3\"/><text x=\"210\" y=\"455\" font-size=\"22\" text-anchor=\"middle\" fill=\"#cfd8e3\">2. yıl</text><rect x=\"270\" y=\"270\" width=\"60\" height=\"150\" rx=\"6\" fill=\"#e8a19a\"/><text x=\"300\" y=\"455\" font-size=\"22\" text-anchor=\"middle\" fill=\"#cfd8e3\">3. yıl</text><rect x=\"360\" y=\"330\" width=\"60\" height=\"90\" rx=\"6\" fill=\"var(--k)\"/><text x=\"390\" y=\"455\" font-size=\"22\" text-anchor=\"middle\" fill=\"#cfd8e3\">4. yıl</text><rect x=\"450\" y=\"380\" width=\"60\" height=\"40\" rx=\"6\" fill=\"var(--k)\"/><text x=\"480\" y=\"455\" font-size=\"22\" text-anchor=\"middle\" fill=\"#cfd8e3\">5. yıl</text><line x1=\"70\" y1=\"420\" x2=\"530\" y2=\"420\" stroke=\"#cfd8e3\" stroke-width=\"4\"/><path d=\"M120 100 L480 360\" stroke=\"var(--k)\" stroke-width=\"10\" stroke-dasharray=\"18 12\"/><path d=\"M480 360 l-30 -5 l18 -24 Z\" fill=\"var(--k)\"/></svg>",
+   "metin": "Basınç yıllardır düşüyor."
+  },
+  {
+   "tur": "cizim",
+   "baslik": "Ve kimse\n**fark etmemiş.**",
+   "cizim": "<svg viewBox=\"0 0 600 480\" xmlns=\"http://www.w3.org/2000/svg\"><rect x=\"150\" y=\"40\" width=\"300\" height=\"400\" rx=\"16\" fill=\"#e9dfc7\"/><rect x=\"250\" y=\"22\" width=\"100\" height=\"36\" rx=\"8\" fill=\"#8a7d63\"/><rect x=\"180\" y=\"100\" width=\"30\" height=\"30\" rx=\"5\" fill=\"none\" stroke=\"#8a7d63\" stroke-width=\"4\"/><rect x=\"225\" y=\"110\" width=\"170\" height=\"10\" rx=\"5\" fill=\"#c9bb98\"/><rect x=\"180\" y=\"160\" width=\"30\" height=\"30\" rx=\"5\" fill=\"none\" stroke=\"#8a7d63\" stroke-width=\"4\"/><rect x=\"225\" y=\"170\" width=\"130\" height=\"10\" rx=\"5\" fill=\"#c9bb98\"/><rect x=\"180\" y=\"220\" width=\"30\" height=\"30\" rx=\"5\" fill=\"none\" stroke=\"#8a7d63\" stroke-width=\"4\"/><rect x=\"225\" y=\"230\" width=\"170\" height=\"10\" rx=\"5\" fill=\"#c9bb98\"/><rect x=\"180\" y=\"280\" width=\"30\" height=\"30\" rx=\"5\" fill=\"none\" stroke=\"#8a7d63\" stroke-width=\"4\"/><rect x=\"225\" y=\"290\" width=\"130\" height=\"10\" rx=\"5\" fill=\"#c9bb98\"/><rect x=\"180\" y=\"340\" width=\"30\" height=\"30\" rx=\"5\" fill=\"none\" stroke=\"#8a7d63\" stroke-width=\"4\"/><rect x=\"225\" y=\"350\" width=\"170\" height=\"10\" rx=\"5\" fill=\"#c9bb98\"/><path d=\"M400 50 q40 20 40 60 M420 40 q30 30 20 80\" stroke=\"#cfc6b3\" stroke-width=\"3\" fill=\"none\" opacity=\".7\"/><circle cx=\"430\" cy=\"400\" r=\"62\" fill=\"#1b1b1b\" stroke=\"var(--k)\" stroke-width=\"8\"/><text x=\"430\" y=\"425\" font-size=\"70\" font-weight=\"900\" text-anchor=\"middle\" fill=\"var(--k)\">?</text></svg>",
+   "metin": "Ve kimse fark etmemiş."
+  },
+  {
+   "tur": "cizim",
+   "baslik": "Periyodik kontrol\nbunu yangından\n**önce** yakalar.",
+   "cizim": "<svg viewBox=\"0 0 600 470\" xmlns=\"http://www.w3.org/2000/svg\"><rect x=\"20\" y=\"230\" width=\"560\" height=\"70\" fill=\"#8a96a6\"/><rect x=\"60\" y=\"215\" width=\"20\" height=\"100\" fill=\"#5b6b7e\"/><rect x=\"520\" y=\"215\" width=\"20\" height=\"100\" fill=\"#5b6b7e\"/><circle cx=\"300\" cy=\"265\" r=\"105\" fill=\"#0b2340\" fill-opacity=\".35\" stroke=\"#e8eef6\" stroke-width=\"18\"/><circle cx=\"300\" cy=\"265\" r=\"20\" fill=\"var(--k)\"/><circle cx=\"300\" cy=\"265\" r=\"40\" fill=\"none\" stroke=\"var(--k)\" stroke-width=\"5\" opacity=\".6\"/><path d=\"M375 340 L470 435\" stroke=\"#f6b420\" stroke-width=\"30\" stroke-linecap=\"round\"/><path d=\"M300 60 a60 60 0 1 1 -0.1 0\" fill=\"none\" stroke=\"#18c25a\" stroke-width=\"10\" stroke-dasharray=\"250 140\"/></svg>",
+   "metin": "Periyodik kontrol, bunu yangından önce yakalar."
+  },
+  {
+   "tur": "cizim",
+   "baslik": "Bu bir prosedür değil.\n**Hayat sigortası.**",
+   "cizim": "<svg viewBox=\"0 0 600 520\" xmlns=\"http://www.w3.org/2000/svg\"><circle cx=\"300\" cy=\"250\" r=\"230\" fill=\"none\" stroke=\"var(--v)\" stroke-opacity=\".25\" stroke-width=\"6\"/><circle cx=\"300\" cy=\"250\" r=\"190\" fill=\"none\" stroke=\"var(--v)\" stroke-opacity=\".15\" stroke-width=\"4\"/><path d=\"M300 70 L450 130 V250 C450 350 380 420 300 450 C220 420 150 350 150 250 V130 Z\" fill=\"var(--v)\"/><path d=\"M300 100 L425 150 V250 C425 335 365 395 300 420 C235 395 175 335 175 250 V150 Z\" fill=\"#1d3048\"/><path d=\"M235 255 L285 305 L375 205\" fill=\"none\" stroke=\"var(--v)\" stroke-width=\"30\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>",
+   "metin": "Bu bir prosedür değil, hayat sigortası."
+  },
+  {
+   "tur": "kapanis",
+   "baslik": "Binanızın kontrolünü\nertelemeyin.",
+   "satirlar": [
+    "teknikisg.com.tr",
+    "☎ 0537 918 48 21"
+   ],
+   "metin": "Binanızın kontrolünü\nertelemeyin. Teknik İSG'yi arayın."
+  }
+ ]
+}

@@ -42,6 +42,30 @@ Komutlar (kısaltma: `VS="uv run --script $HOME/.claude/skills/video-seslendirme
 7. **Doğrula:** `kontrol.png`'yi aç: altyazı sabit yerde mi, içeriğin üstüne biniyor mu (binerse `altyazi.y_orani` değerini değiştir, hikayede 0,74–0,79), siyah ara 0 mı. Gerekirse `ffmpeg -ss <sn> -i <ad>-altyazili.mp4 -frames:v 1 kare.png` ile tek kare al.
 8. **Teslim:** Dosya yollarını ver. Sesi dinleyemediğini, telaffuzu (özellikle kısaltmalar ve özel adlar) kullanıcının kontrol etmesi gerektiğini söyle. Düzeltme isterse sadece ilgili `metin`/`telaffuz` alanını değiştirip `olustur`'u tekrar çalıştır.
 
+## İş akışı D — Kısa tanıtım / farkındalık videosu (hikaye anlatımı, çizimli)
+
+Örnek: "Kapı çaldı → panik → 'alt tarafı iki vana' → bantlı boru → kaza olursa → imza sizin → uzmana bırakın". Şablonlar: `ornekler/tanitim-*.json` (site tesisatı, yürüyen merdiven, yangın tesisatı).
+
+- Sahne türü `cizim`:
+  - `baslik`: kısa, vurucu, `**vurgu**` ile.
+  - `cizim`: düz, sade SVG (viewBox `0 0 600 520`). Renkler: `var(--v)` vurgu, `var(--k)` kırmızı, koyu `#1d3048`, açık `#e8eef6`.
+  - Her sahnede tek bir nesne olsun (kapı, vana, manometre, kalkan, kontrol listesi…).
+- Akış (8–10 sahne + `kapanis`, 20–35 sn):
+  1. Merak uyandıran giriş
+  2. Sorun
+  3. Gizli risk
+  4. Sonuç ("kaza olursa…")
+  5. Sorumluluk
+  6. Çözüm (uzman / periyodik kontrol)
+  7. Kapanış (site + telefon)
+- Konuya göre vurgu rengi (`marka.renk_vurgu`): tesisat/su yeşil `#22c55e`, mekanik/asansör sarı `#f6b420`, yangın kırmızı `#ef4444`.
+- `metin`: başlığı tekrar etmeden doğal konuşma, kısa ("Oysa boru bantla tamir edilmiş."). Hız `+6%`.
+- Var olan bir videonun "görselini ve sesini değiştir" isteğinde:
+  1. Önce kareleri çıkar: `ffmpeg -i v.mp4 -vf fps=1,crop=iw:ih/3:0:0,tile=10x3 metin.png`.
+  2. Ekrandaki metni sırasıyla oku.
+  3. Aynı mesajı yeni çizimlerle bu türde yeniden kur. Orijinal görselleri kopyalama.
+- `hareket`: `yakinlas` (varsayılan, hafif yakınlaşma) veya `yok`.
+
 ## İş akışı C — Gerçekçi video (pano ölçümü, yangın dolabı muayenesi gibi)
 
 Gerçek kişi ve ekipman görüntüsü Gemini uygulamasındaki **Veo** ile üretilir. Kullanıcının Google AI Pro aboneliği var: günlük kotalı, 8 sn klipler. API yok; klipleri kullanıcı elle üretir. Claude Gemini'yi tarayıcıyla otomatik kullanmaz.

@@ -1764,6 +1764,21 @@
           },
           {
             "tur": "dosya-kopyala",
+            "kaynak": "installer/claude/skills/video-seslendirme/ornekler/tanitim-yangin-tesisati.json",
+            "hedef": "%USERPROFILE%\\.claude\\skills\\video-seslendirme\\ornekler\\tanitim-yangin-tesisati.json"
+          },
+          {
+            "tur": "dosya-kopyala",
+            "kaynak": "installer/claude/skills/video-seslendirme/ornekler/tanitim-yuruyen-merdiven.json",
+            "hedef": "%USERPROFILE%\\.claude\\skills\\video-seslendirme\\ornekler\\tanitim-yuruyen-merdiven.json"
+          },
+          {
+            "tur": "dosya-kopyala",
+            "kaynak": "installer/claude/skills/video-seslendirme/ornekler/tanitim-site-tesisat.json",
+            "hedef": "%USERPROFILE%\\.claude\\skills\\video-seslendirme\\ornekler\\tanitim-site-tesisat.json"
+          },
+          {
+            "tur": "dosya-kopyala",
             "kaynak": "installer/claude/skills/video-seslendirme/marka/logo.png",
             "hedef": "%USERPROFILE%\\.claude\\skills\\video-seslendirme\\marka\\logo.png"
           },

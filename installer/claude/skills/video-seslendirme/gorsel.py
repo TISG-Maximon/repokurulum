@@ -48,6 +48,7 @@ def resim_veri(yol):
 
 CSS = """
 *{box-sizing:border-box;margin:0;padding:0}
+:root{--v:%(vurgu)s;--k:%(kirmizi)s;--a1:%(a1)s;--a2:%(a2)s}
 html,body{width:%(W)dpx;height:%(H)dpx;overflow:hidden}
 body{font-family:%(font)s;color:#fff;background:radial-gradient(120%% 80%% at 70%% 30%%,%(a2)s 0%%,%(a1)s 70%%);position:relative}
 .logo{position:absolute;top:%(u)dpx;left:50%%;transform:translateX(-50%%);background:#fff;border-radius:22px;padding:22px 36px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
@@ -73,6 +74,9 @@ h1{font-size:%(s1)dpx;line-height:1.15;font-weight:800;margin-top:22px}
 .ilerleme i{display:block;width:%(pw)dpx;height:8px;border-radius:4px;background:rgba(255,255,255,.25)}
 .ilerleme i.d{background:%(vurgu)s}
 .alt{position:absolute;bottom:%(fb)dpx;width:100%%;text-align:center;color:#9fb3cc;font-size:%(s4)dpx}
+.cizim{margin-top:%(cm)dpx;width:90%%;display:flex;justify-content:center}
+.cizim svg{width:100%%;height:auto;display:block;overflow:visible}
+.baslik-buyuk{font-size:%(sb)dpx;line-height:1.15;font-weight:900}
 .buyuk{font-size:%(s0)dpx;font-weight:800;color:%(vurgu)s;line-height:1.2}
 .iletisim{margin-top:40px;font-size:%(s2)dpx;line-height:1.6}
 /* Temsili ekran parcalari (ekran_html icinde kullanilir) */
@@ -104,7 +108,7 @@ def sahne_html(s, marka, w, h, adim_no, adim_top, hikaye=True):
         yer = dict(u=int(70 * o), it=int(300 * o), ib=int(h * 0.255), pb=int(h * 0.115), fb=int(h * 0.05))
     deg = dict(W=w, H=h, font=marka["yazi_tipi"], a1=marka["renk_arka1"], a2=marka["renk_arka2"], vurgu=marka["renk_vurgu"],
                kirmizi=marka["renk_kirmizi"], lh=int(78 * o), k=int(60 * o),
-               s0=int(84 * o), s1=int(62 * o), s2=int(38 * o), s3=int(30 * o), s4=int(28 * o), sk=int(34 * o), pw=int(70 * o), **yer)
+               s0=int(84 * o), s1=int(62 * o), sb=int(76 * o), cm=int(60 * o), s2=int(38 * o), s3=int(30 * o), s4=int(28 * o), sk=int(34 * o), pw=int(70 * o), **yer)
     logo = marka.get("logo")
     logo_html = f'<img src="{resim_veri(logo)}">' if logo and Path(logo).exists() else f'<span class="yazi">{html.escape(marka["ad"])}</span>'
     tur = s.get("tur", "adim")
@@ -133,6 +137,14 @@ def sahne_html(s, marka, w, h, adim_no, adim_top, hikaye=True):
         if s.get("kutu"): g.append(f'<div class="kutu">{vurgula(s["kutu"])}</div>')
         if s.get("ekran_html"): g.append(f'<div class="ekran" style="flex:0;margin-top:40px;width:100%">{s["ekran_html"]}</div>')
         if s.get("aciklama"): g.append(f'<div class="acik">{vurgula(s["aciklama"])}</div>')
+        g.append('</div>')
+    elif tur == "cizim":
+        # Anlati/tanitim sahnesi: buyuk baslik + ortada SVG cizim (renkler: var(--v) vurgu, var(--k) kirmizi)
+        g.append('<div class="icerik orta">')
+        if s.get("etiket"): g.append(f'<span class="etiket">{vurgula(s["etiket"])}</span>')
+        g.append(f'<h1 class="baslik-buyuk">{vurgula(s.get("baslik", ""))}</h1>')
+        if s.get("aciklama"): g.append(f'<div class="acik">{vurgula(s["aciklama"])}</div>')
+        if s.get("cizim"): g.append(f'<div class="cizim">{s["cizim"]}</div>')
         g.append('</div>')
     elif tur == "kapanis":
         g.append('<div class="icerik orta">')
