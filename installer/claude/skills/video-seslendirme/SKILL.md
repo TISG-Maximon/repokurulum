@@ -1,6 +1,6 @@
 ---
 name: video-seslendirme
-description: Adım adım anlatım / müşteri rehberi / eğitim videosu üretir (dikey 1080x1920, marka tasarımlı sahneler, Türkçe Microsoft Emel seslendirmesi, konuşmaya senkron sabit altyazı, siyahsız geçişler) ya da hazır sessiz bir videoya seslendirme ve altyazı ekler. "video yap", "rehber videosu", "adım adım anlat", "seslendir", "videoya ses/altyazı ekle", "reels/shorts" isteklerinde kullan.
+description: Gerçekçi (Gemini/Veo klipli) veya tasarım sahneli adım adım anlatım / müşteri rehberi / eğitim videosu üretir (dikey 1080x1920, marka tasarımlı sahneler, Türkçe Microsoft Emel seslendirmesi, konuşmaya senkron sabit altyazı, siyahsız geçişler) ya da hazır sessiz bir videoya seslendirme ve altyazı ekler. "video yap", "rehber videosu", "adım adım anlat", "seslendir", "videoya ses/altyazı ekle", "reels/shorts" isteklerinde kullan.
 ---
 <!-- repokurulum: bu dosya Repo Kurulum tarafindan yonetilir; guncellemede yenilenir. Kendine gore degistireceksen bu satiri sil. -->
 
@@ -17,6 +17,8 @@ Komutlar (kısaltma: `VS="uv run --script $HOME/.claude/skills/video-seslendirme
 | `$VS olustur <klasor>/senaryo.json` | Görseller + seslendirme + altyazı → video. |
 | `$VS analiz <video.mp4>` | Hazır video: sahneleri ve siyah geçişleri bulur, `sahneler.json` taslağı ve sahne kareleri üretir. |
 | `$VS uret <klasor>/sahneler.json` | Hazır videoya seslendirme + altyazı; siyah geçişleri atar, sahneleri anlatıma göre uzatır. |
+| `$VS istemler <klasor>/senaryo.json` | Gerçekçi `klip` sahneleri için Gemini (Veo) istem listesi: `veo-istemleri.md`. |
+| `$VS klipler <klasor>/senaryo.json` | İndirilen klipleri listeler, her biri için 6 karelik `klipler/kontrol_XX.png` üretir. |
 | `$VS dene "metin"` | Tek cümlenin telaffuzunu dener (`deneme.mp3`). |
 
 Çıktılar (proje klasöründe): `<ad>.mp4` (seslendirmeli), `<ad>-altyazili.mp4`, `<ad>.srt`, `kontrol.png`.
@@ -40,6 +42,30 @@ Komutlar (kısaltma: `VS="uv run --script $HOME/.claude/skills/video-seslendirme
 7. **Doğrula:** `kontrol.png`'yi aç: altyazı sabit yerde mi, içeriğin üstüne biniyor mu (binerse `altyazi.y_orani` değerini değiştir, hikayede 0,74–0,79), siyah ara 0 mı. Gerekirse `ffmpeg -ss <sn> -i <ad>-altyazili.mp4 -frames:v 1 kare.png` ile tek kare al.
 8. **Teslim:** Dosya yollarını ver. Sesi dinleyemediğini, telaffuzu (özellikle kısaltmalar ve özel adlar) kullanıcının kontrol etmesi gerektiğini söyle. Düzeltme isterse sadece ilgili `metin`/`telaffuz` alanını değiştirip `olustur`'u tekrar çalıştır.
 
+## İş akışı C — Gerçekçi video (pano ölçümü, yangın dolabı muayenesi gibi)
+
+Gerçek kişi ve ekipman görüntüsü Gemini uygulamasındaki **Veo** ile üretilir. Kullanıcının Google AI Pro aboneliği var: günlük kotalı, 8 sn klipler. API yok; klipleri kullanıcı elle üretir. Claude Gemini'yi tarayıcıyla otomatik kullanmaz.
+
+1. Senaryoyu A'daki gibi yaz; `ornek-gercekci.json` şablonunu kullan. Gerçek görüntü gereken sahneler `"tur": "klip"`; kapak, uyarı ve kapanış tasarım sahnesi kalır. 4–6 klip yeterli (kota).
+2. Her `klip` sahnesine:
+   - `"klip": "klipler/sahne_XX.mp4"`
+   - `"adim"`, `"baslik"`, `"aciklama"` (videonun üstüne marka şeridi olarak biner)
+   - `"veo_istemi"`: **İngilizce** istem. Şunları yaz: dikey 9:16 ve gerçekçi; kişinin rolü; **doğru KKD**'nin tamamı (baret, gözlük, uygun eldiven, iş kıyafeti); ekipman ve tek bir net eylem; kamera (yakın, sabit); ışık. Sonuna "No on-screen text, no logos, no talking." ekle. Sayı veya gösterge değeri isteme (yapay zekâ yanlış yazar).
+   - Prosedür, mevzuata ve iyi uygulamaya uygun olmalı (enerji kesme/kilitleme, yetkili kişi, doğru ölçüm aleti). Emin değilsen istemi genel tut ve ayrıntıyı seslendirmede doğru anlat.
+3. `$VS istemler senaryo.json` çalıştır. Kullanıcıya `veo-istemleri.md` yolunu ver: istemleri Gemini > Video'ya yapıştıracak, klipleri belirtilen adla `klipler/` klasörüne koyacak.
+4. Kullanıcı "klipler hazır" deyince `$VS klipler senaryo.json` çalıştır ve her `kontrol_XX.png`'yi Read ile **mutlaka** incele:
+   - Yanlış veya eksik KKD
+   - Tehlikeli ya da yanlış uygulama (enerjili panoda eldivensiz çalışma, yanlış alet)
+   - Bozuk el, yüz veya alet; anlamsız yazı ya da logo
+   Sorunlu klip için düzeltilmiş istem yaz ve yeniden ürettir. **İSG içeriğinde yanlış uygulama gösteren klibi asla kullanma.**
+5. `$VS olustur senaryo.json`. Klip ayarları:
+   - Yatay klip dikeye bulanık arka planla uyarlanır (`doldur`: `otomatik` / `kirp` / `bulanik`).
+   - Kısa klip en fazla %35 yavaşlatılır, sonra son karede durur.
+   - `klip_bas` / `klip_son` ile kırpılır.
+   - Klibin sesi kapalıdır; ortam sesi için `klip_ses: 0.15`.
+   - Klibi olmayan sahnede tasarım görseli kullanılır ve UYARI yazılır.
+6. Teslimde şunu söyle: Gemini videolarında görünür Veo filigranı ve SynthID olabilir. Instagram yapay zekâ içeriğini "AI bilgisi" olarak etiketleyebilir. İçerik temsilîdir; gerçek ölçüm görüntüsü değildir.
+
 ## İş akışı B — Hazır videoya seslendirme ve altyazı
 
 1. `$VS analiz <video>` → `<video>-seslendirme/sahneler.json` ve `sahneler/sahne_XX.png`, `genel.png`.
@@ -57,7 +83,7 @@ Komutlar (kısaltma: `VS="uv run --script $HOME/.claude/skills/video-seslendirme
 ## Ayarlar (`senaryo.json` / `sahneler.json`)
 
 - `ses`: `tr-TR-EmelNeural` (kadın, varsayılan) veya `tr-TR-AhmetNeural` (erkek). `hiz`: `+4%` (doğal); en fazla `+12%`, daha hızlı yapma, metni kısalt.
-- `motor`: `edge` (internet, en doğal). Metin gizli/kurum içiyse `piper` (çevrimdışı, `piper_ses`: `tr_TR-fahrettin-medium` / `tr_TR-dfki-medium` / `tr_TR-fettah-medium`).
+- `motor`: `edge` (internet, en doğal). Metin gizli/kurum içiyse `piper` (çevrimdışı, `piper_ses`: `tr_TR-dfki-medium` (yoksa klasördeki başka Türkçe ses)).
 - `altyazi`: `yazi_tipi` (Arial), `boyut_orani` (0,026 = 50 px / 1920), `y_orani` (hikayede 0,765, hazır videoda 0,78), `max_karakter` (40).
 - `marka`: `ad`, `logo` (png yolu), `site`, `eposta`, `renk_arka1`, `renk_arka2`, `renk_vurgu`, `renk_kirmizi`. Boşsa Teknik İSG.
 - `boyut`: `[1080, 1920]` dikey; yatay için `[1920, 1080]` (o zaman `y_orani` ~0,86).
@@ -65,6 +91,6 @@ Komutlar (kısaltma: `VS="uv run --script $HOME/.claude/skills/video-seslendirme
 ## Yapma
 
 - edge-tts metni Microsoft'a gönderir: kişisel veya gizli bilgiyi seslendirmeye koyma (gerekirse `piper`).
-- Ücretli servis (ElevenLabs, HeyGen Voice) kullanma; kullanıcı açıkça istemedikçe başka TTS deneme.
+- Ücretli servis (ElevenLabs, HeyGen Voice, Veo API) kullanma; kullanıcı açıkça istemedikçe başka TTS deneme. Gerçekçi klip yalnızca kullanıcının kendi Gemini (Google AI Pro) kotasıyla, elle üretilir.
 - Gerçek kişilerin adını, TC numarasını ya da telefonunu ekranda gösterme; temsili veri kullan.
 - Remotion tabanlı araçlarla şirket videosu yapma (lisans ücretli).

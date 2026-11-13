@@ -18,4 +18,5 @@ Bu repo, Windows'ta Claude Code + Playwright MCP + graphify ortamını kuran bet
 - `installer/bilesenler.json`'da aynı işi yapan bir bileşen zaten varsa yenisi eklenmez.
 - Mevcut bileşenler silinmez; bu kural yalnızca bundan sonra eklenecekler için geçerlidir.
 - İstisna: `glm-ajanlar` (GLM 5.3 kod ajanları) kullanıcının açık isteğiyle, kendi ücretsiz Z.ai API anahtarıyla kullanılmak üzere eklendi.
+- İstisna: gerçekçi video klipleri kullanıcının kendi Gemini (Google AI Pro, Veo) kotasıyla, elle üretilir (kullanıcı kararı: "ücretsiz veya kotalı"). Kuruluma bileşen olarak eklenmez; `video-seslendirme` skill'i istem listesini hazırlar ve klipleri işler.
 - Her yeni bileşene `kurallar` alanında ne işe yaradığı ve hangi ihtiyaçta kaçıncı sırada kullanılacağı yazılır.

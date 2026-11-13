@@ -1577,7 +1577,7 @@
             "Kelime zamanlı altyazı gerekiyorsa tek başına yetmez (SRT üretmez; cümle sürelerinden hesapla)"
           ],
           "nasil": [
-            "`piper -m \"$env:PIPER_SESLER\\tr_TR-fahrettin-medium.onnx\" -i metin.txt -f ses.wav` (sesler: dfki, fahrettin, fettah)",
+            "`piper -m \"$env:PIPER_SESLER\\tr_TR-dfki-medium.onnx\" -i metin.txt -f ses.wav` (inen sesler: `dir $env:PIPER_SESLER`)",
             "Kısa metin: `piper -m <model> -f ses.wav \"metin\"`",
             "Yavaşlatmak için `--length-scale 1.1`, cümle arası boşluk `--sentence-silence 0.3`",
             "MP3 gerekirse: `ffmpeg -i ses.wav -b:a 128k ses.mp3`",
@@ -1723,7 +1723,7 @@
       "kategori": "7. Video ve animasyon",
       "lisans": "-",
       "repo": "",
-      "aciklama": "Adimlardan marka tasarimli dikey rehber videosu uretir ya da hazir videoya Turkce seslendirme + senkron sabit altyazi ekler; siyah gecisleri atar. Claude'da 'video-seslendirme' skill'i",
+      "aciklama": "Adimlardan marka tasarimli dikey rehber videosu (WhatsApp durum / Instagram hikaye, en fazla 60 sn) uretir; gercekci sahneler icin Gemini (Veo) istemleri hazirlar ve klipleri isler; hazir videoya Turkce seslendirme + senkron sabit altyazi ekler. Claude'da 'video-seslendirme' skill'i",
       "varsayilan": false,
       "gerekir": [
         "uv",
@@ -1759,6 +1759,11 @@
           },
           {
             "tur": "dosya-kopyala",
+            "kaynak": "installer/claude/skills/video-seslendirme/ornek-gercekci.json",
+            "hedef": "%USERPROFILE%\\.claude\\skills\\video-seslendirme\\ornek-gercekci.json"
+          },
+          {
+            "tur": "dosya-kopyala",
             "kaynak": "installer/claude/skills/video-seslendirme/marka/logo.png",
             "hedef": "%USERPROFILE%\\.claude\\skills\\video-seslendirme\\marka\\logo.png"
           },
@@ -1785,7 +1790,8 @@
           "ne_zaman": [
             "\"X nasıl yapılır videosu\", müşteri rehberi, adım adım anlatım, kısa dikey bilgilendirme videosu",
             "Kullanıcı bir video verip seslendirme/altyazı/konuşma metni istiyor",
-            "Ekran görüntülerinden adım adım video"
+            "Ekran görüntülerinden adım adım video",
+            "Gerçekçi görüntü gereken anlatım (pano ölçümü, yangın dolabı muayenesi): klipler Gemini (Veo) ile kullanıcının kendi kotasıyla üretilir, skill istemleri hazırlar ve klipleri işler"
           ],
           "ne_zaman_degil": [
             "Serbest hareketli grafik/animasyonlu tanıtım (HyperFrames)",
@@ -1796,7 +1802,7 @@
             "Önce `gorsel` ile sessiz önizleme üret ve görselleri Read ile kontrol et, sonra `olustur`/`uret`",
             "Kişisel veriyi ekrana ve seslendirmeye koyma; gizli metinde `motor: piper`"
           ],
-          "dogrula": "`kontrol.png` ve çıktı satırındaki 'siyah ara: 0' değerine bak; altyazının içeriğe binmediğini kare alarak kontrol et; telaffuzu kullanıcıya dinlet."
+          "dogrula": "`kontrol.png` ve 'siyah ara: 0' / 'Hikaye/durum: UYGUN' satırlarına bak; Veo kliplerinin kontrol karelerinde KKD ve uygulama doğruluğunu incele; telaffuzu kullanıcıya dinlet."
         }
       ]
     },

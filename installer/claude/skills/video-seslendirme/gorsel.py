@@ -159,6 +159,40 @@ def sahne_html(s, marka, w, h, adim_no, adim_top, hikaye=True):
             f'<div class="logo">{logo_html}</div>{"".join(g)}{ilerleme}<div class="alt">{html.escape(site)}</div></body></html>')
 
 
+def serit_html(s, marka, w, h, adim_no, adim_top, hikaye=True):
+    """Gercek/AI klibin ustune binen seffaf katman: ustte logo + adim + baslik, altta altyazi icin koyulasan zemin."""
+    sayfa = sahne_html(dict(s, tur="adim", ekran_html=None, ekran_gorsel=None), marka, w, h, adim_no, adim_top, hikaye)
+    ust = int(h * (0.42 if hikaye and h > w else 0.30))
+    ek = ("<style>body{background:transparent!important}"
+          f".golge-ust{{position:absolute;left:0;right:0;top:0;height:{ust}px;background:linear-gradient(rgba(5,15,30,.82),rgba(5,15,30,.55) 60%,rgba(5,15,30,0))}}"
+          f".golge-alt{{position:absolute;left:0;right:0;bottom:0;height:{int(h * 0.36)}px;background:linear-gradient(rgba(5,15,30,0),rgba(5,15,30,.7) 45%,rgba(5,15,30,.85))}}"
+          "h1,.acik{text-shadow:0 2px 8px rgba(0,0,0,.6)}</style>")
+    sayfa = sayfa.replace("</head><body>", ek + '</head><body><div class="golge-ust"></div><div class="golge-alt"></div>', 1)
+    return sayfa
+
+
+def ekran_goruntusu(tarayici, sayfa, png, w, h, profil, seffaf=False):
+    if png.exists():
+        png.unlink()
+    temel = [tarayici, "--headless=new", "--disable-gpu", "--hide-scrollbars", "--no-first-run",
+             "--no-default-browser-check", "--force-device-scale-factor=1", f"--window-size={w},{h}", f"--screenshot={png}"]
+    if seffaf:
+        temel.append("--default-background-color=00000000")
+    if os.name != "nt" and hasattr(os, "geteuid") and os.geteuid() == 0:
+        temel.append("--no-sandbox")
+    # Windows'ta acik Edge/Chrome penceresine baglanmasin diye ayri gecici profil
+    denemeler = ([temel + [f"--user-data-dir={profil}"]] if os.name == "nt" else []) + [temel]
+    r = None
+    for arg in denemeler:
+        try:
+            r = subprocess.run(arg + [sayfa.resolve().as_uri()], capture_output=True, text=True, timeout=90)
+            if png.exists():
+                return
+        except subprocess.TimeoutExpired:
+            print("UYARI: tarayici zaman asimi, farkli ayarla yeniden deneniyor")
+    sys.exit(f"HATA: gorsel uretilemedi ({png.name}):\n{(r.stderr if r else '')[-1500:]}")
+
+
 def gorselleri_uret(cfg, klasor):
     """cfg['sahneler'] icindeki her sahne icin gorseller/sahne_XX.png uretir ve s['goruntu']'ya yazar."""
     klasor = Path(klasor)
@@ -174,7 +208,7 @@ def gorselleri_uret(cfg, klasor):
     tarayici = tarayici_bul()
     etiketler = []
     for s in cfg["sahneler"]:
-        if s.get("tur", "adim") == "adim" and not s.get("atla"):
+        if s.get("tur", "adim") in ("adim", "klip") and not s.get("atla") and (s.get("tur", "adim") == "adim" or s.get("adim")):
             e = s.get("adim") or f"ADIM {len(etiketler) + 1}"
             s["_adim_etiket"] = e
             if e not in etiketler:
@@ -185,27 +219,26 @@ def gorselleri_uret(cfg, klasor):
             if s.get("atla") or s.get("goruntu_hazir"):
                 continue
             sira = (etiketler.index(s["_adim_etiket"]) + 1) if s.get("_adim_etiket") else 0
+            hik = cfg.get("platform", "hikaye") == "hikaye"
+            if s.get("tur") == "klip":
+                klip = Path(s.get("klip", ""))
+                if s.get("klip") and not klip.is_absolute():
+                    klip = (klasor / klip).resolve()
+                if s.get("klip") and klip.exists():
+                    s["_klip"] = str(klip)
+                    sayfa = hedef / f"serit_{n:02d}.html"
+                    sayfa.write_text(serit_html(s, marka, w, h, sira, len(etiketler), hik), encoding="utf-8")
+                    png = hedef / f"serit_{n:02d}.png"
+                    ekran_goruntusu(tarayici, sayfa, png, w, h, profil, seffaf=True)
+                    s["_serit"] = f"gorseller/serit_{n:02d}.png"
+                    s.pop("goruntu", None)
+                    print(f"klip: {klip.name} + serit {png.name}")
+                    continue
+                print(f"UYARI: sahne {n} klibi yok ({s.get('klip')}); yerine tasarim gorseli kullaniliyor. Klibi Gemini'de uretip bu ada kaydet.")
             sayfa = hedef / f"sahne_{n:02d}.html"
-            sayfa.write_text(sahne_html(s, marka, w, h, sira, len(etiketler), cfg.get("platform", "hikaye") == "hikaye"), encoding="utf-8")
+            sayfa.write_text(sahne_html(dict(s, tur="adim") if s.get("tur") == "klip" else s, marka, w, h, sira, len(etiketler), hik), encoding="utf-8")
             png = hedef / f"sahne_{n:02d}.png"
-            if png.exists():
-                png.unlink()
-            temel = [tarayici, "--headless=new", "--disable-gpu", "--hide-scrollbars", "--no-first-run",
-                     "--no-default-browser-check", "--force-device-scale-factor=1", f"--window-size={w},{h}", f"--screenshot={png}"]
-            if os.name != "nt" and hasattr(os, "geteuid") and os.geteuid() == 0:
-                temel.append("--no-sandbox")
-            # Windows'ta acik Edge/Chrome penceresine baglanmasin diye ayri gecici profil
-            denemeler = ([temel + [f"--user-data-dir={profil}"]] if os.name == "nt" else []) + [temel]
-            r = None
-            for arg in denemeler:
-                try:
-                    r = subprocess.run(arg + [sayfa.resolve().as_uri()], capture_output=True, text=True, timeout=90)
-                    if png.exists():
-                        break
-                except subprocess.TimeoutExpired:
-                    print("UYARI: tarayici zaman asimi, farkli ayarla yeniden deneniyor")
-            if not png.exists():
-                sys.exit(f"HATA: sahne {n} gorseli uretilemedi:\n{(r.stderr if r else '')[-1500:]}")
+            ekran_goruntusu(tarayici, sayfa, png, w, h, profil)
             s["goruntu"] = f"gorseller/sahne_{n:02d}.png"
             print(f"gorsel: {png}")
     finally:

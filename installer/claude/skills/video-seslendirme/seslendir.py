@@ -12,6 +12,8 @@
 #   uv run --script seslendir.py uret    <K/sahneler.json>      -> <ad>.mp4, <ad>-altyazili.mp4, <ad>.srt, kontrol.png
 #   uv run --script seslendir.py gorsel  <K/senaryo.json>       -> sahne gorselleri (sifirdan video icin, sessiz onizleme)
 #   uv run --script seslendir.py olustur <K/senaryo.json>       -> gorseller + seslendirme + altyazi ile video
+#   uv run --script seslendir.py istemler <K/senaryo.json>      -> veo-istemleri.md (Gemini/Veo ile gercekci klip uretmek icin)
+#   uv run --script seslendir.py klipler <K/senaryo.json>       -> indirilen kliplerin kontrol kareleri
 #   uv run --script seslendir.py dene    "metin" [--ses ...]    -> deneme.mp3 (telaffuz denemesi)
 #
 # Gerekenler: ffmpeg + ffprobe (PATH'te). Ses: edge-tts (internet), yoksa Piper (PIPER_SESLER).
@@ -31,6 +33,13 @@ def calistir(args, **kw):
 
 def sure(dosya):
     return float(calistir(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", str(dosya)]).stdout.strip())
+
+
+def klip_bilgi(k):
+    o = json.loads(calistir(["ffprobe", "-v", "error", "-show_entries", "format=duration:stream=codec_type,width,height",
+                             "-of", "json", str(k)]).stdout)
+    v = next(x for x in o["streams"] if x["codec_type"] == "video")
+    return float(o["format"]["duration"]), int(v["width"]), int(v["height"]), any(x["codec_type"] == "audio" for x in o["streams"])
 
 
 def video_bilgi(v):
@@ -107,7 +116,7 @@ def analiz(video, klasor):
                      "'atla': true sahneyi cikarir. bas/son: sahnenin kararma/gecis icermeyen temiz araligi (saniye). "
                      "'telaffuz': ses motoruna giden metinde yapilacak degisiklikler (kisaltmalar).",
         "video": str(video), "cikti_adi": video.stem + "-seslendirmeli",
-        "motor": "edge", "ses": "tr-TR-EmelNeural", "hiz": "+4%", "piper_ses": "tr_TR-fahrettin-medium",
+        "motor": "edge", "ses": "tr-TR-EmelNeural", "hiz": "+4%", "piper_ses": "tr_TR-dfki-medium",
         "gecis_sn": 0.3, "on_bosluk_sn": 0.35, "son_bosluk_sn": 0.45,
         "altyazi": {"yazi_tipi": "Arial", "boyut_orani": 0.026, "y_orani": 0.80, "max_karakter": 40},
         "telaffuz": VARSAYILAN_TELAFFUZ,
@@ -186,9 +195,14 @@ async def edge_ses(metin, ses, hiz, dosya):
 
 
 def piper_model(ad):
+    """Istenen Piper sesi; yoksa klasordeki herhangi bir Turkce ses."""
     for d in [os.environ.get("PIPER_SESLER"), os.path.join(os.environ.get("LOCALAPPDATA", ""), "piper-sesler")]:
-        if d and Path(d, ad + ".onnx").exists():
-            return str(Path(d, ad + ".onnx"))
+        if d and Path(d).is_dir():
+            if Path(d, ad + ".onnx").exists():
+                return str(Path(d, ad + ".onnx"))
+            diger = sorted(Path(d).glob("tr_TR-*.onnx"))
+            if diger:
+                return str(diger[0])
     return None
 
 
@@ -206,11 +220,11 @@ def ses_uret(metin, cfg, hedef_wav, gecici):
                       "-ar", "44100", "-ac", "1", str(hedef_wav)])
             return sure(hedef_wav), [(x - a, y - a, t) for x, y, t in k]
         except Exception as e:
-            if not piper_model(cfg.get("piper_ses", "tr_TR-fahrettin-medium")):
+            if not piper_model(cfg.get("piper_ses", "tr_TR-dfki-medium")):
                 sys.exit(f"HATA: edge-tts calismadi ({e}) ve Piper sesi bulunamadi. Internet baglantisini kontrol et.")
             print(f"UYARI: edge-tts calismadi ({e}); Piper ile devam ediliyor.")
             cfg["motor"] = "piper"
-    model = piper_model(cfg.get("piper_ses", "tr_TR-fahrettin-medium"))
+    model = piper_model(cfg.get("piper_ses", "tr_TR-dfki-medium"))
     if not model or not shutil.which("piper"):
         sys.exit("HATA: Piper veya Turkce ses modeli yok (Repo Kurulum'da 'Piper' bilesenini kur).")
     txt = gecici.with_suffix(".txt"); txt.write_text(metin, encoding="utf-8")
@@ -285,6 +299,8 @@ def uret_cfg(cfg, klasor):
         for s in sahneler:
             if s["_ses"]:
                 s["_uzunluk"] = ON + s["_sure"] + SON
+            elif s.get("_klip"):
+                s["_uzunluk"] = float(s.get("sure", min(6.0, klip_bilgi(s["_klip"])[0])))
             elif s.get("goruntu"):
                 s["_uzunluk"] = float(s.get("sure", 2.5))
             else:
@@ -318,7 +334,31 @@ def uret_cfg(cfg, klasor):
     n = 1 if video else 0
     for i, s in enumerate(sahneler):
         L = s["_uzunluk"]
-        if s.get("goruntu"):
+        if s.get("_klip"):
+            ksure, kw, kh, kses = klip_bilgi(s["_klip"])
+            a = float(s.get("klip_bas", 0)); b = min(float(s.get("klip_son", ksure)), ksure)
+            parca = max(0.5, b - a)
+            yavas = min(L / parca, 1.35) if L > parca else 1.0     # klip kisaysa en fazla %35 yavaslat, kalani son kare
+            doldur = s.get("doldur", "otomatik")
+            if doldur == "otomatik":
+                doldur = "kirp" if abs(kw / kh - w / h) < 0.2 else "bulanik"
+            girdiler += ["-i", s["_klip"]]
+            temel = f"[{n}:v]trim={a:.3f}:{b:.3f},setpts=(PTS-STARTPTS)*{yavas:.4f},fps={fps}"
+            if doldur == "kirp":
+                fl.append(f"{temel},scale={w}:{h}:force_original_aspect_ratio=increase,crop={w}:{h},setsar=1[kb{i}]")
+            else:   # yatay klip: arkada bulanik buyutulmus kopya, onde tam klip
+                fl.append(f"{temel},split[ka{i}][kc{i}];[ka{i}]scale={w}:{h}:force_original_aspect_ratio=increase,crop={w}:{h},boxblur=25:4[kd{i}];"
+                          f"[kc{i}]scale={w}:{h}:force_original_aspect_ratio=decrease[ke{i}];[kd{i}][ke{i}]overlay=(W-w)/2:(H-h)/2,setsar=1[kb{i}]")
+            if kses and float(s.get("klip_ses", 0)) > 0:
+                s["_klip_ses"] = (n, a, b, yavas)
+            n += 1
+            son_etiket = f"kb{i}"
+            if s.get("_serit"):
+                girdiler += ["-loop", "1", "-framerate", str(fps), "-t", f"{L + 0.5:.3f}", "-i", str(Path(klasor, s["_serit"]))]
+                fl.append(f"[{n}:v]format=rgba[ks{i}];[kb{i}][ks{i}]overlay=0:0:shortest=0[kf{i}]")
+                son_etiket = f"kf{i}"; n += 1
+            fl.append(f"[{son_etiket}]tpad=stop_mode=clone:stop_duration={L + 0.5:.3f},trim=0:{L:.3f},setpts=PTS-STARTPTS,format=yuv420p,settb=AVTB[v{i}]")
+        elif s.get("goruntu"):
             girdiler += ["-loop", "1", "-framerate", str(fps), "-t", f"{L + 0.5:.3f}", "-i", str(Path(klasor, s["goruntu"]))]
             fl.append(f"[{n}:v]scale={w}:{h}:force_original_aspect_ratio=decrease,pad={w}:{h}:(ow-iw)/2:(oh-ih)/2,setsar=1,"
                       f"trim=0:{L:.3f},setpts=PTS-STARTPTS,fps={fps},format=yuv420p,settb=AVTB[v{i}]")
@@ -341,6 +381,12 @@ def uret_cfg(cfg, klasor):
         if s["_ses"]:
             girdiler += ["-i", str(s["_ses"])]
             fl.append(f"[{n}:a]adelay={int(s['_bas'] * 1000)}:all=1[a{i}]"); ses_etiket.append(f"[a{i}]"); n += 1
+    for i, s in enumerate(sahneler):
+        if s.get("_klip_ses"):
+            kn, a, b, yavas = s["_klip_ses"]
+            fl.append(f"[{kn}:a]atrim={a:.3f}:{b:.3f},asetpts=PTS-STARTPTS,atempo={1 / yavas:.4f},volume={float(s['klip_ses']):.2f},"
+                      f"apad,atrim=0:{s['_uzunluk']:.3f},adelay={int(ofset[i] * 1000)}:all=1[ka{i}x]")
+            ses_etiket.append(f"[ka{i}x]")
     if ses_etiket:
         fl.append("".join(ses_etiket) + f"amix=inputs={len(ses_etiket)}:normalize=0,loudnorm=I=-16:TP=-1.5:LRA=11,apad,atrim=0:{toplam:.3f}[ses]")
     else:
@@ -424,6 +470,52 @@ def uret_cfg(cfg, klasor):
         print(f"  Bolum {k}       : {klasor / f'{ad}-altyazili-bolum{k}.mp4'} ({u:.1f} sn)")
 
 
+def istemler(json_yolu):
+    """Gemini (Veo) icin istem listesi: kullanici Gemini uygulamasinda uretir, klipler/ klasorune verilen adla kaydeder."""
+    jy = Path(json_yolu).resolve()
+    cfg = json.loads(jy.read_text(encoding="utf-8"))
+    (jy.parent / "klipler").mkdir(exist_ok=True)
+    satir = ["# Gemini (Veo) video istemleri", "",
+             "1. gemini.google.com > araçlar > **Video** (Veo) seç.",
+             "2. Her istemi ayrı ayrı yapıştır, üretilen videoyu indir.",
+             f"3. İndirdiğin dosyayı `{(jy.parent / 'klipler').as_posix()}` klasörüne **her istemin altındaki adla** kaydet.",
+             "4. Beğenmediğin klibi (yanlış KKD, bozuk el/alet, yazı) yeniden üret. Hepsi hazır olunca Claude'a \"klipler hazır\" de.",
+             "", "Not: Klip yatay (16:9) gelirse sistem dikeye otomatik uyarlar. Klibin sesi varsayılan olarak kullanılmaz.", ""]
+    adet = 0
+    for n, sh in enumerate(cfg["sahneler"], 1):
+        if sh.get("tur") != "klip" or sh.get("atla"):
+            continue
+        adet += 1
+        ad = sh.get("klip") or f"klipler/sahne_{n:02d}.mp4"
+        var = (jy.parent / ad).exists()
+        satir += [f"## Sahne {n}: {sh.get('baslik', '')}  {'(HAZIR)' if var else ''}", "",
+                  f"**Kaydedilecek ad:** `{Path(ad).name}`", "", "```", sh.get("veo_istemi", "(istem yazilmamis)"), "```", ""]
+    hedef = jy.parent / "veo-istemleri.md"
+    hedef.write_text("\n".join(satir), encoding="utf-8")
+    print(f"{adet} klip istemi: {hedef}")
+
+
+def klip_kontrol(json_yolu):
+    """Indirilen klipleri listeler ve her biri icin 6 karelik kontrol gorseli uretir (Claude Read ile inceler)."""
+    jy = Path(json_yolu).resolve()
+    cfg = json.loads(jy.read_text(encoding="utf-8"))
+    eksik = []
+    for n, sh in enumerate(cfg["sahneler"], 1):
+        if sh.get("tur") != "klip" or sh.get("atla"):
+            continue
+        k = jy.parent / (sh.get("klip") or f"klipler/sahne_{n:02d}.mp4")
+        if not k.exists():
+            eksik.append(f"sahne {n}: {k.name}"); continue
+        sure_k, kw, kh, kses = klip_bilgi(k)
+        kare = jy.parent / "klipler" / f"kontrol_{n:02d}.png"
+        calistir(["ffmpeg", "-v", "error", "-y", "-i", str(k), "-vf", f"fps={6 / max(sure_k, 1):.4f},scale=320:-2,tile=6x1:padding=4",
+                  "-frames:v", "1", str(kare)])
+        print(f"sahne {n:2d}: {k.name}  {sure_k:.1f} sn  {kw}x{kh}  {'sesli' if kses else 'sessiz'}  -> {kare}")
+    for e in eksik:
+        print("EKSIK  " + e)
+    print("Kareleri incele: dogru KKD (baret, gozluk, eldiven), aletin dogru kullanimi, bozuk el/yuz/yazi, logo. Sorunlu klibi yeniden urettir.")
+
+
 def olustur(json_yolu, sadece_gorsel=False):
     sys.dont_write_bytecode = True
     sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -448,6 +540,8 @@ def main():
     u = alt.add_parser("uret"); u.add_argument("sahneler_json")
     o = alt.add_parser("olustur"); o.add_argument("senaryo_json")
     g = alt.add_parser("gorsel"); g.add_argument("senaryo_json")
+    i_ = alt.add_parser("istemler"); i_.add_argument("senaryo_json")
+    kk = alt.add_parser("klipler"); kk.add_argument("senaryo_json")
     d = alt.add_parser("dene"); d.add_argument("metin"); d.add_argument("--ses", default="tr-TR-EmelNeural")
     d.add_argument("--hiz", default="+4%"); d.add_argument("--json")
     x = ap.parse_args()
@@ -460,6 +554,10 @@ def main():
         uret(x.sahneler_json)
     elif x.komut == "olustur":
         olustur(x.senaryo_json)
+    elif x.komut == "istemler":
+        istemler(x.senaryo_json)
+    elif x.komut == "klipler":
+        klip_kontrol(x.senaryo_json)
     elif x.komut == "gorsel":
         olustur(x.senaryo_json, sadece_gorsel=True)
     else:

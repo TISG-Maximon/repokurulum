@@ -175,7 +175,9 @@ jobs:
           Set-Content -Path "$t\metin.txt" -Value 'Merhaba, bu bir seslendirme testidir.' -Encoding UTF8
           [IO.File]::WriteAllText("$t\metin.txt", 'Merhaba, bu bir seslendirme testidir.', (New-Object System.Text.UTF8Encoding($false)))
           Write-Host "piper: $((Get-Command piper -ErrorAction SilentlyContinue).Source)"
-          & piper -m "$env:PIPER_SESLER\tr_TR-fahrettin-medium.onnx" -i "$t\metin.txt" -f "$t\piper.wav" 2>&1 | Select-Object -Last 15 | Write-Host
+          Get-ChildItem $env:PIPER_SESLER | ForEach-Object { Write-Host "ses dosyasi: $($_.Name) $($_.Length)" }
+          $model = (Get-ChildItem "$env:PIPER_SESLER\tr_TR-*.onnx" | Select-Object -First 1).FullName
+          & piper -m $model -i "$t\metin.txt" -f "$t\piper.wav" 2>&1 | Select-Object -Last 15 | Write-Host
           if (-not (Test-Path "$t\piper.wav") -or (Get-Item "$t\piper.wav").Length -lt 10000) { Write-Host '::error::Piper ses uretmedi'; exit 1 }
           & edge-tts --voice tr-TR-EmelNeural --file "$t\metin.txt" --write-media "$t\edge.mp3" --write-subtitles "$t\edge.srt" 2>&1 | Out-Null
           if (-not (Test-Path "$t\edge.mp3") -or (Get-Item "$t\edge.mp3").Length -lt 5000) { Write-Host '::warning::edge-tts ses uretmedi (Microsoft servisi CI''dan erisilemiyor olabilir)' }
@@ -200,7 +202,7 @@ jobs:
           if ($kod -ne 0) { exit $kod }
           $ErrorActionPreference = 'Continue'
           $sk = "$env:USERPROFILE\.claude\skills\video-seslendirme"
-          foreach ($f in 'SKILL.md','seslendir.py','gorsel.py','ornek-senaryo.json','marka\logo.png') { if (-not (Test-Path "$sk\$f")) { Write-Host "::error::eksik: $f"; exit 1 } }
+          foreach ($f in 'SKILL.md','seslendir.py','gorsel.py','ornek-senaryo.json','ornek-gercekci.json','marka\logo.png') { if (-not (Test-Path "$sk\$f")) { Write-Host "::error::eksik: $f"; exit 1 } }
           $p = Join-Path $env:RUNNER_TEMP 'video-test'; New-Item -ItemType Directory -Force $p | Out-Null
           Copy-Item "$sk\ornek-senaryo.json" "$p\senaryo.json"
           & uv run --script "$sk\seslendir.py" gorsel "$p\senaryo.json" 2>&1 | Write-Host
@@ -217,6 +219,16 @@ jobs:
           } elseif ($cikti -match 'edge-tts calismadi') {
             Write-Host '::warning::edge-tts CI ortamindan Microsoft servisine erisemedi; gorsel uretimi dogrulandi, ses adimi atlandi'
           } else { Write-Host '::error::video uretilemedi'; exit 1 }
+          # Gercekci (klip) akisi: sahte yatay klip ile istem listesi, klip kontrolu ve serit gorseli
+          $g = Join-Path $env:RUNNER_TEMP 'video-klip'; New-Item -ItemType Directory -Force "$g\klipler" | Out-Null
+          Copy-Item "$sk\ornek-gercekci.json" "$g\senaryo.json"
+          & ffmpeg -v error -y -f lavfi -i testsrc2=s=1280x720:r=24:d=6 -c:v libx264 -pix_fmt yuv420p "$g\klipler\sahne_02.mp4"
+          & uv run --script "$sk\seslendir.py" istemler "$g\senaryo.json" 2>&1 | Write-Host
+          & uv run --script "$sk\seslendir.py" klipler "$g\senaryo.json" 2>&1 | Write-Host
+          & uv run --script "$sk\seslendir.py" gorsel "$g\senaryo.json" 2>&1 | Write-Host
+          if (-not (Test-Path "$g\veo-istemleri.md")) { Write-Host '::error::veo-istemleri.md yok'; exit 1 }
+          if (-not (Test-Path "$g\klipler\kontrol_02.png")) { Write-Host '::error::klip kontrol karesi yok'; exit 1 }
+          if (-not (Test-Path "$g\gorseller\serit_02.png")) { Write-Host '::error::klip serit gorseli yok'; exit 1 }
           exit 0
 
       - name: Guncelleme kontrolu (-GuncellemeKontrol) hatasiz calisiyor mu

@@ -1,0 +1,74 @@
+{
+  "_aciklama": "repokurulum ornek senaryo (gercekci): elektrik panosu periyodik kontrolu. 'klip' sahneleri Gemini (Veo) ile uretilir: once 'istemler' komutu, sonra klipler/ klasorune kaydet, 'klipler' ile kontrol, 'olustur' ile video.",
+  "cikti_adi": "elektrik-panosu-kontrolu",
+  "platform": "hikaye",
+  "hedef_sure_sn": 58,
+  "boyut": [1080, 1920],
+  "motor": "edge",
+  "ses": "tr-TR-EmelNeural",
+  "hiz": "+4%",
+  "gecis_sn": 0.3,
+  "on_bosluk_sn": 0.3,
+  "son_bosluk_sn": 0.4,
+  "altyazi": {"yazi_tipi": "Arial", "boyut_orani": 0.026, "max_karakter": 40},
+  "telaffuz": {"İSG": "İ Se Ge", "KKD": "Ka Ka De", "RCD": "Ar Si Di", "mA": "miliamper", "MΩ": "megaohm"},
+  "marka": {},
+  "sahneler": [
+    {
+      "tur": "kapak",
+      "etiket": "PERİYODİK KONTROL",
+      "baslik": "Elektrik panosu\n**nasıl kontrol edilir?**",
+      "bant": "Yetkili elektrik mühendisi tarafından yapılır",
+      "metin": "Elektrik panosunun periyodik kontrolü nasıl yapılır, kısaca gösteriyoruz."
+    },
+    {
+      "tur": "klip",
+      "adim": "ADIM 1",
+      "baslik": "Önce güvenlik",
+      "aciklama": "KKD ve **enerji kesme / kilitleme**",
+      "klip": "klipler/sahne_02.mp4",
+      "klip_ses": 0,
+      "veo_istemi": "Vertical 9:16 realistic video. A Turkish electrical engineer in his 30s wearing a white hard hat, safety glasses, arc-rated long-sleeve shirt and insulated rubber gloves stands in front of a grey industrial electrical distribution panel in a factory. He switches off the main breaker and attaches a red lockout padlock and a yellow 'do not operate' tag to it. Steady handheld medium shot, natural factory lighting, realistic hands and tools. No on-screen text, no logos, no talking.",
+      "metin": "Önce kişisel koruyucu donanım giyilir, pano enerjisi kesilir ve kilitlenir."
+    },
+    {
+      "tur": "klip",
+      "adim": "ADIM 2",
+      "baslik": "Gözle kontrol",
+      "aciklama": "Kablolar, klemensler, **ısınma izi**",
+      "klip": "klipler/sahne_03.mp4",
+      "veo_istemi": "Vertical 9:16 realistic close-up video. Inside an open industrial electrical panel, a gloved hand of an electrician points a small flashlight at neatly arranged cables, terminal blocks and circuit breakers, slowly inspecting for discoloration and loose connections. Shallow depth of field, realistic details, no on-screen text, no logos, no talking.",
+      "metin": "Kablolar, klemensler ve bağlantılar ısınma, gevşeklik ve hasar için gözle kontrol edilir."
+    },
+    {
+      "tur": "klip",
+      "adim": "ADIM 3",
+      "baslik": "Topraklama ölçümü",
+      "aciklama": "Ölçüm cihazıyla **direnç** değeri",
+      "klip": "klipler/sahne_04.mp4",
+      "veo_istemi": "Vertical 9:16 realistic video. An electrical engineer wearing a hard hat, safety glasses and insulated gloves holds a professional digital earth resistance and insulation tester with red and black test leads, touching the probes to the grounding bar inside an industrial electrical panel, then looks at the display. Close-up on hands and device, steady camera, realistic, no readable numbers, no on-screen text, no logos, no talking.",
+      "metin": "Topraklama ve yalıtım direnci uygun cihazla ölçülür, değerler kaydedilir."
+    },
+    {
+      "tur": "klip",
+      "adim": "ADIM 4",
+      "baslik": "Kaçak akım rölesi testi",
+      "aciklama": "**RCD** açma süresi ve akımı",
+      "klip": "klipler/sahne_05.mp4",
+      "veo_istemi": "Vertical 9:16 realistic close-up video. An electrician's gloved finger presses the test button of a residual current device (RCD) mounted on a DIN rail in an industrial panel and the switch trips down. A multifunction installation tester is connected nearby. Macro shot, realistic lighting, no on-screen text, no logos, no talking.",
+      "metin": "Kaçak akım rölesinin açma akımı ve süresi test edilir."
+    },
+    {
+      "tur": "uyari",
+      "etiket": "DİKKAT",
+      "baslik": "Uygunsuzluk varsa\n**pano kullanılmaz**",
+      "kutu": "Rapor ve düzeltici faaliyet **imza altına** alınır.",
+      "metin": "Uygunsuzluk bulunursa giderilene kadar pano kullanılmaz ve rapora yazılır."
+    },
+    {
+      "tur": "kapanis",
+      "baslik": "Periyodik kontrol için\nbize ulaşın.",
+      "metin": "Periyodik kontrolleriniz için bize ulaşın."
+    }
+  ]
+}

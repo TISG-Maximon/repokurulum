@@ -97,6 +97,7 @@ Komut satırından da alabilirsin:
 | "X nasıl yapılır videosu", müşteri rehberi, adım adım anlatım, kısa dikey bilgilendirme videosu | **video-seslendirme skill'i** |
 | Kullanıcı bir video verip seslendirme/altyazı/konuşma metni istiyor | **video-seslendirme skill'i** |
 | Ekran görüntülerinden adım adım video | **video-seslendirme skill'i** |
+| Gerçekçi görüntü gereken anlatım (pano ölçümü, yangın dolabı muayenesi): klipler Gemini (Veo) ile kullanıcının kendi kotasıyla üretilir, skill istemleri hazırlar ve klipleri işler | **video-seslendirme skill'i** |
 | Konu anlatım / eğitim / İSG bilgilendirme videosu, slayt + seslendirme videosu, kinetik yazı, altyazılı kısa video | **HyperFrames** |
 | Şirket adına veya ticari kullanılacak her video (Remotion lisansı gerekmez) | **HyperFrames** |
 | Bir web sitesini videoya dönüştürme | **HyperFrames** |
@@ -358,10 +359,10 @@ Araçları bu sırayla değerlendir: video-seslendirme skill'i > HyperFrames > v
 
 ### 1. **video-seslendirme skill'i**
 - **Amaç:** Adım adım rehber/eğitim/bilgilendirme videosu üretmek (marka tasarımlı sahneler + Emel seslendirme + senkron altyazı) veya hazır sessiz videoya seslendirme ve altyazı eklemek.
-- **Ne zaman:** "X nasıl yapılır videosu", müşteri rehberi, adım adım anlatım, kısa dikey bilgilendirme videosu; Kullanıcı bir video verip seslendirme/altyazı/konuşma metni istiyor; Ekran görüntülerinden adım adım video
+- **Ne zaman:** "X nasıl yapılır videosu", müşteri rehberi, adım adım anlatım, kısa dikey bilgilendirme videosu; Kullanıcı bir video verip seslendirme/altyazı/konuşma metni istiyor; Ekran görüntülerinden adım adım video; Gerçekçi görüntü gereken anlatım (pano ölçümü, yangın dolabı muayenesi): klipler Gemini (Veo) ile kullanıcının kendi kotasıyla üretilir, skill istemleri hazırlar ve klipleri işler
 - **Ne zaman değil:** Serbest hareketli grafik/animasyonlu tanıtım (HyperFrames); Karakter animasyonu (ClaudeAnimationBase)
 - **Nasıl:** `~/.claude/skills/video-seslendirme/SKILL.md` iş akışını izle (A: sıfırdan, B: hazır video); Önce `gorsel` ile sessiz önizleme üret ve görselleri Read ile kontrol et, sonra `olustur`/`uret`; Kişisel veriyi ekrana ve seslendirmeye koyma; gizli metinde `motor: piper`
-- **Doğrula:** `kontrol.png` ve çıktı satırındaki 'siyah ara: 0' değerine bak; altyazının içeriğe binmediğini kare alarak kontrol et; telaffuzu kullanıcıya dinlet.
+- **Doğrula:** `kontrol.png` ve 'siyah ara: 0' / 'Hikaye/durum: UYGUN' satırlarına bak; Veo kliplerinin kontrol karelerinde KKD ve uygulama doğruluğunu incele; telaffuzu kullanıcıya dinlet.
 
 ### 2. **HyperFrames**
 - **Amaç:** HTML/CSS/GSAP sahnelerinden MP4 video: eğitim, konu anlatımı, bilgilendirme, altyazılı ve seslendirmeli video.
@@ -408,7 +409,7 @@ Araçları bu sırayla değerlendir: edge-tts > Piper
 - **Amaç:** İnternetsiz, yerel Türkçe seslendirme (WAV).
 - **Ne zaman:** İnternet yok, edge-tts hata verdi/limit; Metin gizli veya kurum içi (dışarı gönderilmemeli); Çok sayıda kısa ses dosyası (hızlı, yerel)
 - **Ne zaman değil:** İnternet varsa ve en doğal ses isteniyorsa (edge-tts daha doğal); Kelime zamanlı altyazı gerekiyorsa tek başına yetmez (SRT üretmez; cümle sürelerinden hesapla)
-- **Nasıl:** `piper -m "$env:PIPER_SESLER\tr_TR-fahrettin-medium.onnx" -i metin.txt -f ses.wav` (sesler: dfki, fahrettin, fettah); Kısa metin: `piper -m <model> -f ses.wav "metin"`; Yavaşlatmak için `--length-scale 1.1`, cümle arası boşluk `--sentence-silence 0.3`; MP3 gerekirse: `ffmpeg -i ses.wav -b:a 128k ses.mp3`; metin.txt dosyasını UTF-8 kaydet (Türkçe karakterler bozulmasın)
+- **Nasıl:** `piper -m "$env:PIPER_SESLER\tr_TR-dfki-medium.onnx" -i metin.txt -f ses.wav` (inen sesler: `dir $env:PIPER_SESLER`); Kısa metin: `piper -m <model> -f ses.wav "metin"`; Yavaşlatmak için `--length-scale 1.1`, cümle arası boşluk `--sentence-silence 0.3`; MP3 gerekirse: `ffmpeg -i ses.wav -b:a 128k ses.mp3`; metin.txt dosyasını UTF-8 kaydet (Türkçe karakterler bozulmasın)
 - **Doğrula:** `ffprobe` ile süreyi kontrol et; sayılar ve kısaltmalar doğru okunuyor mu bak (gerekirse metinde yazıyla yaz: "%5" → "yüzde beş").
 
 > Not: Sıra: edge-tts (internet varsa, en doğal ses) → Piper (internet yoksa / gizli metin) → Windows Tolga (hiçbiri yoksa; kurulum gerekmez: PowerShell `System.Speech`, ses tr-TR Tolga). Ses ve altyazıyı aynı kaynaktan üret; ses dosyası cümle cümle değil, bölüm bölüm (sahne başına bir dosya) üretilsin. Hazır bir VİDEOYA seslendirme + altyazı eklenecekse video-seslendirme skill'ini kullan (sahneleri ve senkronu o yapar).
