@@ -335,6 +335,24 @@ def gemini_toplu(metinler, cfg, is_d):
             print("UYARI: Gemini uslup talimatini da okumus; talimatsiz yeniden uretiliyor.")
             ham.unlink()
     toplam = sure(ham)
+    # Gemini ciktisinin sonunda (bazen basinda) konusmadan sonra gelen kisa ses artigi olabiliyor ("pat"): kes
+    r0 = subprocess.run(["ffmpeg", "-hide_banner", "-i", str(ham), "-af", "silencedetect=n=-38dB:d=0.18", "-f", "null", "-"],
+                        capture_output=True, text=True, encoding="utf-8", errors="replace")
+    sb = [float(x) for x in re.findall(r"silence_start: ([\d.]+)", r0.stderr)]
+    se = [float(x) for x in re.findall(r"silence_end: ([\d.]+)", r0.stderr)]
+    son_kes, bas_kes = toplam, 0.0
+    if se and toplam - se[-1] < 0.35 and len(sb) >= len(se):
+        son_kes = sb[len(se) - 1] + 0.05          # son sessizlikten sonra gelen kisa artigi at
+    elif len(sb) > len(se) and sb[-1] < toplam:
+        pass                                      # dosya sessizlikle bitiyor, sorun yok
+    if len(se) >= 2 and sb and sb[0] < 0.35 and se[0] > sb[0] and sb[0] > 0.0:
+        bas_kes = max(0.0, se[0] - 0.05)          # bastaki kisa artik + sessizlik
+    if son_kes < toplam or bas_kes > 0:
+        temiz = Path(str(ham) + ".temiz.wav")
+        calistir(["ffmpeg", "-v", "error", "-y", "-ss", f"{bas_kes:.3f}", "-to", f"{son_kes:.3f}", "-i", str(ham), str(temiz)])
+        os.replace(temiz, ham)
+        print(f"Gemini ses artigi temizlendi (bas {bas_kes:.2f} sn, son {toplam - son_kes:.2f} sn kesildi)")
+        toplam = sure(ham)
     n = len(metinler)
     # Sessizlikleri bul; en uzun n-1 tanesinden bol (paragraf aralari)
     r = subprocess.run(["ffmpeg", "-hide_banner", "-i", str(ham), "-af", "silencedetect=n=-38dB:d=0.18", "-f", "null", "-"],
@@ -515,6 +533,25 @@ def kalite(video, hikaye=True):
     gecici.unlink()
     bas, son = max(map(abs, ornek[:441])) if n else 0, max(map(abs, ornek[-441:])) if n else 0
     sonuc.append(("Baslangic/bitis patlamasi", f"ilk/son 10 ms tepe {bas}/{son}", bas < 1500 and son < 1500))
+    # Son 2 sn: konusmadan sonra sessizlik ve ardindan kisa (<0,3 sn) guclu ses = artik/patlama
+    pen = 882
+    son2 = ornek[-88200:] if n > 88200 else ornek
+    ham_aktif = [max(map(abs, son2[i:i + pen])) > 3000 for i in range(0, len(son2) - pen, pen)]
+    # 60 ms'den kisa bosluklari doldur (bir patlama/kelime icindeki minik araliklar)
+    aktif = list(ham_aktif)
+    for a in range(len(aktif)):
+        if not aktif[a] and any(ham_aktif[max(0, a - 3):a]) and any(ham_aktif[a + 1:a + 4]):
+            aktif[a] = True
+    artik = False
+    i = len(aktif) - 1
+    while i >= 0 and not aktif[i]: i -= 1
+    j = i
+    while j >= 0 and aktif[j]: j -= 1
+    k = j
+    while k >= 0 and not aktif[k]: k -= 1
+    if i >= 0 and (i - j) * 0.02 < 0.3 and (j - k) * 0.02 >= 0.2 and k >= 0:
+        artik = True
+    sonuc.append(("Sondaki ses artigi", "var" if artik else "yok", not artik))
     tavan = sum(1 for x in ornek if abs(x) >= 32700)
     sonuc.append(("Tavana vurma (clipping)", f"{tavan} ornek", tavan == 0))
     gecti = all(ok for _, _, ok in sonuc)
