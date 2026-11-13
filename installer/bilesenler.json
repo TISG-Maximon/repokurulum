@@ -1754,6 +1754,16 @@
           },
           {
             "tur": "dosya-kopyala",
+            "kaynak": "installer/claude/skills/video-seslendirme/parcalar.py",
+            "hedef": "%USERPROFILE%\\.claude\\skills\\video-seslendirme\\parcalar.py"
+          },
+          {
+            "tur": "dosya-kopyala",
+            "kaynak": "installer/claude/skills/video-seslendirme/ikon-dizin.json",
+            "hedef": "%USERPROFILE%\\.claude\\skills\\video-seslendirme\\ikon-dizin.json"
+          },
+          {
+            "tur": "dosya-kopyala",
             "kaynak": "installer/claude/skills/video-seslendirme/ornek-senaryo.json",
             "hedef": "%USERPROFILE%\\.claude\\skills\\video-seslendirme\\ornek-senaryo.json"
           },

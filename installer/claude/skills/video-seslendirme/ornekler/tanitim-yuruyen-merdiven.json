@@ -1,5 +1,5 @@
 {
- "_aciklama": "repokurulum ornek tanitim (cizim sahneli, hikaye). SVG cizimler var(--v) vurgu ve var(--k) kirmizi renklerini kullanir.",
+ "_aciklama": "repokurulum ornek tanitim (3B katmanli cizim sahneleri, hikaye). katmanlar: ikon (Fluent Emoji 3D adi), parca (parcalar.py), zemin, etiket (oklu), yazi. Koordinatlar 600x520 sahnede merkez noktasi.",
  "cikti_adi": "yuruyen-merdiven-muayenesi",
  "platform": "hikaye",
  "hedef_sure_sn": 58,
@@ -12,7 +12,7 @@
  "hiz": "+6%",
  "gecis_sn": 0.25,
  "on_bosluk_sn": 0.25,
- "son_bosluk_sn": 0.3,
+ "son_bosluk_sn": 0.35,
  "hareket": "yakinlas",
  "altyazi": {
   "yazi_tipi": "Arial",
@@ -25,63 +25,300 @@
  "marka": {
   "site": "teknikisg.com.tr",
   "eposta": "",
-  "telefon": "0537 918 48 21",
   "renk_vurgu": "#f6b420"
  },
  "sahneler": [
   {
    "tur": "cizim",
    "baslik": "Her gün\n**biniyorsunuz.**",
-   "cizim": "<svg viewBox=\"0 0 600 520\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M40 460 L140 460 L460 140 L560 140\" fill=\"none\" stroke=\"#8a96a6\" stroke-width=\"40\" stroke-linejoin=\"round\"/><rect x=\"150\" y=\"410\" width=\"36\" height=\"12\" fill=\"#5b6b7e\"/><rect x=\"186\" y=\"374\" width=\"36\" height=\"12\" fill=\"#5b6b7e\"/><rect x=\"222\" y=\"338\" width=\"36\" height=\"12\" fill=\"#5b6b7e\"/><rect x=\"258\" y=\"302\" width=\"36\" height=\"12\" fill=\"#5b6b7e\"/><rect x=\"294\" y=\"266\" width=\"36\" height=\"12\" fill=\"#5b6b7e\"/><rect x=\"330\" y=\"230\" width=\"36\" height=\"12\" fill=\"#5b6b7e\"/><rect x=\"366\" y=\"194\" width=\"36\" height=\"12\" fill=\"#5b6b7e\"/><rect x=\"402\" y=\"158\" width=\"36\" height=\"12\" fill=\"#5b6b7e\"/><rect x=\"438\" y=\"122\" width=\"36\" height=\"12\" fill=\"#5b6b7e\"/><path d=\"M30 400 L140 400 L460 80 L570 80\" fill=\"none\" stroke=\"var(--v)\" stroke-width=\"10\" stroke-linecap=\"round\"/><circle cx=\"230\" cy=\"300\" r=\"34\" fill=\"#cfd8e3\"/><circle cx=\"218\" cy=\"296\" r=\"5\" fill=\"#1b1b1b\"/><circle cx=\"242\" cy=\"296\" r=\"5\" fill=\"#1b1b1b\"/><path d=\"M182 405 q0 -60 48 -60 q48 0 48 60 Z\" fill=\"#3b5675\"/><circle cx=\"330\" cy=\"200\" r=\"34\" fill=\"#cfd8e3\"/><circle cx=\"318\" cy=\"196\" r=\"5\" fill=\"#1b1b1b\"/><circle cx=\"342\" cy=\"196\" r=\"5\" fill=\"#1b1b1b\"/><path d=\"M282 305 q0 -60 48 -60 q48 0 48 60 Z\" fill=\"#a8483d\"/><circle cx=\"430\" cy=\"100\" r=\"34\" fill=\"#cfd8e3\"/><circle cx=\"418\" cy=\"96\" r=\"5\" fill=\"#1b1b1b\"/><circle cx=\"442\" cy=\"96\" r=\"5\" fill=\"#1b1b1b\"/><path d=\"M382 205 q0 -60 48 -60 q48 0 48 60 Z\" fill=\"#3d8a5a\"/></svg>",
-   "metin": "Yürüyen merdivene her gün biniyorsunuz."
+   "metin": "Yürüyen merdivene her gün biniyorsunuz.",
+   "katmanlar": [
+    {
+     "parca": "yuruyen_merdiven",
+     "x": 300,
+     "y": 280,
+     "boyut": 580
+    },
+    {
+     "ikon": "person_walking",
+     "x": 230,
+     "y": 250,
+     "boyut": 110
+    },
+    {
+     "ikon": "man_office_worker",
+     "x": 380,
+     "y": 130,
+     "boyut": 110
+    }
+   ]
   },
   {
    "tur": "cizim",
    "baslik": "Hiç **aşağı**\nbaktınız mı?",
-   "cizim": "<svg viewBox=\"0 0 600 520\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M110 200 Q300 40 490 200 Q300 360 110 200 Z\" fill=\"#f4f7fb\"/><circle cx=\"300\" cy=\"200\" r=\"80\" fill=\"#2c4766\"/><circle cx=\"300\" cy=\"200\" r=\"36\" fill=\"#0b2340\"/><circle cx=\"322\" cy=\"180\" r=\"12\" fill=\"#fff\"/><path d=\"M220 340 l0 70 l-22 -26 M220 410 l22 -26\" fill=\"none\" stroke=\"var(--v)\" stroke-width=\"12\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M300 340 l0 70 l-22 -26 M300 410 l22 -26\" fill=\"none\" stroke=\"var(--v)\" stroke-width=\"12\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M380 340 l0 70 l-22 -26 M380 410 l22 -26\" fill=\"none\" stroke=\"var(--v)\" stroke-width=\"12\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>",
-   "metin": "Peki hiç aşağı baktınız mı?"
+   "metin": "Peki hiç aşağı baktınız mı?",
+   "katmanlar": [
+    {
+     "ikon": "eyes",
+     "x": 300,
+     "y": 110,
+     "boyut": 200
+    },
+    {
+     "ikon": "down_arrow",
+     "x": 300,
+     "y": 250,
+     "boyut": 100,
+     "golge": false
+    },
+    {
+     "parca": "tarak",
+     "x": 300,
+     "y": 420,
+     "boyut": 520
+    }
+   ]
   },
   {
    "tur": "cizim",
    "baslik": "Bu dişlerden biri\n**kırık.**",
-   "cizim": "<svg viewBox=\"0 0 600 520\" xmlns=\"http://www.w3.org/2000/svg\"><rect x=\"40\" y=\"200\" width=\"520\" height=\"70\" fill=\"#b9a98a\"/><rect x=\"40\" y=\"190\" width=\"520\" height=\"16\" fill=\"#d8ccb2\"/><rect x=\"48\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"68\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"88\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"108\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"128\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"148\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"168\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"188\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"208\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"228\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"248\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"268\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"288\" y=\"270\" width=\"12\" height=\"20\" fill=\"#3b4b5e\"/><rect x=\"308\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"328\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"348\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"368\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"388\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"408\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"428\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"448\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"468\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"488\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"508\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"528\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"548\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"40\" y=\"330\" width=\"520\" height=\"120\" fill=\"#232f3d\"/><rect x=\"50\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"70\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"90\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"110\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"130\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"150\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"170\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"190\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"210\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"230\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"250\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"270\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"290\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"310\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"330\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"350\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"370\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"390\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"410\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"430\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"450\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"470\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"490\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"510\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"530\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"550\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><circle cx=\"294\" cy=\"290\" r=\"44\" fill=\"none\" stroke=\"var(--v)\" stroke-width=\"10\"/></svg>",
-   "metin": "Tarak plakasındaki dişlerden biri kırık."
+   "metin": "Tarak plakasındaki dişlerden biri kırık.",
+   "katmanlar": [
+    {
+     "parca": "tarak",
+     "x": 300,
+     "y": 280,
+     "boyut": 580,
+     "secenek": {
+      "kirik": 11
+     }
+    },
+    {
+     "ikon": "magnifying_glass_tilted_left",
+     "x": 330,
+     "y": 250,
+     "boyut": 150
+    },
+    {
+     "etiket": "Kırık diş",
+     "x": 470,
+     "y": 450,
+     "ok": [
+      320,
+      340
+     ],
+     "renk": "k"
+    }
+   ]
   },
   {
    "tur": "cizim",
    "baslik": "Bir ayakkabı ucu\n**sıkışırsa...**",
-   "cizim": "<svg viewBox=\"0 0 600 520\" xmlns=\"http://www.w3.org/2000/svg\"><rect x=\"40\" y=\"200\" width=\"520\" height=\"70\" fill=\"#b9a98a\"/><rect x=\"40\" y=\"190\" width=\"520\" height=\"16\" fill=\"#d8ccb2\"/><rect x=\"48\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"68\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"88\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"108\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"128\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"148\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"168\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"188\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"208\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"228\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"248\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"268\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"288\" y=\"270\" width=\"12\" height=\"20\" fill=\"#3b4b5e\"/><rect x=\"308\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"328\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"348\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"368\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"388\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"408\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"428\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"448\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"468\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"488\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"508\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"528\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"548\" y=\"270\" width=\"12\" height=\"55\" fill=\"#3b4b5e\"/><rect x=\"40\" y=\"330\" width=\"520\" height=\"120\" fill=\"#232f3d\"/><rect x=\"50\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"70\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"90\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"110\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"130\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"150\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"170\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"190\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"210\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"230\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"250\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"270\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"290\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"310\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"330\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"350\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"370\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"390\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"410\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"430\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"450\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"470\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"490\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"510\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"530\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><rect x=\"550\" y=\"335\" width=\"10\" height=\"110\" fill=\"#2e3b4a\"/><path d=\"M150 190 q-10 -60 60 -70 l120 -10 q30 0 30 40 l0 40 Z\" fill=\"#f4f7fb\"/><rect x=\"150\" y=\"178\" width=\"210\" height=\"14\" fill=\"#cfd5dc\"/><path d=\"M300 70 L360 170 H240 Z\" fill=\"#f6b420\" stroke=\"var(--k)\" stroke-width=\"8\" stroke-linejoin=\"round\" transform=\"translate(150 -60)\"/><text x=\"450\" y=\"95\" font-size=\"60\" font-weight=\"900\" text-anchor=\"middle\" fill=\"#1b1b1b\">!</text></svg>",
-   "metin": "Bir ayakkabı ucu sıkışırsa..."
+   "metin": "Bir ayakkabı ucu sıkışırsa...",
+   "katmanlar": [
+    {
+     "parca": "tarak",
+     "x": 300,
+     "y": 330,
+     "boyut": 580,
+     "secenek": {
+      "kirik": 11
+     }
+    },
+    {
+     "ikon": "mans_shoe",
+     "x": 300,
+     "y": 200,
+     "boyut": 230,
+     "don": 12
+    },
+    {
+     "ikon": "warning",
+     "x": 490,
+     "y": 110,
+     "boyut": 120
+    },
+    {
+     "etiket": "Sıkışma",
+     "x": 120,
+     "y": 120,
+     "ok": [
+      260,
+      250
+     ],
+     "renk": "k"
+    }
+   ]
   },
   {
    "tur": "cizim",
    "baslik": "Durduracak tek şey:\nbir **sensör.**",
-   "cizim": "<svg viewBox=\"0 0 600 520\" xmlns=\"http://www.w3.org/2000/svg\"><rect x=\"270\" y=\"300\" width=\"60\" height=\"180\" fill=\"#5b6b7e\"/><rect x=\"170\" y=\"140\" width=\"260\" height=\"190\" rx=\"30\" fill=\"#2c3a4a\" stroke=\"#5b6b7e\" stroke-width=\"8\"/><circle cx=\"300\" cy=\"235\" r=\"62\" fill=\"#18c25a\" opacity=\".25\"/><circle cx=\"300\" cy=\"235\" r=\"40\" fill=\"#18c25a\"/></svg>",
-   "metin": "Merdiveni durduracak tek şey bir sensördür."
+   "metin": "Merdiveni durduracak tek şey bir sensördür.",
+   "katmanlar": [
+    {
+     "zemin": true,
+     "x": 300,
+     "y": 470,
+     "g": 360
+    },
+    {
+     "parca": "sensor",
+     "x": 300,
+     "y": 270,
+     "boyut": 280
+    },
+    {
+     "etiket": "Emniyet kontağı",
+     "x": 300,
+     "y": 470,
+     "ok": [
+      300,
+      350
+     ],
+     "renk": "v"
+    }
+   ]
   },
   {
    "tur": "cizim",
    "baslik": "Peki o sensör\n**çalışıyor mu?**",
-   "cizim": "<svg viewBox=\"0 0 600 520\" xmlns=\"http://www.w3.org/2000/svg\"><rect x=\"270\" y=\"300\" width=\"60\" height=\"180\" fill=\"#5b6b7e\"/><rect x=\"170\" y=\"140\" width=\"260\" height=\"190\" rx=\"30\" fill=\"#2c3a4a\" stroke=\"#5b6b7e\" stroke-width=\"8\"/><circle cx=\"300\" cy=\"235\" r=\"62\" fill=\"#18c25a\" opacity=\".25\"/><circle cx=\"300\" cy=\"235\" r=\"40\" fill=\"#18c25a\"/><circle cx=\"455\" cy=\"120\" r=\"56\" fill=\"var(--v)\"/><text x=\"455\" y=\"142\" font-size=\"70\" font-weight=\"900\" text-anchor=\"middle\" fill=\"#0b2340\">?</text></svg>",
-   "metin": "Peki o sensör çalışıyor mu?"
+   "metin": "Peki o sensör çalışıyor mu?",
+   "katmanlar": [
+    {
+     "zemin": true,
+     "x": 300,
+     "y": 470,
+     "g": 360
+    },
+    {
+     "parca": "sensor",
+     "x": 260,
+     "y": 270,
+     "boyut": 260,
+     "secenek": {
+      "isik": "#8a96a6"
+     }
+    },
+    {
+     "ikon": "thinking_face",
+     "x": 450,
+     "y": 150,
+     "boyut": 170
+    },
+    {
+     "yazi": "?",
+     "x": 470,
+     "y": 330,
+     "boyut": 90,
+     "renk": "v",
+     "don": 0
+    }
+   ]
   },
   {
    "tur": "cizim",
    "baslik": "Acil stop. Fren.\n**Emniyet kontakları.**",
-   "cizim": "<svg viewBox=\"0 0 600 360\" xmlns=\"http://www.w3.org/2000/svg\"><circle cx=\"110\" cy=\"200\" r=\"82\" fill=\"#1d3048\" stroke=\"var(--v)\" stroke-width=\"10\"/><circle cx=\"110\" cy=\"200\" r=\"48\" fill=\"var(--k)\"/><text x=\"110\" y=\"330\" font-size=\"30\" font-weight=\"800\" text-anchor=\"middle\" fill=\"#e8eef6\">Acil stop</text><circle cx=\"300\" cy=\"200\" r=\"82\" fill=\"#1d3048\" stroke=\"var(--v)\" stroke-width=\"10\"/><line x1=\"250\" y1=\"215\" x2=\"350\" y2=\"215\" stroke=\"#e8eef6\" stroke-width=\"10\"/><path d=\"M335 200 l20 15 l-20 15\" fill=\"#e8eef6\"/><text x=\"300\" y=\"195\" font-size=\"40\" font-weight=\"900\" text-anchor=\"middle\" fill=\"#e8eef6\">m</text><text x=\"300\" y=\"330\" font-size=\"30\" font-weight=\"800\" text-anchor=\"middle\" fill=\"#e8eef6\">Fren</text><circle cx=\"490\" cy=\"200\" r=\"82\" fill=\"#1d3048\" stroke=\"var(--v)\" stroke-width=\"10\"/><rect x=\"462\" y=\"170\" width=\"20\" height=\"60\" fill=\"#e8eef6\"/><rect x=\"498\" y=\"170\" width=\"20\" height=\"60\" fill=\"#e8eef6\"/><rect x=\"452\" y=\"160\" width=\"76\" height=\"22\" fill=\"#e8eef6\"/><text x=\"490\" y=\"330\" font-size=\"30\" font-weight=\"800\" text-anchor=\"middle\" fill=\"#e8eef6\">Kontaklar</text></svg>",
-   "metin": "Acil stop, fren mesafesi, emniyet kontakları..."
+   "metin": "Acil stop, fren mesafesi, emniyet kontakları...",
+   "katmanlar": [
+    {
+     "parca": "acil_stop",
+     "x": 120,
+     "y": 230,
+     "boyut": 200
+    },
+    {
+     "ikon": "stopwatch",
+     "x": 300,
+     "y": 230,
+     "boyut": 170
+    },
+    {
+     "ikon": "electric_plug",
+     "x": 480,
+     "y": 230,
+     "boyut": 170
+    },
+    {
+     "etiket": "Acil stop",
+     "x": 120,
+     "y": 390,
+     "renk": "k"
+    },
+    {
+     "etiket": "Fren",
+     "x": 300,
+     "y": 390,
+     "renk": "v"
+    },
+    {
+     "etiket": "Kontaklar",
+     "x": 480,
+     "y": 390,
+     "renk": "beyaz"
+    }
+   ]
   },
   {
    "tur": "cizim",
    "baslik": "Bunu ancak\n**periyodik muayene**\ngösterir.",
-   "cizim": "<svg viewBox=\"0 0 600 450\" xmlns=\"http://www.w3.org/2000/svg\"><rect x=\"130\" y=\"40\" width=\"340\" height=\"390\" rx=\"18\" fill=\"#f4f7fb\"/><rect x=\"250\" y=\"22\" width=\"100\" height=\"36\" rx=\"8\" fill=\"#5b6b7e\"/><rect x=\"160\" y=\"95\" width=\"34\" height=\"34\" rx=\"6\" fill=\"#18a34a\" stroke=\"#18a34a\" stroke-width=\"4\"/><path d=\"M168 112 l9 9 l17 -19\" fill=\"none\" stroke=\"#fff\" stroke-width=\"6\"/><text x=\"212\" y=\"121\" font-size=\"26\" font-weight=\"700\" fill=\"#1d2733\">Tarak plakası</text><rect x=\"160\" y=\"157\" width=\"34\" height=\"34\" rx=\"6\" fill=\"#18a34a\" stroke=\"#18a34a\" stroke-width=\"4\"/><path d=\"M168 174 l9 9 l17 -19\" fill=\"none\" stroke=\"#fff\" stroke-width=\"6\"/><text x=\"212\" y=\"183\" font-size=\"26\" font-weight=\"700\" fill=\"#1d2733\">Acil stop</text><rect x=\"160\" y=\"219\" width=\"34\" height=\"34\" rx=\"6\" fill=\"#18a34a\" stroke=\"#18a34a\" stroke-width=\"4\"/><path d=\"M168 236 l9 9 l17 -19\" fill=\"none\" stroke=\"#fff\" stroke-width=\"6\"/><text x=\"212\" y=\"245\" font-size=\"26\" font-weight=\"700\" fill=\"#1d2733\">Fren mesafesi</text><rect x=\"160\" y=\"281\" width=\"34\" height=\"34\" rx=\"6\" fill=\"#fff\" stroke=\"#18a34a\" stroke-width=\"4\"/><text x=\"212\" y=\"307\" font-size=\"26\" font-weight=\"700\" fill=\"#1d2733\">Emniyet kontakları</text><rect x=\"160\" y=\"343\" width=\"34\" height=\"34\" rx=\"6\" fill=\"#fff\" stroke=\"#18a34a\" stroke-width=\"4\"/><text x=\"212\" y=\"369\" font-size=\"26\" font-weight=\"700\" fill=\"#1d2733\">Korkuluk bandı</text></svg>",
-   "metin": "Bunu ancak periyodik muayene gösterir."
+   "metin": "Bunu ancak periyodik muayene gösterir.",
+   "katmanlar": [
+    {
+     "zemin": true,
+     "x": 300,
+     "y": 470,
+     "g": 420
+    },
+    {
+     "ikon": "clipboard",
+     "x": 230,
+     "y": 270,
+     "boyut": 300
+    },
+    {
+     "ikon": "man_construction_worker",
+     "x": 440,
+     "y": 290,
+     "boyut": 240
+    },
+    {
+     "ikon": "check_mark_button",
+     "x": 330,
+     "y": 120,
+     "boyut": 110
+    }
+   ]
   },
   {
    "tur": "cizim",
    "baslik": "Ceza için değil.\n**Can güvenliği** için.",
-   "cizim": "<svg viewBox=\"0 0 600 460\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M300 40 L430 92 V200 C430 290 370 350 300 378 C230 350 170 290 170 200 V92 Z\" fill=\"var(--v)\"/><path d=\"M300 68 L405 110 V200 C405 275 355 325 300 348 C245 325 195 275 195 200 V110 Z\" fill=\"#1d3048\"/><path d=\"M245 205 L288 248 L362 170\" fill=\"none\" stroke=\"var(--v)\" stroke-width=\"26\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><circle cx=\"90\" cy=\"330\" r=\"34\" fill=\"#cfd8e3\"/><circle cx=\"78\" cy=\"326\" r=\"5\" fill=\"#1b1b1b\"/><circle cx=\"102\" cy=\"326\" r=\"5\" fill=\"#1b1b1b\"/><path d=\"M42 435 q0 -60 48 -60 q48 0 48 60 Z\" fill=\"#3b5675\"/><circle cx=\"150\" cy=\"380\" r=\"22\" fill=\"#cfd8e3\"/><path d=\"M122 450 q0 -40 28 -40 q28 0 28 40 Z\" fill=\"#e3893a\"/><circle cx=\"510\" cy=\"330\" r=\"34\" fill=\"#cfd8e3\"/><circle cx=\"498\" cy=\"326\" r=\"5\" fill=\"#1b1b1b\"/><circle cx=\"522\" cy=\"326\" r=\"5\" fill=\"#1b1b1b\"/><path d=\"M462 435 q0 -60 48 -60 q48 0 48 60 Z\" fill=\"#a8483d\"/><circle cx=\"450\" cy=\"380\" r=\"22\" fill=\"#cfd8e3\"/><path d=\"M422 450 q0 -40 28 -40 q28 0 28 40 Z\" fill=\"#3d8a5a\"/></svg>",
-   "metin": "Ceza için değil, can güvenliği için."
+   "metin": "Ceza için değil, can güvenliği için.",
+   "katmanlar": [
+    {
+     "zemin": true,
+     "x": 300,
+     "y": 470,
+     "g": 480
+    },
+    {
+     "ikon": "shield",
+     "x": 300,
+     "y": 240,
+     "boyut": 250
+    },
+    {
+     "ikon": "people_hugging",
+     "x": 120,
+     "y": 370,
+     "boyut": 170
+    },
+    {
+     "ikon": "older_person",
+     "x": 480,
+     "y": 370,
+     "boyut": 150
+    }
+   ]
   },
   {
    "tur": "kapanis",
@@ -90,7 +327,7 @@
     "teknikisg.com.tr",
     "☎ 0537 918 48 21"
    ],
-   "metin": "Riskleri şansa\nbırakmayın. Teknik İSG'yi arayın."
+   "metin": "Riskleri şansa bırakmayın. Teknik İSG'yi arayın."
   }
  ]
 }

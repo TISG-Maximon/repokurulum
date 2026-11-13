@@ -46,10 +46,28 @@ Komutlar (kısaltma: `VS="uv run --script $HOME/.claude/skills/video-seslendirme
 
 Örnek: "Kapı çaldı → panik → 'alt tarafı iki vana' → bantlı boru → kaza olursa → imza sizin → uzmana bırakın". Şablonlar: `ornekler/tanitim-*.json` (site tesisatı, yürüyen merdiven, yangın tesisatı).
 
-- Sahne türü `cizim`:
-  - `baslik`: kısa, vurucu, `**vurgu**` ile.
-  - `cizim`: düz, sade SVG (viewBox `0 0 600 520`). Renkler: `var(--v)` vurgu, `var(--k)` kırmızı, koyu `#1d3048`, açık `#e8eef6`.
-  - Her sahnede tek bir nesne olsun (kapı, vana, manometre, kalkan, kontrol listesi…).
+- Sahne türü `cizim`: `baslik` kısa ve vurucu (`**vurgu**` ile). Görseli **`katmanlar`** ile kur (3B görünüm, en anlaşılır yol). Koordinatlar 600x520'lik sahnede nesnenin merkezidir.
+  - `{"zemin": true, "x": 300, "y": 460, "g": 420}`: odak nesnenin altına gölge ve vurgu renginde ışık.
+  - `{"ikon": "fire", "x": 300, "y": 260, "boyut": 260}`: Fluent Emoji 3D (MIT). İlk kullanımda indirilir. Bulmak için `$VS ikonlar <kelime>` (örnek: `ikonlar fire`, `ikonlar worker`). Seçenekler: `don` (derece), `saydam` (0–1), `golge: false`.
+  - `{"parca": "vana", ..., "secenek": {...}}`: 3B teknik parçalar.
+    - `vana`
+    - `boru` (`bant`, `sizinti`)
+    - `manometre` (`deger` 0–1)
+    - `tarak` (`kirik`: diş no)
+    - `yuruyen_merdiven`
+    - `sensor` (`isik` rengi)
+    - `yangin_dolabi`
+    - `boru_kesiti` (`kirec` 0–1)
+    - `acil_stop`
+    - `pano`
+  - `{"etiket": "Kırık diş", "x": 470, "y": 450, "ok": [320, 340], "renk": "k"}`: oklu açıklama. Renk: `k` kırmızı, `v` vurgu, `beyaz`, `yesil`.
+  - `{"yazi": "TAK!", "x": 90, "y": 150, "boyut": 52, "renk": "v", "don": -12}`: ses efekti ya da kısa yazı.
+  - **Anlaşılırlık kuralları:**
+    - Her sahnede 1 odak nesne (büyük, 250–340), en fazla 2–3 yardımcı nesne (110–200).
+    - Önemli ayrıntıya her zaman oklu `etiket`.
+    - Olumsuz durum: `cross_mark` / `warning`. Olumlu durum: `check_mark_button` / `shield`.
+    - Nesneler üst üste binmesin. `gorsel` önizlemesinde kontrol et (ör. "su yok" sahnesinde suyu akıtan ikon kullanma).
+  - Basit durumlarda `cizim` alanına düz SVG de yazılabilir.
 - Akış (8–10 sahne + `kapanis`, 20–35 sn):
   1. Merak uyandıran giriş
   2. Sorun

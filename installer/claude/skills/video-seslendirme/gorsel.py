@@ -74,7 +74,16 @@ h1{font-size:%(s1)dpx;line-height:1.15;font-weight:800;margin-top:22px}
 .ilerleme i{display:block;width:%(pw)dpx;height:8px;border-radius:4px;background:rgba(255,255,255,.25)}
 .ilerleme i.d{background:%(vurgu)s}
 .alt{position:absolute;bottom:%(fb)dpx;width:100%%;text-align:center;color:#9fb3cc;font-size:%(s4)dpx}
-.cizim{margin-top:%(cm)dpx;width:90%%;display:flex;justify-content:center}
+.sahne3d{position:relative;width:100%%;aspect-ratio:600/520;container-type:inline-size}
+.sahne3d .k{position:absolute}
+.sahne3d .k img,.sahne3d .k svg{width:100%%;height:auto;display:block}
+.sahne3d .golgeli{filter:drop-shadow(0 22px 22px rgba(0,0,0,.5))}
+.sahne3d .zemin{position:absolute;transform:translate(-50%%,-50%%);border-radius:50%%;background:radial-gradient(closest-side,rgba(0,0,0,.55),rgba(0,0,0,0));}
+.sahne3d .zemin::after{content:"";position:absolute;inset:-35%% -10%%;border-radius:50%%;background:radial-gradient(closest-side,color-mix(in srgb,var(--v) 35%%,transparent),transparent)}
+.sahne3d .oklar{position:absolute;inset:0;width:100%%;height:100%%;overflow:visible}
+.sahne3d .cip{position:absolute;white-space:nowrap;font-weight:800;font-size:4.6cqw;padding:.35em .8em;border-radius:.6em;box-shadow:0 8px 18px rgba(0,0,0,.4)}
+.sahne3d .yazi3d{position:absolute;white-space:nowrap;font-weight:900;text-shadow:0 6px 14px rgba(0,0,0,.5)}
+.cizim{margin-top:%(cm)dpx;width:84%%;display:flex;justify-content:center}
 .cizim svg{width:100%%;height:auto;display:block;overflow:visible}
 .baslik-buyuk{font-size:%(sb)dpx;line-height:1.15;font-weight:900}
 .buyuk{font-size:%(s0)dpx;font-weight:800;color:%(vurgu)s;line-height:1.2}
@@ -97,6 +106,85 @@ table.t td,table.t th{padding:8px 10px;border-bottom:1px solid #e3e8ef;text-alig
 table.t tr.yesil td{background:#cfeec6}table.t tr.kirmizi td{background:#f6c9cc}table.t tr.mavi td{background:#d6e6fb}
 .not{font-size:.8em;color:#8a96a6;text-align:right;padding:6px 12px}
 """
+
+
+IKON_KAYNAK = "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/"   # Fluent Emoji 3D (MIT)
+_ikon_dizin = None
+
+
+def ikon_veri(ad):
+    """Fluent Emoji 3D ikonunu (ilk kullanimda indirip ikonlar/ altinda saklar) data URI olarak dondurur."""
+    global _ikon_dizin
+    import json, urllib.parse, urllib.request
+    if _ikon_dizin is None:
+        _ikon_dizin = json.loads((BURASI / "ikon-dizin.json").read_text(encoding="utf-8"))
+    yol = _ikon_dizin.get(ad)
+    if not yol:
+        benzer = [k for k in _ikon_dizin if ad.split("_")[0] in k][:12]
+        sys.exit(f"HATA: '{ad}' adinda 3B ikon yok. Benzerleri: {', '.join(benzer)} (liste: seslendir.py ikonlar <kelime>)")
+    yerel = BURASI / "ikonlar" / (ad + ".png")
+    if not yerel.exists():
+        yerel.parent.mkdir(exist_ok=True)
+        url = IKON_KAYNAK + urllib.parse.quote(yol)
+        for i in range(3):
+            try:
+                with urllib.request.urlopen(url, timeout=60) as r:
+                    yerel.write_bytes(r.read())
+                break
+            except Exception as e:
+                if i == 2:
+                    sys.exit(f"HATA: ikon indirilemedi ({ad}): {e}")
+    return resim_veri(yerel)
+
+
+def sahne3d_html(katmanlar):
+    """600x520 sahne: 3B ikonlar, teknik parcalar, zemin golgesi, oklu etiketler, yazilar."""
+    sys.path.insert(0, str(BURASI))
+    import parcalar
+    yuzde = lambda v, t: f"{v / t * 100:.2f}%"
+    ogeler, oklar = [], []
+    renkler = {"k": "var(--k)", "v": "var(--v)", "beyaz": "#ffffff", "yesil": "#18a34a", "koyu": "#1d3048"}
+    for k in katmanlar:
+        x, y = float(k.get("x", 300)), float(k.get("y", 260))
+        konum = f"left:{yuzde(x, 600)};top:{yuzde(y, 520)};"
+        don = f" rotate({float(k.get('don', 0))}deg)" if k.get("don") else ""
+        if k.get("zemin"):
+            g = float(k.get("g", 420))
+            ogeler.append(f'<div class="zemin" style="{konum}width:{yuzde(g, 600)};height:{yuzde(g * 0.16, 520)}"></div>')
+            continue
+        if k.get("etiket"):
+            renk = renkler.get(k.get("renk", "k"), k.get("renk"))
+            yazi_renk = "#1b1b1b" if k.get("renk") in ("v", "beyaz") else "#fff"
+            if k.get("ok"):
+                tx, ty = k["ok"]
+                oklar.append(f'<line x1="{x}" y1="{y}" x2="{tx}" y2="{ty}" stroke="{renk}" stroke-width="5" stroke-linecap="round"/>'
+                             f'<circle cx="{tx}" cy="{ty}" r="10" fill="{renk}" stroke="#fff" stroke-width="4"/>')
+            ogeler.append(f'<div class="cip" style="{konum}background:{renk};color:{yazi_renk};transform:translate(-50%,-50%){don}">{vurgula(k["etiket"])}</div>')
+            continue
+        if k.get("yazi"):
+            renk = renkler.get(k.get("renk", "v"), k.get("renk"))
+            ogeler.append(f'<div class="yazi3d" style="{konum}color:{renk};font-size:{float(k.get("boyut", 44)) / 600 * 100:.2f}cqw;transform:translate(-50%,-50%){don}">{vurgula(k["yazi"])}</div>')
+            continue
+        genislik = f"width:{yuzde(float(k.get('boyut', 220)), 600)};"
+        golge = "" if k.get("golge") is False else " golgeli"
+        saydam = f"opacity:{k['saydam']};" if "saydam" in k else ""
+        if k.get("ikon"):
+            icerik = f'<img src="{ikon_veri(k["ikon"])}">'
+        elif k.get("parca"):
+            f = parcalar.PARCALAR.get(k["parca"])
+            if not f:
+                sys.exit(f"HATA: parca yok: {k['parca']} (var olanlar: {', '.join(parcalar.PARCALAR)})")
+            icerik = f(**k.get("secenek", {}))
+        elif k.get("svg"):
+            icerik = k["svg"]
+        else:
+            continue
+        ogeler.append(f'<div class="k{golge}" style="{konum}{genislik}{saydam}transform:translate(-50%,-50%){don}">{icerik}</div>')
+    ok_svg = f'<svg class="oklar" viewBox="0 0 600 520">{"".join(oklar)}</svg>' if oklar else ""
+    # sira: zemin/ikonlar, sonra oklar, sonra etiket/yazi (ogeler listesinde etiketler zaten sonra eklenmisse ustte kalir)
+    alt = [o for o in ogeler if 'class="cip"' not in o and 'class="yazi3d"' not in o]
+    ust = [o for o in ogeler if o not in alt]
+    return f'<div class="sahne3d">{"".join(alt)}{ok_svg}{"".join(ust)}</div>'
 
 
 def sahne_html(s, marka, w, h, adim_no, adim_top, hikaye=True):
@@ -144,7 +232,8 @@ def sahne_html(s, marka, w, h, adim_no, adim_top, hikaye=True):
         if s.get("etiket"): g.append(f'<span class="etiket">{vurgula(s["etiket"])}</span>')
         g.append(f'<h1 class="baslik-buyuk">{vurgula(s.get("baslik", ""))}</h1>')
         if s.get("aciklama"): g.append(f'<div class="acik">{vurgula(s["aciklama"])}</div>')
-        if s.get("cizim"): g.append(f'<div class="cizim">{s["cizim"]}</div>')
+        if s.get("katmanlar"): g.append(f'<div class="cizim">{sahne3d_html(s["katmanlar"])}</div>')
+        elif s.get("cizim"): g.append(f'<div class="cizim">{s["cizim"]}</div>')
         g.append('</div>')
     elif tur == "kapanis":
         g.append('<div class="icerik orta">')

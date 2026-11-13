@@ -202,7 +202,7 @@ jobs:
           if ($kod -ne 0) { exit $kod }
           $ErrorActionPreference = 'Continue'
           $sk = "$env:USERPROFILE\.claude\skills\video-seslendirme"
-          foreach ($f in 'SKILL.md','seslendir.py','gorsel.py','ornek-senaryo.json','ornek-gercekci.json','marka\logo.png') { if (-not (Test-Path "$sk\$f")) { Write-Host "::error::eksik: $f"; exit 1 } }
+          foreach ($f in 'SKILL.md','seslendir.py','gorsel.py','parcalar.py','ikon-dizin.json','ornek-senaryo.json','ornek-gercekci.json','ornekler\tanitim-yangin-tesisati.json','marka\logo.png') { if (-not (Test-Path "$sk\$f")) { Write-Host "::error::eksik: $f"; exit 1 } }
           $p = Join-Path $env:RUNNER_TEMP 'video-test'; New-Item -ItemType Directory -Force $p | Out-Null
           Copy-Item "$sk\ornek-senaryo.json" "$p\senaryo.json"
           & uv run --script "$sk\seslendir.py" gorsel "$p\senaryo.json" 2>&1 | Write-Host
@@ -229,6 +229,12 @@ jobs:
           if (-not (Test-Path "$g\veo-istemleri.md")) { Write-Host '::error::veo-istemleri.md yok'; exit 1 }
           if (-not (Test-Path "$g\klipler\kontrol_02.png")) { Write-Host '::error::klip kontrol karesi yok'; exit 1 }
           if (-not (Test-Path "$g\gorseller\serit_02.png")) { Write-Host '::error::klip serit gorseli yok'; exit 1 }
+          # 3B katmanli tanitim sahneleri (Fluent Emoji 3D indirme + teknik parcalar)
+          $t3 = Join-Path $env:RUNNER_TEMP 'video-3d'; New-Item -ItemType Directory -Force $t3 | Out-Null
+          Copy-Item "$sk\ornekler\tanitim-yangin-tesisati.json" "$t3\senaryo.json"
+          & uv run --script "$sk\seslendir.py" gorsel "$t3\senaryo.json" 2>&1 | Write-Host
+          $n3 = @(Get-ChildItem "$t3\gorseller\sahne_*.png").Count
+          if ($n3 -ne 10) { Write-Host "::error::3B tanitim: 10 gorsel bekleniyordu, $n3"; exit 1 }
           exit 0
 
       - name: Guncelleme kontrolu (-GuncellemeKontrol) hatasiz calisiyor mu

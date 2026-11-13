@@ -484,6 +484,15 @@ def uret_cfg(cfg, klasor):
         print(f"  Bolum {k}       : {klasor / f'{ad}-altyazili-bolum{k}.mp4'} ({u:.1f} sn)")
 
 
+def ikon_ara(kelime):
+    d = json.loads((Path(__file__).resolve().parent / "ikon-dizin.json").read_text(encoding="utf-8"))
+    bul = [k for k in d if all(p in k for p in kelime.lower().split())]
+    print(f"{len(bul)} ikon ({kelime}):\n" + ", ".join(bul[:200]))
+    sys.path.insert(0, str(Path(__file__).resolve().parent)); sys.dont_write_bytecode = True
+    import parcalar
+    print("Teknik parcalar (\"parca\"): " + ", ".join(parcalar.PARCALAR))
+
+
 def istemler(json_yolu):
     """Gemini (Veo) icin istem listesi: kullanici Gemini uygulamasinda uretir, klipler/ klasorune verilen adla kaydeder."""
     jy = Path(json_yolu).resolve()
@@ -560,6 +569,7 @@ def main():
     u = alt.add_parser("uret"); u.add_argument("sahneler_json")
     o = alt.add_parser("olustur"); o.add_argument("senaryo_json")
     g = alt.add_parser("gorsel"); g.add_argument("senaryo_json")
+    ia = alt.add_parser("ikonlar"); ia.add_argument("kelime", nargs="?", default="")
     i_ = alt.add_parser("istemler"); i_.add_argument("senaryo_json")
     kk = alt.add_parser("klipler"); kk.add_argument("senaryo_json")
     d = alt.add_parser("dene"); d.add_argument("metin"); d.add_argument("--ses", default="tr-TR-EmelNeural")
@@ -574,6 +584,8 @@ def main():
         uret(x.sahneler_json)
     elif x.komut == "olustur":
         olustur(x.senaryo_json)
+    elif x.komut == "ikonlar":
+        ikon_ara(x.kelime)
     elif x.komut == "istemler":
         istemler(x.senaryo_json)
     elif x.komut == "klipler":
