@@ -35,6 +35,14 @@ def sure(dosya):
     return float(calistir(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", str(dosya)]).stdout.strip())
 
 
+def filtre_secenegi(betik):
+    """FFmpeg 7.1+ '-/filter_complex dosya' ister (8.x eski -filter_complex_script'i kaldirdi); eskiler eski yazimi."""
+    cikti = calistir(["ffmpeg", "-version"]).stdout
+    m = re.search(r"version\s+n?(\d+)\.(\d+)", cikti)
+    yeni = (int(m.group(1)), int(m.group(2))) >= (7, 1) if m else ("version N-" in cikti or "git-" in cikti)   # N-/git = guncel derleme
+    return ["-/filter_complex", str(betik)] if yeni else ["-filter_complex_script", str(betik)]
+
+
 def klip_bilgi(k):
     o = json.loads(calistir(["ffprobe", "-v", "error", "-show_entries", "format=duration:stream=codec_type,width,height",
                              "-of", "json", str(k)]).stdout)
@@ -394,7 +402,7 @@ def uret_cfg(cfg, klasor):
     betik = is_d / "filtre.txt"; betik.write_text(";\n".join(fl), encoding="utf-8")
     ad = cfg.get("cikti_adi") or ((video.stem + "-seslendirmeli") if video else "video")
     sesli = klasor / f"{ad}.mp4"
-    calistir(["ffmpeg", "-v", "error", "-y"] + girdiler + ["-filter_complex_script", str(betik), "-map", f"[{onceki}]", "-map", "[ses]",
+    calistir(["ffmpeg", "-v", "error", "-y"] + girdiler + [*filtre_secenegi(betik), "-map", f"[{onceki}]", "-map", "[ses]",
               "-c:v", "libx264", "-crf", "19", "-preset", "medium", "-c:a", "aac", "-b:a", "160k", "-ar", "44100",
               "-movflags", "+faststart", str(sesli)])
 
