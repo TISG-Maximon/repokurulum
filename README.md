@@ -132,6 +132,15 @@ graphify explain "X"   →  bir kavramı açıkla
 
 ---
 
+## 2b. Video rehberi üretme (her PC'de aynı işleyiş)
+
+Repo Kurulum'da **"Video rehber uretici"** bileşenini (ve isteğe bağlı **Piper**) işaretle. Sonra `ClaudeAc.bat` ile Claude'u aç ve şunlardan birini yaz:
+
+- *"İSG-KATİP'te sözleşme onayı için adım adım müşteri rehberi videosu yap"*: Claude senaryoyu yazar, marka tasarımlı sahne görsellerini üretip kontrol eder, Microsoft Emel sesiyle seslendirir, konuşmaya senkron sabit altyazı ekler.
+- *"Şu videoya seslendirme ve altyazı ekle: C:\...\video.mp4"*: Claude sahneleri ve siyah geçişleri bulur, metni ekrana göre yazar, siyah araları kaldırıp yumuşak geçişle birleştirir.
+
+Çıktılar `%USERPROFILE%\ClaudeProjeler\videolar\<ad>\` altına yazılır: seslendirmeli video, altyazılı video, `.srt` ve `kontrol.png`. Ekran görüntüsü verirsen onu kullanır, vermezsen temsili ekran çizer. Ayrıntılı işleyiş: `installer/claude/skills/video-seslendirme/SKILL.md`. Örnek senaryo: `ornek-senaryo.json`.
+
 ## 3. Uzaktan bağlantı senaryosu (sen başka PC'de, asıl PC uzakta)
 
 Kurulum **asıl PC'de** yapılmalı (araçlar orada çalışacak). İki yol var:

@@ -1,5 +1,5 @@
 {
-  "surum": "1.12.0",
+  "surum": "1.13.0",
   "aciklama": "RepoKurulum bilesen listesi. Yeni bir arac eklerken 'kurallar' alanina ne ise yaradigini ve hangi ihtiyacta kacinci sirada denenecegini yaz; uygulamadaki 'Kurallari Kopyala' dugmesi bunlardan CLAUDE.md'ye yapistirilacak metni uretir. Sira onemlidir: bagimliliklar once gelmelidir.",
   "kural_basligi": "Araç seçim kuralları",
   "genel_kurallar": [
@@ -127,7 +127,7 @@
       "id": "seslendirme",
       "baslik": "Metni seslendirmek (Türkçe TTS)",
       "tetik": "\"seslendir\", \"sesli anlatım\", \"voiceover\", \"dış ses\", \"metni oku\", \"TTS\", \"podcast\", videoya anlatıcı sesi.",
-      "not": "Sıra: edge-tts (internet varsa, en doğal ses) → Piper (internet yoksa / gizli metin) → Windows Tolga (hiçbiri yoksa; kurulum gerekmez: PowerShell `System.Speech`, ses tr-TR Tolga). Ses ve altyazıyı aynı kaynaktan üret; ses dosyası cümle cümle değil, bölüm bölüm (sahne başına bir dosya) üretilsin."
+      "not": "Sıra: edge-tts (internet varsa, en doğal ses) → Piper (internet yoksa / gizli metin) → Windows Tolga (hiçbiri yoksa; kurulum gerekmez: PowerShell `System.Speech`, ses tr-TR Tolga). Ses ve altyazıyı aynı kaynaktan üret; ses dosyası cümle cümle değil, bölüm bölüm (sahne başına bir dosya) üretilsin. Hazır bir VİDEOYA seslendirme + altyazı eklenecekse video-seslendirme skill'ini kullan (sahneleri ve senkronu o yapar)."
     },
     {
       "id": "sunum",
@@ -1310,7 +1310,7 @@
       "kurallar": [
         {
           "ihtiyac": "video",
-          "oncelik": 2,
+          "oncelik": 3,
           "arac": "video-shotcraft",
           "metin": "Ürün/uygulama/site tanıtım ve promo videosu (hareketli grafik, müzik senkronu).",
           "ne_zaman": [
@@ -1384,7 +1384,7 @@
       "kurallar": [
         {
           "ihtiyac": "video",
-          "oncelik": 3,
+          "oncelik": 4,
           "arac": "claude-code-video-toolkit",
           "metin": "Seslendirmeli, müzikli, AI görsel/klip içeren videolar.",
           "ne_zaman": [
@@ -1457,7 +1457,7 @@
       "kurallar": [
         {
           "ihtiyac": "video",
-          "oncelik": 4,
+          "oncelik": 5,
           "arac": "ClaudeAnimationBase",
           "metin": "El çizimi/suluboya tarzı karakter animasyonu ve kısa çizgi film.",
           "ne_zaman": [
@@ -1556,7 +1556,7 @@
           },
           {
             "tur": "ps",
-            "komut": "$ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; [Net.ServicePointManager]::SecurityProtocol=[Net.ServicePointManager]::SecurityProtocol -bor 3072; $h=Join-Path $env:LOCALAPPDATA 'piper-sesler'; New-Item -ItemType Directory -Force $h | Out-Null; $tamam=0; foreach ($s in @('fahrettin','dfki','fettah')) { $sesOk=$true; foreach ($u in @('.onnx.json','.onnx')) { $ad='tr_TR-' + $s + '-medium' + $u; $f=Join-Path $h $ad; if ((Test-Path $f) -and ((Get-Item $f).Length -gt 1000)) { continue }; $url='https://huggingface.co/rhasspy/piper-voices/resolve/main/tr/tr_TR/' + $s + '/medium/' + $ad + '?download=true'; $ok=$false; for ($i=1; $i -le 3 -and -not $ok; $i++) { Write-Output ('indiriliyor (' + $i + '): ' + $ad); try { Invoke-WebRequest -UseBasicParsing -Uri $url -OutFile ($f + '.part') -TimeoutSec 600 } catch { Write-Output ('Invoke-WebRequest: ' + $_.Exception.Message); if (Get-Command curl.exe -ErrorAction SilentlyContinue) { & curl.exe -fsSL --retry 2 -o ($f + '.part') $url 2>&1 | ForEach-Object { Write-Output ('curl: ' + $_) } } }; if ((Test-Path ($f + '.part')) -and ((Get-Item ($f + '.part')).Length -gt 1000)) { Move-Item -Force ($f + '.part') $f; $ok=$true } else { Start-Sleep -Seconds (5*$i) } }; if (-not $ok) { Write-Output ('INDIRILEMEDI: ' + $url); Remove-Item ($f + '.part') -ErrorAction SilentlyContinue; $sesOk=$false; break } }; if ($sesOk) { $tamam++ } }; if ($tamam -eq 0) { Write-Output 'Hicbir Turkce ses indirilemedi'; exit 1 }; [Environment]::SetEnvironmentVariable('PIPER_SESLER', $h, 'User'); Write-Output ('Piper sesleri (' + $tamam + '/3): ' + $h)"
+            "komut": "$ErrorActionPreference='Continue'; $ProgressPreference='SilentlyContinue'; [Net.ServicePointManager]::SecurityProtocol=[Net.ServicePointManager]::SecurityProtocol -bor 3072; $h=Join-Path $env:LOCALAPPDATA 'piper-sesler'; New-Item -ItemType Directory -Force $h | Out-Null; $tamam=0; foreach ($s in @('fahrettin','dfki','fettah')) { $sesOk=$true; foreach ($u in @('.onnx.json','.onnx')) { $ad='tr_TR-' + $s + '-medium' + $u; $f=Join-Path $h $ad; if ((Test-Path $f) -and ((Get-Item $f).Length -gt 1000)) { continue }; $url='https://huggingface.co/rhasspy/piper-voices/resolve/main/tr/tr_TR/' + $s + '/medium/' + $ad + '?download=true'; $ok=$false; for ($i=1; $i -le 3 -and -not $ok; $i++) { Write-Output ('indiriliyor (' + $i + '): ' + $ad); try { Invoke-WebRequest -UseBasicParsing -Uri $url -OutFile ($f + '.part') -TimeoutSec 600 } catch { Write-Output ('Invoke-WebRequest: ' + $_.Exception.Message); $kod=$null; try { $kod=[int]$_.Exception.Response.StatusCode } catch { }; Write-Output ('HTTP: ' + $kod); if (Get-Command curl.exe -ErrorAction SilentlyContinue) { & curl.exe -fsSL --retry 2 -o ($f + '.part') $url 2>$null; Write-Output ('curl cikis kodu: ' + $LASTEXITCODE) } }; if ((Test-Path ($f + '.part')) -and ((Get-Item ($f + '.part')).Length -gt 1000)) { Move-Item -Force ($f + '.part') $f; $ok=$true } else { Start-Sleep -Seconds (5*$i) } }; if (-not $ok) { Write-Output ('INDIRILEMEDI: ' + $url); Remove-Item ($f + '.part') -ErrorAction SilentlyContinue; $sesOk=$false; break } }; if ($sesOk) { $tamam++ } }; if ($tamam -eq 0) { Write-Output 'Hicbir Turkce ses indirilemedi'; exit 1 }; [Environment]::SetEnvironmentVariable('PIPER_SESLER', $h, 'User'); Write-Output ('Piper sesleri (' + $tamam + '/3): ' + $h)"
           }
         ]
       ],
@@ -1636,7 +1636,7 @@
       "kurallar": [
         {
           "ihtiyac": "video",
-          "oncelik": 1,
+          "oncelik": 2,
           "arac": "HyperFrames",
           "metin": "HTML/CSS/GSAP sahnelerinden MP4 video: eğitim, konu anlatımı, bilgilendirme, altyazılı ve seslendirmeli video.",
           "ne_zaman": [
@@ -1716,6 +1716,89 @@
         "tur": "npm",
         "paket": "@marp-team/marp-cli"
       }
+    },
+    {
+      "id": "video-rehber",
+      "ad": "Video rehber uretici (gorsel + Emel seslendirme + altyazi)",
+      "kategori": "7. Video ve animasyon",
+      "lisans": "-",
+      "repo": "",
+      "aciklama": "Adimlardan marka tasarimli dikey rehber videosu uretir ya da hazir videoya Turkce seslendirme + senkron sabit altyazi ekler; siyah gecisleri atar. Claude'da 'video-seslendirme' skill'i",
+      "varsayilan": false,
+      "gerekir": [
+        "uv",
+        "ffmpeg",
+        "claude"
+      ],
+      "kontrol": {
+        "dosya": [
+          "%USERPROFILE%\\.claude\\skills\\video-seslendirme\\SKILL.md"
+        ]
+      },
+      "kur": [
+        [
+          {
+            "tur": "dosya-kopyala",
+            "kaynak": "installer/claude/skills/video-seslendirme/SKILL.md",
+            "hedef": "%USERPROFILE%\\.claude\\skills\\video-seslendirme\\SKILL.md"
+          },
+          {
+            "tur": "dosya-kopyala",
+            "kaynak": "installer/claude/skills/video-seslendirme/seslendir.py",
+            "hedef": "%USERPROFILE%\\.claude\\skills\\video-seslendirme\\seslendir.py"
+          },
+          {
+            "tur": "dosya-kopyala",
+            "kaynak": "installer/claude/skills/video-seslendirme/gorsel.py",
+            "hedef": "%USERPROFILE%\\.claude\\skills\\video-seslendirme\\gorsel.py"
+          },
+          {
+            "tur": "dosya-kopyala",
+            "kaynak": "installer/claude/skills/video-seslendirme/ornek-senaryo.json",
+            "hedef": "%USERPROFILE%\\.claude\\skills\\video-seslendirme\\ornek-senaryo.json"
+          },
+          {
+            "tur": "dosya-kopyala",
+            "kaynak": "installer/claude/skills/video-seslendirme/marka/logo.png",
+            "hedef": "%USERPROFILE%\\.claude\\skills\\video-seslendirme\\marka\\logo.png"
+          },
+          {
+            "tur": "calistir",
+            "dosya": "uv",
+            "argumanlar": [
+              "run",
+              "--script",
+              "%USERPROFILE%\\.claude\\skills\\video-seslendirme\\seslendir.py",
+              "--help"
+            ],
+            "zaman_asimi": 300
+          }
+        ]
+      ],
+      "kurulum_notu": "Kullanim: Claude'a 'su konuda adim adim rehber videosu yap' ya da 'bu videoya seslendirme ve altyazi ekle' de. Projeler: %USERPROFILE%\\ClaudeProjeler\\videolar. Edge veya Chrome gerekir (Windows'ta Edge hazir).",
+      "kurallar": [
+        {
+          "ihtiyac": "video",
+          "oncelik": 1,
+          "arac": "video-seslendirme skill'i",
+          "metin": "Adım adım rehber/eğitim/bilgilendirme videosu üretmek (marka tasarımlı sahneler + Emel seslendirme + senkron altyazı) veya hazır sessiz videoya seslendirme ve altyazı eklemek.",
+          "ne_zaman": [
+            "\"X nasıl yapılır videosu\", müşteri rehberi, adım adım anlatım, kısa dikey bilgilendirme videosu",
+            "Kullanıcı bir video verip seslendirme/altyazı/konuşma metni istiyor",
+            "Ekran görüntülerinden adım adım video"
+          ],
+          "ne_zaman_degil": [
+            "Serbest hareketli grafik/animasyonlu tanıtım (HyperFrames)",
+            "Karakter animasyonu (ClaudeAnimationBase)"
+          ],
+          "nasil": [
+            "`~/.claude/skills/video-seslendirme/SKILL.md` iş akışını izle (A: sıfırdan, B: hazır video)",
+            "Önce `gorsel` ile sessiz önizleme üret ve görselleri Read ile kontrol et, sonra `olustur`/`uret`",
+            "Kişisel veriyi ekrana ve seslendirmeye koyma; gizli metinde `motor: piper`"
+          ],
+          "dogrula": "`kontrol.png` ve çıktı satırındaki 'siyah ara: 0' değerine bak; altyazının içeriğe binmediğini kare alarak kontrol et; telaffuzu kullanıcıya dinlet."
+        }
+      ]
     },
     {
       "id": "durum-satiri",

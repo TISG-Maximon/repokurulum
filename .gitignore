@@ -6,3 +6,4 @@ graphify-out/.graphify_python
 graphify-out/.graphify_root
 graphify-out/cost.json
 cikti/
+__pycache__/

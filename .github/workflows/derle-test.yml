@@ -166,7 +166,7 @@ jobs:
           $kod = $LASTEXITCODE
           $log = Get-ChildItem "$env:LOCALAPPDATA\RepoKurulum\logs\*.log" | Sort-Object LastWriteTime | Select-Object -Last 1
           $hatalar = Select-String -Path $log.FullName -Pattern '\[HATA\]'
-          if ($hatalar) { Get-Content $log.FullName -Tail 60 | Write-Host; $hatalar | ForEach-Object { Write-Host "::error::$($_.Line)" }; exit 1 }
+          if ($hatalar) { Select-String -Path $log.FullName -Pattern 'indiriliyor|Invoke-WebRequest:|HTTP:|curl:|INDIRILEMEDI|Hicbir|Piper sesleri' | ForEach-Object { Write-Host $_.Line }; $hatalar | ForEach-Object { Write-Host "::error::$($_.Line)" }; exit 1 }
           if ($kod -ne 0) { exit $kod }
           foreach ($y in @("$env:USERPROFILE\.local\bin", "$env:APPDATA\npm")) { $env:Path += ";$y" }
           $env:PIPER_SESLER = [Environment]::GetEnvironmentVariable('PIPER_SESLER', 'User')
@@ -184,6 +184,37 @@ jobs:
           Write-Host "OK: piper.wav $((Get-Item "$t\piper.wav").Length) bayt, slayt PNG: $($png.Count)"
           $kural = & .\installer\RepoKurulum.ps1 -Kurallar | Out-String
           foreach ($k in @('Seslendirme', 'edge-tts', 'Piper', 'HyperFrames', 'Marp CLI')) { if ($kural -notmatch [regex]::Escape($k)) { Write-Host "::error::kural metninde yok: $k"; exit 1 } }
+          exit 0
+
+      - name: Video rehber uretici (gorsel uretimi + seslendirme + altyazi)
+        shell: powershell
+        timeout-minutes: 20
+        run: |
+          .\installer\RepoKurulum.ps1 -Sessiz -Bilesenler "video-rehber"
+          $kod = $LASTEXITCODE
+          $log = Get-ChildItem "$env:LOCALAPPDATA\RepoKurulum\logs\*.log" | Sort-Object LastWriteTime | Select-Object -Last 1
+          $hatalar = Select-String -Path $log.FullName -Pattern '\[HATA\]'
+          if ($hatalar) { $hatalar | ForEach-Object { Write-Host "::error::$($_.Line)" }; exit 1 }
+          if ($kod -ne 0) { exit $kod }
+          $ErrorActionPreference = 'Continue'
+          $sk = "$env:USERPROFILE\.claude\skills\video-seslendirme"
+          foreach ($f in 'SKILL.md','seslendir.py','gorsel.py','ornek-senaryo.json','marka\logo.png') { if (-not (Test-Path "$sk\$f")) { Write-Host "::error::eksik: $f"; exit 1 } }
+          $p = Join-Path $env:RUNNER_TEMP 'video-test'; New-Item -ItemType Directory -Force $p | Out-Null
+          Copy-Item "$sk\ornek-senaryo.json" "$p\senaryo.json"
+          & uv run --script "$sk\seslendir.py" gorsel "$p\senaryo.json" 2>&1 | Write-Host
+          $png = @(Get-ChildItem "$p\gorseller\sahne_*.png")
+          if ($png.Count -ne 14) { Write-Host "::error::14 sahne gorseli bekleniyordu, $($png.Count) uretildi"; exit 1 }
+          Add-Type -AssemblyName System.Drawing
+          $r = [System.Drawing.Image]::FromFile($png[0].FullName); $boy = "$($r.Width)x$($r.Height)"; $r.Dispose()
+          if ($boy -ne '1080x1920') { Write-Host "::error::gorsel boyutu $boy (1080x1920 olmali)"; exit 1 }
+          $cikti = & uv run --script "$sk\seslendir.py" olustur "$p\senaryo.json" 2>&1 | Out-String
+          Write-Host $cikti
+          if ($cikti -match 'TAMAM\. Sure ([\d.]+) sn, (\d+) altyazi parcasi, siyah ara: (\d+)') {
+            if ([int]$Matches[3] -ne 0) { Write-Host "::error::videoda siyah ara var"; exit 1 }
+            foreach ($f in 'isg-katip-sozlesme-onayi.mp4','isg-katip-sozlesme-onayi-altyazili.mp4','isg-katip-sozlesme-onayi.srt') { if (-not (Test-Path "$p\$f")) { Write-Host "::error::cikti yok: $f"; exit 1 } }
+          } elseif ($cikti -match 'edge-tts calismadi') {
+            Write-Host '::warning::edge-tts CI ortamindan Microsoft servisine erisemedi; gorsel uretimi dogrulandi, ses adimi atlandi'
+          } else { Write-Host '::error::video uretilemedi'; exit 1 }
           exit 0
 
       - name: Guncelleme kontrolu (-GuncellemeKontrol) hatasiz calisiyor mu
