@@ -534,6 +534,12 @@ def olustur(json_yolu, sadece_gorsel=False):
 
 
 def main():
+    # Windows konsolu/yonlendirme cp1252 olabilir: Turkce karakterde cokmesin
+    for akis in (sys.stdout, sys.stderr):
+        try:
+            akis.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
     ap = argparse.ArgumentParser(description="Videoya Turkce seslendirme + senkron altyazi (repokurulum)")
     alt = ap.add_subparsers(dest="komut", required=True)
     a = alt.add_parser("analiz"); a.add_argument("video"); a.add_argument("--klasor")
