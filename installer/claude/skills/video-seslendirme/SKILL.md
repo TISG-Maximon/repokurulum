@@ -124,7 +124,7 @@ Gerçek kişi ve ekipman görüntüsü Gemini uygulamasındaki **Veo** ile üret
 
 ## Ayarlar (`senaryo.json` / `sahneler.json`)
 
-- `motor`: `otomatik` (varsayılan: GEMINI_API_KEY varsa Gemini TTS, yoksa Microsoft Emel), `gemini`, `edge`, `piper`. Gemini en akıcı Türkçe sestir; tüm metin tek istekte gider, kota dolarsa otomatik Emel'e geçer. Gemini ayarları: `gemini_ses` (Kore varsayılan; Aoede, Leda, Sulafat, Puck, Charon), `gemini_uslup` (okuma tarzı), `gemini_model` (boşsa en yeni TTS modeli seçilir). Gemini kelime zamanı vermez, altyazı cümle süresine oranlanır.
+- `motor`: `otomatik` (varsayılan: GEMINI_API_KEY varsa Gemini TTS, yoksa Microsoft Emel), `gemini`, `edge`, `piper`. Gemini en akıcı Türkçe sestir; tüm metin tek istekte gider, kota dolarsa otomatik Emel'e geçer. Gemini ayarları: `gemini_ses` (Kore varsayılan; Aoede, Leda, Sulafat, Puck, Charon), `gemini_uslup` (okuma tarzı; varsayılan boş = modelin doğal okuyuşu. Doluysa ses yazıya dökülüp kontrol edilir, talimat da okunmuşsa talimatsız yeniden üretilir), `gemini_model` (boşsa en yeni TTS modeli seçilir). Gemini kelime zamanı vermez, altyazı cümle süresine oranlanır.
 - `ses` (edge): `tr-TR-EmelNeural` (kadın, varsayılan) veya `tr-TR-AhmetNeural` (erkek). `hiz`: `+4%` (doğal); en fazla `+12%`, daha hızlı yapma, metni kısalt.
 - `motor`: `edge` (internet, en doğal). Metin gizli/kurum içiyse `piper` (çevrimdışı, `piper_ses`: `tr_TR-dfki-medium` (yoksa klasördeki başka Türkçe ses)).
 - `altyazi`: `yazi_tipi` (Arial), `boyut_orani` (0,026 = 50 px / 1920), `y_orani` (hikayede 0,765, hazır videoda 0,78), `max_karakter` (40).

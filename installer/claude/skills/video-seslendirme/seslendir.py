@@ -271,31 +271,60 @@ def gemini_model(cfg):
     return "gemini-2.5-flash-preview-tts"
 
 
+def gemini_fazla_okuma(wav, metin, is_d):
+    """Uretilen sesi Gemini ile yaziya doker; metne gore fazladan okunan kelime oranini dondurur (kontrol yapilamazsa None)."""
+    import base64
+    try:
+        modeller = [m["name"].split("/")[-1] for m in gemini_istek("models?pageSize=200").get("models", [])]
+        yazici = sorted([m for m in modeller if "transcribe" in m], reverse=True) or sorted([m for m in modeller if "flash" in m and "-tts" not in m and "lite" not in m and "image" not in m], reverse=True)
+        if not yazici:
+            return None
+        mp3 = is_d / "denetim.mp3"
+        calistir(["ffmpeg", "-v", "error", "-y", "-i", str(wav), "-ar", "16000", "-ac", "1", "-b:a", "48k", str(mp3)])
+        govde = {"contents": [{"parts": [{"inline_data": {"mime_type": "audio/mp3", "data": base64.b64encode(mp3.read_bytes()).decode()}},
+                                         {"text": "Bu Türkçe ses kaydını kelimesi kelimesine yazıya dök, başka bir şey yazma."}]}]}
+        y = gemini_istek(f"models/{yazici[0]}:generateContent", govde)
+        parca = y["candidates"][0]["content"]["parts"][0]
+        yazi = parca.get("text") or parca.get("audioTranscription", {}).get("text", "")
+        say = lambda t: len(re.findall(r"\w+", t))
+        return max(0.0, (say(yazi) - say(metin)) / max(1, say(metin)))
+    except (SystemExit, Exception):
+        return None
+
+
 def gemini_toplu(metinler, cfg, is_d):
     """Tum sahne metinlerini TEK istekte seslendirir (kota dostu), sesi sahne aralarindaki duraklamalardan boler.
     Donus: [(wav, sure), ...] metinler sirasiyla."""
     import base64, hashlib
     ses = cfg.get("gemini_ses", "Kore")
-    uslup = cfg.get("gemini_uslup", "Doğal, akıcı, sıcak ve güven veren bir Türkçe tanıtım spikeri gibi oku. "
-                                    "Her paragraftan sonra yaklaşık bir saniye dur.")
+    uslup = cfg.get("gemini_uslup", "")   # bos: modelin dogal okuyusu (talimat metne karisip okunabiliyor)
     metin = "\n\n".join(metinler)
     anahtar = hashlib.sha1(f"{ses}|{uslup}|{metin}|{cfg.get('gemini_model', '')}".encode()).hexdigest()[:16]
     ham = is_d / f"gemini_{anahtar}.wav"
     if not ham.exists():
         model = gemini_model(cfg)
-        print(f"Gemini TTS: model {model}, ses {ses} (tek istek)")
-        govde = {"contents": [{"parts": [{"text": f"{uslup}\n\n{metin}"}]}],
-                 "generationConfig": {"responseModalities": ["AUDIO"],
-                                      "speechConfig": {"voiceConfig": {"prebuiltVoiceConfig": {"voiceName": ses}}}}}
-        y = gemini_istek(f"models/{model}:generateContent", govde)
-        try:
-            veri = next(p["inlineData"] for p in y["candidates"][0]["content"]["parts"] if "inlineData" in p)
-        except Exception:
-            sys.exit("HATA: Gemini ses dondurmedi: " + json.dumps(y)[:500])
-        pcm = is_d / f"gemini_{anahtar}.pcm"
-        pcm.write_bytes(base64.b64decode(veri["data"]))
-        oran = re.search(r"rate=(\d+)", veri.get("mimeType", "")); oran = oran.group(1) if oran else "24000"
-        calistir(["ffmpeg", "-v", "error", "-y", "-f", "s16le", "-ar", oran, "-ac", "1", "-i", str(pcm), "-ar", "44100", str(ham)])
+        for deneme, us in enumerate([uslup, ""] if uslup else [""]):
+            istem = f"{us.rstrip(':')}:\n{metin}" if us else metin
+            print(f"Gemini TTS: model {model}, ses {ses}{' (uslup: ' + us + ')' if us else ''}")
+            govde = {"contents": [{"parts": [{"text": istem}]}],
+                     "generationConfig": {"responseModalities": ["AUDIO"],
+                                          "speechConfig": {"voiceConfig": {"prebuiltVoiceConfig": {"voiceName": ses}}}}}
+            y = gemini_istek(f"models/{model}:generateContent", govde)
+            try:
+                veri = next(p["inlineData"] for p in y["candidates"][0]["content"]["parts"] if "inlineData" in p)
+            except Exception:
+                sys.exit("HATA: Gemini ses dondurmedi: " + json.dumps(y)[:500])
+            pcm = is_d / f"gemini_{anahtar}.pcm"
+            pcm.write_bytes(base64.b64decode(veri["data"]))
+            oran = re.search(r"rate=(\d+)", veri.get("mimeType", "")); oran = oran.group(1) if oran else "24000"
+            calistir(["ffmpeg", "-v", "error", "-y", "-f", "s16le", "-ar", oran, "-ac", "1", "-i", str(pcm), "-ar", "44100", str(ham)])
+            fazla = gemini_fazla_okuma(ham, metin, is_d)
+            if fazla is None or fazla < 0.15 or deneme == 1 or not us:
+                if fazla is not None and fazla >= 0.15:
+                    print(f"UYARI: Gemini metinde olmayan kelimeler okumus olabilir (%{fazla * 100:.0f} fazla). Sesi dinleyerek kontrol et.")
+                break
+            print("UYARI: Gemini uslup talimatini da okumus; talimatsiz yeniden uretiliyor.")
+            ham.unlink()
     toplam = sure(ham)
     n = len(metinler)
     # Sessizlikleri bul; en uzun n-1 tanesinden bol (paragraf aralari)
@@ -306,7 +335,20 @@ def gemini_toplu(metinler, cfg, is_d):
     araliklar = [(a, b) for a, b in zip(bas_l, son_l) if a > 0.05 and b < toplam - 0.05]
     if len(araliklar) < n - 1:
         sys.exit(f"HATA: Gemini sesi {n} sahneye bolunemedi ({len(araliklar)} duraklama bulundu). Tekrar dene ya da metinleri sadelestir.")
-    secilen = sorted(sorted(araliklar, key=lambda ab: ab[1] - ab[0], reverse=True)[:n - 1])
+    # Her sinir icin metin uzunlugundan beklenen zamani hesapla; ona en yakin (ve yeterince uzun) duraklamayi sec.
+    # Paragraf aralari genelde cumle ici duraklamalardan uzundur: uzunluga hafif agirlik ver.
+    uz = [max(1, len(m)) for m in metinler]
+    konusma = toplam - sum(b - a for a, b in araliklar) * 0.5
+    secilen, onceki = [], 0.0
+    for k in range(1, n):
+        hedef = toplam * sum(uz[:k]) / sum(uz)
+        kalan = n - 1 - k   # sonra secilecek sinir sayisi kadar aralik birak
+        adaylar = [ab for ab in araliklar if (ab[0] + ab[1]) / 2 > onceki + 0.3]
+        adaylar = adaylar[:len(adaylar) - kalan] if kalan else adaylar
+        if not adaylar:
+            sys.exit("HATA: Gemini sesi sahnelere bolunemedi.")
+        en = min(adaylar, key=lambda ab: abs((ab[0] + ab[1]) / 2 - hedef) - 1.5 * (ab[1] - ab[0]))
+        secilen.append(en); onceki = (en[0] + en[1]) / 2
     kes = [0.0] + [(a + b) / 2 for a, b in secilen] + [toplam]
     cikti = []
     for i in range(n):
