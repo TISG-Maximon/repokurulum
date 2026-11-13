@@ -1,5 +1,5 @@
 {
-  "surum": "1.11.0",
+  "surum": "1.12.0",
   "aciklama": "RepoKurulum bilesen listesi. Yeni bir arac eklerken 'kurallar' alanina ne ise yaradigini ve hangi ihtiyacta kacinci sirada denenecegini yaz; uygulamadaki 'Kurallari Kopyala' dugmesi bunlardan CLAUDE.md'ye yapistirilacak metni uretir. Sira onemlidir: bagimliliklar once gelmelidir.",
   "kural_basligi": "Araç seçim kuralları",
   "genel_kurallar": [
@@ -120,8 +120,20 @@
     {
       "id": "video",
       "baslik": "Video ve animasyon üretmek",
-      "tetik": "\"video\", \"tanıtım\", \"promo\", \"reels/shorts\", \"animasyon\", \"çizgi film\", \"seslendirme\".",
-      "not": "Videonun türüne göre TEK araç seç; aynı videoda araçları karıştırma."
+      "tetik": "\"video\", \"tanıtım\", \"promo\", \"reels/shorts\", \"animasyon\", \"çizgi film\", \"eğitim videosu\", \"konu anlatım videosu\".",
+      "not": "Videonun türüne göre TEK araç seç; aynı videoda araçları karıştırma. Şirket/ticari video (3+ çalışanlı kurum adına) Remotion tabanlı araçlarla (video-shotcraft, claude-code-video-toolkit) yapılmaz — Remotion bu durumda ücretli lisans ister; HyperFrames kullan. Seslendirme gerekiyorsa sesi 'Seslendirme' bölümündeki araçlarla üret."
+    },
+    {
+      "id": "seslendirme",
+      "baslik": "Metni seslendirmek (Türkçe TTS)",
+      "tetik": "\"seslendir\", \"sesli anlatım\", \"voiceover\", \"dış ses\", \"metni oku\", \"TTS\", \"podcast\", videoya anlatıcı sesi.",
+      "not": "Sıra: edge-tts (internet varsa, en doğal ses) → Piper (internet yoksa / gizli metin) → Windows Tolga (hiçbiri yoksa; kurulum gerekmez: PowerShell `System.Speech`, ses tr-TR Tolga). Ses ve altyazıyı aynı kaynaktan üret; ses dosyası cümle cümle değil, bölüm bölüm (sahne başına bir dosya) üretilsin."
+    },
+    {
+      "id": "sunum",
+      "baslik": "Slayt / sunum hazırlamak",
+      "tetik": "\"sunum\", \"slayt\", \"slides\", \"PowerPoint\", \"pptx\", eğitim sunumu, videoda slayt sahnesi.",
+      "not": "İçeriği önce Markdown olarak yaz, sonra dönüştür; kullanıcı PowerPoint'te metni düzenleyecekse bunu baştan sor."
     }
   ],
   "bilesenler": [
@@ -1298,7 +1310,7 @@
       "kurallar": [
         {
           "ihtiyac": "video",
-          "oncelik": 1,
+          "oncelik": 2,
           "arac": "video-shotcraft",
           "metin": "Ürün/uygulama/site tanıtım ve promo videosu (hareketli grafik, müzik senkronu).",
           "ne_zaman": [
@@ -1307,7 +1319,8 @@
           ],
           "ne_zaman_degil": [
             "Karakter animasyonu/çizgi film (ClaudeAnimationBase)",
-            "Gerçek kamera görüntüsü düzenleme"
+            "Gerçek kamera görüntüsü düzenleme",
+            "Şirket adına (3+ çalışanlı kurum) ticari video: Remotion ücretli lisans ister → HyperFrames"
           ],
           "nasil": [
             "Önce ekranları yakala ve storyboard'u kullanıcıya göster, onaydan sonra render et"
@@ -1371,14 +1384,15 @@
       "kurallar": [
         {
           "ihtiyac": "video",
-          "oncelik": 2,
+          "oncelik": 3,
           "arac": "claude-code-video-toolkit",
           "metin": "Seslendirmeli, müzikli, AI görsel/klip içeren videolar.",
           "ne_zaman": [
             "Seslendirme/anlatım, müzik veya AI görsel gereken açıklayıcı video, kısa dikey video, reklam"
           ],
           "ne_zaman_degil": [
-            "Bulut GPU hesabı kurulmadıysa AI ses/görsel adımları (önce /setup)"
+            "Bulut GPU hesabı kurulmadıysa AI ses/görsel adımları (önce /setup)",
+            "Şirket adına (3+ çalışanlı kurum) ticari video: Remotion ücretli lisans ister → HyperFrames"
           ],
           "nasil": [
             "Kendi klasöründe (`ClaudeProjeler\\claude-code-video-toolkit`) çalışır; başka klasördeysen kullanıcıya orada açmasını söyle",
@@ -1443,7 +1457,7 @@
       "kurallar": [
         {
           "ihtiyac": "video",
-          "oncelik": 3,
+          "oncelik": 4,
           "arac": "ClaudeAnimationBase",
           "metin": "El çizimi/suluboya tarzı karakter animasyonu ve kısa çizgi film.",
           "ne_zaman": [
@@ -1463,6 +1477,242 @@
         "tur": "git",
         "dizin": "%USERPROFILE%\\ClaudeProjeler\\ClaudeAnimationBase",
         "url": "https://github.com/JohnHeibel/ClaudeAnimationBase.git"
+      }
+    },
+    {
+      "id": "edge-tts",
+      "ad": "edge-tts (Turkce seslendirme)",
+      "kategori": "7. Video ve animasyon",
+      "lisans": "LGPL-3.0",
+      "repo": "https://github.com/rany2/edge-tts",
+      "aciklama": "Metni dogal Turkce sesle MP3'e cevirir (Emel, Ahmet) + SRT altyazi; ucretsiz, API anahtari yok, internet gerekir",
+      "varsayilan": false,
+      "gerekir": [
+        "uv"
+      ],
+      "kontrol": {
+        "komut": "edge-tts"
+      },
+      "kur": [
+        [
+          {
+            "tur": "uvtool",
+            "paket": "edge-tts"
+          }
+        ]
+      ],
+      "kurallar": [
+        {
+          "ihtiyac": "seslendirme",
+          "oncelik": 1,
+          "arac": "edge-tts",
+          "metin": "Metinden doğal Türkçe ses (MP3) ve kelime zamanlı altyazı (SRT) üretmek.",
+          "ne_zaman": [
+            "Video anlatımı, dış ses, eğitim/konu anlatımı, sesli özet — internet varsa her Türkçe seslendirmede ilk seçim",
+            "Altyazı da gerekiyorsa (SRT'yi aynı komut verir)"
+          ],
+          "ne_zaman_degil": [
+            "İnternet yok ya da metin gizli/kurum içi (Microsoft sunucusuna gider) → Piper",
+            "Tek kelimelik kısa test için uzun metin gönderme"
+          ],
+          "nasil": [
+            "Ses: `edge-tts --voice tr-TR-EmelNeural --file metin.txt --write-media ses.mp3 --write-subtitles ses.srt` (erkek ses: tr-TR-AhmetNeural)",
+            "Kısa metin: `--text \"...\"`; uzun metinde her zaman `--file` kullan (tırnak/satır sorunu olmaz)",
+            "Hız/ton: `--rate=-5%` (eğitimde biraz yavaş), `--pitch=+0Hz`; seslerin listesi: `edge-tts --list-voices` çıktısında `tr-TR`",
+            "Videoda sahne başına ayrı dosya üret; sahne süresini ses süresine göre ayarla",
+            "metin.txt dosyasını UTF-8 kaydet (Türkçe karakterler bozulmasın)"
+          ],
+          "dogrula": "`ffprobe -v error -show_entries format=duration -of csv=p=0 ses.mp3` ile süreyi kontrol et (0 veya çok kısa ise hata); SRT'nin son zamanı ses süresiyle uyumlu olmalı; Türkçe karakterler (ç, ğ, ı, ö, ş, ü) metinde doğru mu bak."
+        }
+      ],
+      "guncelleme": {
+        "tur": "pypi",
+        "paket": "edge-tts"
+      }
+    },
+    {
+      "id": "piper-tts",
+      "ad": "Piper + Turkce sesler (cevrimdisi seslendirme)",
+      "kategori": "7. Video ve animasyon",
+      "lisans": "GPL-3.0 (sesler: MIT/CC)",
+      "repo": "https://github.com/OHF-Voice/piper1-gpl",
+      "aciklama": "Internetsiz, islemcide calisan Turkce seslendirme (WAV); sesler: dfki, fahrettin, fettah (%LOCALAPPDATA%\\piper-sesler)",
+      "varsayilan": false,
+      "gerekir": [
+        "uv"
+      ],
+      "kontrol": {
+        "dosya": [
+          "%LOCALAPPDATA%\\piper-sesler\\tr_TR-fahrettin-medium.onnx"
+        ]
+      },
+      "kur": [
+        [
+          {
+            "tur": "uvtool",
+            "paket": "piper-tts"
+          },
+          {
+            "tur": "ps",
+            "komut": "$ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; [Net.ServicePointManager]::SecurityProtocol=[Net.ServicePointManager]::SecurityProtocol -bor 3072; $h=Join-Path $env:LOCALAPPDATA 'piper-sesler'; New-Item -ItemType Directory -Force $h | Out-Null; foreach ($s in @('dfki','fahrettin','fettah')) { foreach ($u in @('.onnx.json','.onnx')) { $ad='tr_TR-' + $s + '-medium' + $u; $f=Join-Path $h $ad; if ((Test-Path $f) -and ((Get-Item $f).Length -gt 1000)) { continue }; $url='https://huggingface.co/rhasspy/piper-voices/resolve/main/tr/tr_TR/' + $s + '/medium/' + $ad; $ok=$false; for ($i=1; $i -le 3 -and -not $ok; $i++) { try { Write-Output ('indiriliyor: ' + $ad); Invoke-WebRequest -UseBasicParsing -Uri $url -OutFile ($f + '.part') -TimeoutSec 600; Move-Item -Force ($f + '.part') $f; $ok=$true } catch { Write-Output $_.Exception.Message; Start-Sleep -Seconds (5*$i) } }; if (-not $ok) { exit 1 } } }; [Environment]::SetEnvironmentVariable('PIPER_SESLER', $h, 'User'); Write-Output ('Piper sesleri: ' + $h)"
+          }
+        ]
+      ],
+      "kurulum_notu": "Piper sesleri: %LOCALAPPDATA%\\piper-sesler (ortam degiskeni PIPER_SESLER).",
+      "kurallar": [
+        {
+          "ihtiyac": "seslendirme",
+          "oncelik": 2,
+          "arac": "Piper",
+          "metin": "İnternetsiz, yerel Türkçe seslendirme (WAV).",
+          "ne_zaman": [
+            "İnternet yok, edge-tts hata verdi/limit",
+            "Metin gizli veya kurum içi (dışarı gönderilmemeli)",
+            "Çok sayıda kısa ses dosyası (hızlı, yerel)"
+          ],
+          "ne_zaman_degil": [
+            "İnternet varsa ve en doğal ses isteniyorsa (edge-tts daha doğal)",
+            "Kelime zamanlı altyazı gerekiyorsa tek başına yetmez (SRT üretmez; cümle sürelerinden hesapla)"
+          ],
+          "nasil": [
+            "`piper -m \"$env:PIPER_SESLER\\tr_TR-fahrettin-medium.onnx\" -i metin.txt -f ses.wav` (sesler: dfki, fahrettin, fettah)",
+            "Kısa metin: `piper -m <model> -f ses.wav \"metin\"`",
+            "Yavaşlatmak için `--length-scale 1.1`, cümle arası boşluk `--sentence-silence 0.3`",
+            "MP3 gerekirse: `ffmpeg -i ses.wav -b:a 128k ses.mp3`",
+            "metin.txt dosyasını UTF-8 kaydet (Türkçe karakterler bozulmasın)"
+          ],
+          "dogrula": "`ffprobe` ile süreyi kontrol et; sayılar ve kısaltmalar doğru okunuyor mu bak (gerekirse metinde yazıyla yaz: \"%5\" → \"yüzde beş\")."
+        }
+      ],
+      "guncelleme": {
+        "tur": "pypi",
+        "paket": "piper-tts"
+      }
+    },
+    {
+      "id": "hyperframes",
+      "ad": "HyperFrames (HTML ile video, plugin)",
+      "kategori": "7. Video ve animasyon",
+      "lisans": "Apache-2.0",
+      "repo": "https://github.com/heygen-com/hyperframes",
+      "aciklama": "HTML + GSAP ile video: egitim/konu anlatimi, altyazili ve seslendirmeli video; Remotion'a ucretsiz alternatif (sirket kullaniminda lisans sorunu yok)",
+      "varsayilan": false,
+      "gerekir": [
+        "node",
+        "ffmpeg",
+        "claude"
+      ],
+      "kontrol": {
+        "plugin": "hyperframes"
+      },
+      "kur": [
+        [
+          {
+            "tur": "calistir",
+            "dosya": "claude",
+            "argumanlar": [
+              "plugin",
+              "marketplace",
+              "add",
+              "heygen-com/hyperframes"
+            ]
+          },
+          {
+            "tur": "calistir",
+            "dosya": "claude",
+            "argumanlar": [
+              "plugin",
+              "install",
+              "hyperframes@hyperframes",
+              "-s",
+              "user"
+            ]
+          }
+        ]
+      ],
+      "kurulum_notu": "Claude'da /hyperframes:hyperframes ile kullanilir. HeyGen girisi gerektiren ozellikler (Voice Turbo, muzik katalogu, AI uretim) ucretsiz kotayla sinirli; yerel araclar yeterli.",
+      "kurallar": [
+        {
+          "ihtiyac": "video",
+          "oncelik": 1,
+          "arac": "HyperFrames",
+          "metin": "HTML/CSS/GSAP sahnelerinden MP4 video: eğitim, konu anlatımı, bilgilendirme, altyazılı ve seslendirmeli video.",
+          "ne_zaman": [
+            "Konu anlatım / eğitim / İSG bilgilendirme videosu, slayt + seslendirme videosu, kinetik yazı, altyazılı kısa video",
+            "Şirket adına veya ticari kullanılacak her video (Remotion lisansı gerekmez)",
+            "Bir web sitesini videoya dönüştürme"
+          ],
+          "ne_zaman_degil": [
+            "Karakter animasyonu/çizgi film (ClaudeAnimationBase)",
+            "HeyGen hesabı gerektiren özellikler (Voice Turbo, müzik kataloğu, AI görsel/video üretimi): kullanıcı açıkça istemedikçe kullanma — ücretsiz kota sınırlı"
+          ],
+          "nasil": [
+            "`/hyperframes:hyperframes` ile kompozisyonu yaz; CLI işleri (init, lint, preview, render) `npx hyperframes ...`",
+            "Türkçe seslendirmeyi HyperFrames'in kendi TTS'iyle değil edge-tts/Piper ile üret (yerel Kokoro Türkçe desteklemez); ses dosyasını ve SRT'yi kompozisyona ekle",
+            "Sahne süresini ses süresine göre ayarla; önce `npx hyperframes preview`, onaydan sonra render"
+          ],
+          "dogrula": "`npx hyperframes lint` temiz olmalı; render sonrası `ffprobe` ile süre/çözünürlük ve birkaç kareyi (`ffmpeg -ss <sn> -i video.mp4 -frames:v 1 kare.png`) kontrol et: metin taşması, boş kare, ses-görüntü senkronu."
+        }
+      ],
+      "guncelleme": {
+        "tur": "plugin",
+        "url": "https://github.com/heygen-com/hyperframes.git",
+        "marketplace": "hyperframes",
+        "eklenti": "hyperframes@hyperframes"
+      }
+    },
+    {
+      "id": "marp-cli",
+      "ad": "Marp CLI (Markdown -> slayt)",
+      "kategori": "7. Video ve animasyon",
+      "lisans": "MIT",
+      "repo": "https://github.com/marp-team/marp-cli",
+      "aciklama": "Markdown'dan sunum: PDF, PPTX, HTML ve slayt basina PNG + konusmaci notlari (videoda slayt sahnesi icin); sistemdeki Edge/Chrome'u kullanir",
+      "varsayilan": false,
+      "gerekir": [
+        "node"
+      ],
+      "kontrol": {
+        "komut": "marp"
+      },
+      "kur": [
+        [
+          {
+            "tur": "calistir",
+            "dosya": "npm",
+            "argumanlar": [
+              "install",
+              "-g",
+              "@marp-team/marp-cli"
+            ]
+          }
+        ]
+      ],
+      "kurallar": [
+        {
+          "ihtiyac": "sunum",
+          "oncelik": 1,
+          "arac": "Marp CLI",
+          "metin": "Markdown'dan slayt/sunum üretmek (PDF, PPTX, HTML, PNG).",
+          "ne_zaman": [
+            "Sunum, eğitim slaytı, toplantı sunumu hazırlanacak",
+            "Video için slayt görselleri + konuşmacı notları (seslendirme metni) gerekiyor"
+          ],
+          "ne_zaman_degil": [
+            "Kullanıcı slaytı PowerPoint'te metin olarak düzenleyecekse: `--pptx` slaytları görsel olarak koyar; bunu söyle (düzenlenebilir PPTX için LibreOffice'li `--pptx-editable` deneysel)",
+            "Hareketli/animasyonlu sahne gerekiyorsa (HyperFrames)"
+          ],
+          "nasil": [
+            "Dosya başına `---\\nmarp: true\\n---`; slaytlar `---` ile ayrılır; konuşmacı notu `<!-- ... -->`",
+            "PDF: `marp sunum.md --pdf`; PowerPoint: `marp sunum.md --pptx`; slayt başına PNG: `marp sunum.md --images png`; notlar: `marp sunum.md --notes`",
+            "Yerel resim kullanıyorsan `--allow-local-files` ekle"
+          ],
+          "dogrula": "PNG çıktısından birkaç slaytı aç/oku: metin taşması, Türkçe karakter, slayt sayısı beklenenle aynı mı."
+        }
+      ],
+      "guncelleme": {
+        "tur": "npm",
+        "paket": "@marp-team/marp-cli"
       }
     },
     {

@@ -21,7 +21,7 @@ Komut satırından da alabilirsin:
                 "ne_zaman": ["koşul 1", "koşul 2"], "ne_zaman_degil": ["..."],
                 "nasil": ["verimli kullanım adımı"], "dogrula": "sonucun doğruluğu nasıl kontrol edilir" } ]
 ```
-`ihtiyac` değerleri: `dokuman` (Kütüphane / framework / API dokümanı), `arama` (Web araması ve güncel bilgi), `sayfa` (Bilinen bir URL'nin içeriğini okumak), `tarayici` (Tarayıcıda etkileşim (tıklama, form, giriş, ekran görüntüsü)), `belge` (Yerel belge okuma (PDF, Word, Excel, PowerPoint, resim)), `kaynak` (Çok sayıda kaynağı analiz etmek, kaynaklı özet / podcast / slayt), `proje` (Üzerinde çalıştığın projenin kodunu anlamak), `dis-repo` (Başka bir repoyu incelemek), `github` (GitHub işlemleri (issue, PR, inceleme, Actions)), `dusunme` (Karmaşık, çok adımlı problem), `is-akisi` (Geliştirme iş akışı), `uygulama` (Var olan bir uygulamaya benzer ürün yapmak), `video` (Video ve animasyon üretmek). Aynı ihtiyaçta `oncelik` küçük olan önce denenir.
+`ihtiyac` değerleri: `dokuman` (Kütüphane / framework / API dokümanı), `arama` (Web araması ve güncel bilgi), `sayfa` (Bilinen bir URL'nin içeriğini okumak), `tarayici` (Tarayıcıda etkileşim (tıklama, form, giriş, ekran görüntüsü)), `belge` (Yerel belge okuma (PDF, Word, Excel, PowerPoint, resim)), `kaynak` (Çok sayıda kaynağı analiz etmek, kaynaklı özet / podcast / slayt), `proje` (Üzerinde çalıştığın projenin kodunu anlamak), `dis-repo` (Başka bir repoyu incelemek), `github` (GitHub işlemleri (issue, PR, inceleme, Actions)), `dusunme` (Karmaşık, çok adımlı problem), `is-akisi` (Geliştirme iş akışı), `uygulama` (Var olan bir uygulamaya benzer ürün yapmak), `video` (Video ve animasyon üretmek), `seslendirme` (Metni seslendirmek (Türkçe TTS)), `sunum` (Slayt / sunum hazırlamak). Aynı ihtiyaçta `oncelik` küçük olan önce denenir.
 
 ---
 
@@ -94,10 +94,20 @@ Komut satırından da alabilirsin:
 | Her kod yazma, düzeltme, refactor | **karpathy ilkeleri** |
 | Yeni özellik, çok dosyalı değişiklik, zor hata | **superpowers** |
 | "X'in benzerini/klonunu yap", rakip uygulama incelemesi + yeniden yapım | **replica-skill** |
+| Konu anlatım / eğitim / İSG bilgilendirme videosu, slayt + seslendirme videosu, kinetik yazı, altyazılı kısa video | **HyperFrames** |
+| Şirket adına veya ticari kullanılacak her video (Remotion lisansı gerekmez) | **HyperFrames** |
+| Bir web sitesini videoya dönüştürme | **HyperFrames** |
 | Bir ürünün, uygulamanın veya sitenin tanıtım/promo/özellik videosu | **video-shotcraft** |
 | Gerçek ekran görüntülerinden hareketli video | **video-shotcraft** |
 | Seslendirme/anlatım, müzik veya AI görsel gereken açıklayıcı video, kısa dikey video, reklam | **claude-code-video-toolkit** |
 | Karakterli animasyon, çizgi film, hikâye anlatan kısa animasyon | **ClaudeAnimationBase** |
+| Video anlatımı, dış ses, eğitim/konu anlatımı, sesli özet — internet varsa her Türkçe seslendirmede ilk seçim | **edge-tts** |
+| Altyazı da gerekiyorsa (SRT'yi aynı komut verir) | **edge-tts** |
+| İnternet yok, edge-tts hata verdi/limit | **Piper** |
+| Metin gizli veya kurum içi (dışarı gönderilmemeli) | **Piper** |
+| Çok sayıda kısa ses dosyası (hızlı, yerel) | **Piper** |
+| Sunum, eğitim slaytı, toplantı sunumu hazırlanacak | **Marp CLI** |
+| Video için slayt görselleri + konuşmacı notları (seslendirme metni) gerekiyor | **Marp CLI** |
 
 # Araç ayrıntıları (ihtiyaca göre)
 
@@ -340,29 +350,68 @@ Araçları bu sırayla değerlendir: karpathy ilkeleri > superpowers
 - **Doğrula:** `diff` adımındaki benzerlik puanı ve eksikler listesiyle ilerlemeyi ölç.
 
 ## Video ve animasyon üretmek
-**Tetikleyici:** "video", "tanıtım", "promo", "reels/shorts", "animasyon", "çizgi film", "seslendirme".
-Araçları bu sırayla değerlendir: video-shotcraft > claude-code-video-toolkit > ClaudeAnimationBase
+**Tetikleyici:** "video", "tanıtım", "promo", "reels/shorts", "animasyon", "çizgi film", "eğitim videosu", "konu anlatım videosu".
+Araçları bu sırayla değerlendir: HyperFrames > video-shotcraft > claude-code-video-toolkit > ClaudeAnimationBase
 
-### 1. **video-shotcraft**
+### 1. **HyperFrames**
+- **Amaç:** HTML/CSS/GSAP sahnelerinden MP4 video: eğitim, konu anlatımı, bilgilendirme, altyazılı ve seslendirmeli video.
+- **Ne zaman:** Konu anlatım / eğitim / İSG bilgilendirme videosu, slayt + seslendirme videosu, kinetik yazı, altyazılı kısa video; Şirket adına veya ticari kullanılacak her video (Remotion lisansı gerekmez); Bir web sitesini videoya dönüştürme
+- **Ne zaman değil:** Karakter animasyonu/çizgi film (ClaudeAnimationBase); HeyGen hesabı gerektiren özellikler (Voice Turbo, müzik kataloğu, AI görsel/video üretimi): kullanıcı açıkça istemedikçe kullanma — ücretsiz kota sınırlı
+- **Nasıl:** `/hyperframes:hyperframes` ile kompozisyonu yaz; CLI işleri (init, lint, preview, render) `npx hyperframes ...`; Türkçe seslendirmeyi HyperFrames'in kendi TTS'iyle değil edge-tts/Piper ile üret (yerel Kokoro Türkçe desteklemez); ses dosyasını ve SRT'yi kompozisyona ekle; Sahne süresini ses süresine göre ayarla; önce `npx hyperframes preview`, onaydan sonra render
+- **Doğrula:** `npx hyperframes lint` temiz olmalı; render sonrası `ffprobe` ile süre/çözünürlük ve birkaç kareyi (`ffmpeg -ss <sn> -i video.mp4 -frames:v 1 kare.png`) kontrol et: metin taşması, boş kare, ses-görüntü senkronu.
+
+### 2. **video-shotcraft**
 - **Amaç:** Ürün/uygulama/site tanıtım ve promo videosu (hareketli grafik, müzik senkronu).
 - **Ne zaman:** Bir ürünün, uygulamanın veya sitenin tanıtım/promo/özellik videosu; Gerçek ekran görüntülerinden hareketli video
-- **Ne zaman değil:** Karakter animasyonu/çizgi film (ClaudeAnimationBase); Gerçek kamera görüntüsü düzenleme
+- **Ne zaman değil:** Karakter animasyonu/çizgi film (ClaudeAnimationBase); Gerçek kamera görüntüsü düzenleme; Şirket adına (3+ çalışanlı kurum) ticari video: Remotion ücretli lisans ister → HyperFrames
 - **Nasıl:** Önce ekranları yakala ve storyboard'u kullanıcıya göster, onaydan sonra render et
 - **Doğrula:** Render edilen karelerden örnekler al ve kontrol et (metin taşması, boş kare, senkron).
 
-### 2. **claude-code-video-toolkit**
+### 3. **claude-code-video-toolkit**
 - **Amaç:** Seslendirmeli, müzikli, AI görsel/klip içeren videolar.
 - **Ne zaman:** Seslendirme/anlatım, müzik veya AI görsel gereken açıklayıcı video, kısa dikey video, reklam
-- **Ne zaman değil:** Bulut GPU hesabı kurulmadıysa AI ses/görsel adımları (önce /setup)
+- **Ne zaman değil:** Bulut GPU hesabı kurulmadıysa AI ses/görsel adımları (önce /setup); Şirket adına (3+ çalışanlı kurum) ticari video: Remotion ücretli lisans ister → HyperFrames
 - **Nasıl:** Kendi klasöründe (`ClaudeProjeler\claude-code-video-toolkit`) çalışır; başka klasördeysen kullanıcıya orada açmasını söyle; `/video` ile şablondan başla
 - **Doğrula:** Sahne sahne inceleme (`/scene-review`) yap.
 
-### 3. **ClaudeAnimationBase**
+### 4. **ClaudeAnimationBase**
 - **Amaç:** El çizimi/suluboya tarzı karakter animasyonu ve kısa çizgi film.
 - **Ne zaman:** Karakterli animasyon, çizgi film, hikâye anlatan kısa animasyon
 - **Ne zaman değil:** Ürün tanıtımı (video-shotcraft)
 - **Nasıl:** Kendi klasöründe (`ClaudeProjeler\ClaudeAnimationBase`) çalışır; önce ANIMATION_GUIDE.md okunur; GPU yoksa suluboya dolgularını azalt (render yavaş)
 - **Doğrula:** Kontak sayfası (contact sheet) render edip kareleri kontrol et.
 
-> Not: Videonun türüne göre TEK araç seç; aynı videoda araçları karıştırma.
+> Not: Videonun türüne göre TEK araç seç; aynı videoda araçları karıştırma. Şirket/ticari video (3+ çalışanlı kurum adına) Remotion tabanlı araçlarla (video-shotcraft, claude-code-video-toolkit) yapılmaz — Remotion bu durumda ücretli lisans ister; HyperFrames kullan. Seslendirme gerekiyorsa sesi 'Seslendirme' bölümündeki araçlarla üret.
+
+## Metni seslendirmek (Türkçe TTS)
+**Tetikleyici:** "seslendir", "sesli anlatım", "voiceover", "dış ses", "metni oku", "TTS", "podcast", videoya anlatıcı sesi.
+Araçları bu sırayla değerlendir: edge-tts > Piper
+
+### 1. **edge-tts**
+- **Amaç:** Metinden doğal Türkçe ses (MP3) ve kelime zamanlı altyazı (SRT) üretmek.
+- **Ne zaman:** Video anlatımı, dış ses, eğitim/konu anlatımı, sesli özet — internet varsa her Türkçe seslendirmede ilk seçim; Altyazı da gerekiyorsa (SRT'yi aynı komut verir)
+- **Ne zaman değil:** İnternet yok ya da metin gizli/kurum içi (Microsoft sunucusuna gider) → Piper; Tek kelimelik kısa test için uzun metin gönderme
+- **Nasıl:** Ses: `edge-tts --voice tr-TR-EmelNeural --file metin.txt --write-media ses.mp3 --write-subtitles ses.srt` (erkek ses: tr-TR-AhmetNeural); Kısa metin: `--text "..."`; uzun metinde her zaman `--file` kullan (tırnak/satır sorunu olmaz); Hız/ton: `--rate=-5%` (eğitimde biraz yavaş), `--pitch=+0Hz`; seslerin listesi: `edge-tts --list-voices` çıktısında `tr-TR`; Videoda sahne başına ayrı dosya üret; sahne süresini ses süresine göre ayarla; metin.txt dosyasını UTF-8 kaydet (Türkçe karakterler bozulmasın)
+- **Doğrula:** `ffprobe -v error -show_entries format=duration -of csv=p=0 ses.mp3` ile süreyi kontrol et (0 veya çok kısa ise hata); SRT'nin son zamanı ses süresiyle uyumlu olmalı; Türkçe karakterler (ç, ğ, ı, ö, ş, ü) metinde doğru mu bak.
+
+### 2. **Piper**
+- **Amaç:** İnternetsiz, yerel Türkçe seslendirme (WAV).
+- **Ne zaman:** İnternet yok, edge-tts hata verdi/limit; Metin gizli veya kurum içi (dışarı gönderilmemeli); Çok sayıda kısa ses dosyası (hızlı, yerel)
+- **Ne zaman değil:** İnternet varsa ve en doğal ses isteniyorsa (edge-tts daha doğal); Kelime zamanlı altyazı gerekiyorsa tek başına yetmez (SRT üretmez; cümle sürelerinden hesapla)
+- **Nasıl:** `piper -m "$env:PIPER_SESLER\tr_TR-fahrettin-medium.onnx" -i metin.txt -f ses.wav` (sesler: dfki, fahrettin, fettah); Kısa metin: `piper -m <model> -f ses.wav "metin"`; Yavaşlatmak için `--length-scale 1.1`, cümle arası boşluk `--sentence-silence 0.3`; MP3 gerekirse: `ffmpeg -i ses.wav -b:a 128k ses.mp3`; metin.txt dosyasını UTF-8 kaydet (Türkçe karakterler bozulmasın)
+- **Doğrula:** `ffprobe` ile süreyi kontrol et; sayılar ve kısaltmalar doğru okunuyor mu bak (gerekirse metinde yazıyla yaz: "%5" → "yüzde beş").
+
+> Not: Sıra: edge-tts (internet varsa, en doğal ses) → Piper (internet yoksa / gizli metin) → Windows Tolga (hiçbiri yoksa; kurulum gerekmez: PowerShell `System.Speech`, ses tr-TR Tolga). Ses ve altyazıyı aynı kaynaktan üret; ses dosyası cümle cümle değil, bölüm bölüm (sahne başına bir dosya) üretilsin.
+
+## Slayt / sunum hazırlamak
+**Tetikleyici:** "sunum", "slayt", "slides", "PowerPoint", "pptx", eğitim sunumu, videoda slayt sahnesi.
+
+### 1. **Marp CLI**
+- **Amaç:** Markdown'dan slayt/sunum üretmek (PDF, PPTX, HTML, PNG).
+- **Ne zaman:** Sunum, eğitim slaytı, toplantı sunumu hazırlanacak; Video için slayt görselleri + konuşmacı notları (seslendirme metni) gerekiyor
+- **Ne zaman değil:** Kullanıcı slaytı PowerPoint'te metin olarak düzenleyecekse: `--pptx` slaytları görsel olarak koyar; bunu söyle (düzenlenebilir PPTX için LibreOffice'li `--pptx-editable` deneysel); Hareketli/animasyonlu sahne gerekiyorsa (HyperFrames)
+- **Nasıl:** Dosya başına `---\nmarp: true\n---`; slaytlar `---` ile ayrılır; konuşmacı notu `<!-- ... -->`; PDF: `marp sunum.md --pdf`; PowerPoint: `marp sunum.md --pptx`; slayt başına PNG: `marp sunum.md --images png`; notlar: `marp sunum.md --notes`; Yerel resim kullanıyorsan `--allow-local-files` ekle
+- **Doğrula:** PNG çıktısından birkaç slaytı aç/oku: metin taşması, Türkçe karakter, slayt sayısı beklenenle aynı mı.
+
+> Not: İçeriği önce Markdown olarak yaz, sonra dönüştür; kullanıcı PowerPoint'te metni düzenleyecekse bunu baştan sor.
 ````

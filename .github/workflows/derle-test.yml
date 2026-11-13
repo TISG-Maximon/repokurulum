@@ -158,6 +158,34 @@ jobs:
           Get-Content "$env:LOCALAPPDATA\RepoKurulum\logs\hafiza.log" -ErrorAction SilentlyContinue | Write-Host
           if ($hata) { $hata | ForEach-Object { Write-Host "::error::$_" }; exit 1 }
 
+      - name: Seslendirme ve sunum (edge-tts, Piper, HyperFrames, Marp) + gercek ses uretimi
+        shell: powershell
+        timeout-minutes: 20
+        run: |
+          .\installer\RepoKurulum.ps1 -Sessiz -Bilesenler "edge-tts,piper-tts,hyperframes,marp-cli"
+          $kod = $LASTEXITCODE
+          $log = Get-ChildItem "$env:LOCALAPPDATA\RepoKurulum\logs\*.log" | Sort-Object LastWriteTime | Select-Object -Last 1
+          $hatalar = Select-String -Path $log.FullName -Pattern '\[HATA\]'
+          if ($hatalar) { $hatalar | ForEach-Object { Write-Host "::error::$($_.Line)" }; exit 1 }
+          if ($kod -ne 0) { exit $kod }
+          foreach ($y in @("$env:USERPROFILE\.local\bin", "$env:APPDATA\npm")) { $env:Path += ";$y" }
+          $env:PIPER_SESLER = [Environment]::GetEnvironmentVariable('PIPER_SESLER', 'User')
+          $t = Join-Path $env:RUNNER_TEMP 'ses'; New-Item -ItemType Directory -Force $t | Out-Null
+          $ErrorActionPreference = 'Continue'
+          Set-Content -Path "$t\metin.txt" -Value 'Merhaba, bu bir seslendirme testidir.' -Encoding UTF8
+          & piper -m "$env:PIPER_SESLER\tr_TR-fahrettin-medium.onnx" -i "$t\metin.txt" -f "$t\piper.wav" 2>&1 | Out-Null
+          if (-not (Test-Path "$t\piper.wav") -or (Get-Item "$t\piper.wav").Length -lt 10000) { Write-Host '::error::Piper ses uretmedi'; exit 1 }
+          & edge-tts --voice tr-TR-EmelNeural --file "$t\metin.txt" --write-media "$t\edge.mp3" --write-subtitles "$t\edge.srt" 2>&1 | Out-Null
+          if (-not (Test-Path "$t\edge.mp3") -or (Get-Item "$t\edge.mp3").Length -lt 5000) { Write-Host '::warning::edge-tts ses uretmedi (Microsoft servisi CI''dan erisilemiyor olabilir)' }
+          Set-Content -Path "$t\sunum.md" -Value "---`nmarp: true`n---`n# Baslik`n`n---`n# Ikinci slayt" -Encoding UTF8
+          & marp "$t\sunum.md" --images png -o "$t\sunum.png" 2>&1 | Out-Null
+          $png = @(Get-ChildItem "$t\sunum*.png")
+          if ($png.Count -lt 2) { Write-Host "::error::Marp 2 slayt PNG uretmedi ($($png.Count))"; exit 1 }
+          Write-Host "OK: piper.wav $((Get-Item "$t\piper.wav").Length) bayt, slayt PNG: $($png.Count)"
+          $kural = & .\installer\RepoKurulum.ps1 -Kurallar | Out-String
+          foreach ($k in @('Seslendirme', 'edge-tts', 'Piper', 'HyperFrames', 'Marp CLI')) { if ($kural -notmatch [regex]::Escape($k)) { Write-Host "::error::kural metninde yok: $k"; exit 1 } }
+          exit 0
+
       - name: Guncelleme kontrolu (-GuncellemeKontrol) hatasiz calisiyor mu
         shell: powershell
         run: |

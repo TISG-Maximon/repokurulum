@@ -784,6 +784,15 @@ function Test-Guncelleme($B) {
                 $son = (Invoke-RestMethod -Uri 'https://registry.npmjs.org/@anthropic-ai/claude-code/latest' -TimeoutSec 20).version
                 if ($son -and ([version]$son -gt [version]$kurulu)) { return "$kurulu -> $son" }
             }
+            'npm' {
+                # Global npm paketi: kurulu surum (npm ls -g) ile npm'deki son surum
+                Invoke-Harici 'npm' @('ls', '-g', $g.paket, '--json', '--depth', '0') -ZamanAsimi 90 -Sessizce | Out-Null
+                $kurulu = $null
+                try { $kurulu = ([string]$script:SonCikti | ConvertFrom-Json).dependencies.($g.paket).version } catch { }
+                if (-not $kurulu) { return $null }
+                $son = (Invoke-RestMethod -Uri ('https://registry.npmjs.org/{0}/latest' -f ($g.paket -replace '/', '%2F')) -TimeoutSec 20).version
+                if ($son -and ([version]$son -gt [version]$kurulu)) { return "$kurulu -> $son" }
+            }
             'winget' {
                 if (-not (Test-Komut 'winget')) { return $null }
                 Invoke-Harici 'winget' @('list', '--id', $g.id, '-e', '--upgrade-available', '--accept-source-agreements', '--disable-interactivity') -ZamanAsimi 90 -Sessizce | Out-Null
@@ -818,6 +827,7 @@ function Invoke-Guncelleme($B) {
     $kod = 1
     switch ($g.tur) {
         'pypi' { $kod = Invoke-Harici 'uv' @('tool', 'upgrade', $g.paket) }
+        'npm' { $kod = Invoke-Harici 'npm' @('install', '-g', ($g.paket + '@latest')) }
         'git' {
             $dizin = Expand-Deger $g.dizin
             # Sig klon (--depth 1): ileri sarma calismaz; yeni commit'e 'reset --keep' ile gecilir.
