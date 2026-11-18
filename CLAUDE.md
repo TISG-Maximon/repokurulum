@@ -7,6 +7,7 @@ Bu repo, Windows'ta Claude Code + Playwright MCP + graphify ortamını kuran bet
 - `.bat` dosyalarında: ASCII karakter kullan (Türkçe karakter yok), `.cmd` olan araçları (`claude`, `npm`, `npx`) her zaman `call` ile çağır, satır sonları CRLF olmalı (`.gitattributes` zorlar).
 - Betikler idempotent olmalı: tekrar çalıştırıldığında kurulu olanı atlamalı, MCP kayıtlarını önce `claude mcp remove` ile silip sonra eklemeli.
 - Windows'ta stdio MCP sunucuları `cmd /c npx ...` ile eklenir.
+- Kod yorumu ekleme (kullanıcı kararı): yeni açıklama/yorum satırı yazma; açıklamayı sohbette yap. Çalışma için gerekli başlıklar ve `repokurulum` işaretleri hariç. Var olan yorumları silme.
 - graphify'in PyPI adı `graphifyy`'dir; `uv tool install --python 3.12` ile kur.
 
 ## Araçlar

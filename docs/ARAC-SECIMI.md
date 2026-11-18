@@ -37,6 +37,7 @@ Komut satırından da alabilirsin:
 - **Yerel mi dış mı:** Yerel dosya/kod için yerleşik Read/Grep/Glob/Edit; internet, tarayıcı, dış servis ve belge dönüştürme için MCP araçları.
 - **Hata durumunda:** Araç hata verirse veya bağlı değilse aynı başlıktaki bir sonraki araca geç; listede araç kalmadıysa yerleşik araçları (WebSearch, WebFetch, Read, Grep) kullan. Aynı araçla 2 başarısız denemeden sonra kullanıcıya ne denediğini ve neyin başarısız olduğunu söyle.
 - **Anahtarlı/kotalı araçlar** (exa, tavily, firecrawl, github): gereksiz tekrar ve çok geniş sorgulardan kaçın; önce sorguyu daralt.
+- **Kod yorumu yazma:** Kod yazarken veya düzenlerken açıklama/yorum satırı (`# ...`, `// ...`, `<!-- ... -->`, docstring) EKLEME; kodun ne yaptığını koda not olarak yazma, gerekiyorsa kullanıcıya sohbette anlat. İstisna yalnızca çalışma için gerekli olanlar: dosyanın çalışmasını sağlayan başlıklar (shebang, `# /// script` bağımlılık bloğu, YAML frontmatter, lisans başlığı) ve araçların aradığı işaretler (örn. `repokurulum`). Var olan yorumlara dokunma; kullanıcı istemedikçe silme.
 
 ## Hızlı eşleme: koşul → araç
 İstekteki eylemi/koşulu bu tabloda bul, eşleşen aracı kullan; ayrıntı ve sınırlar için aşağıdaki ilgili bölüme bak. Birden fazla satır eşleşirse ihtiyaç başlığındaki sırayı izle.
